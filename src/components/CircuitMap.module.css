@@ -1,0 +1,121 @@
+.circuitContainer {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.circuitSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ─── TRACES / PATHS ─────────────────────────────────────── */
+.trace {
+  stroke: #1a3a1a;
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 8 4;
+  animation: traceFlow 1s linear infinite;
+}
+
+.traceActive {
+  stroke: var(--text-accent);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.4));
+}
+
+/* ─── NODES ──────────────────────────────────────────────── */
+.nodeGroup {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.nodeGroup:hover {
+  transform: scale(1.05);
+}
+
+.nodeCircle {
+  fill: #0a0a0a;
+  stroke: #1a3a1a;
+  stroke-width: 2;
+  transition: all 0.3s ease;
+}
+
+.nodeCircle:hover {
+  stroke: var(--text-accent);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.3));
+}
+
+.nodeActive {
+  stroke: var(--text-accent) !important;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.5));
+}
+
+.nodeLabel {
+  fill: #aaaaaa;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  text-anchor: middle;
+  pointer-events: none;
+  transition: fill 0.3s ease;
+}
+
+.nodeLabelActive {
+  fill: var(--text-accent);
+  font-weight: 600;
+}
+
+.nodeCount {
+  fill: #555555;
+  font-family: 'Fira Code', monospace;
+  font-size: 9px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.nodeCountActive {
+  fill: var(--text-accent);
+}
+
+/* ─── PLAYER DOT INDICATORS ─────────────────────────────── */
+.playerDot {
+  fill: var(--text-accent);
+  opacity: 0.7;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* ─── MOVING INDICATOR ───────────────────────────────────── */
+.movingIndicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-warning);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: blink 0.5s step-end infinite;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 8px 20px;
+  border: 1px solid var(--text-warning);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes traceFlow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

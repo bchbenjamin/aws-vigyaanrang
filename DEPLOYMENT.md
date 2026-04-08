@@ -1,64 +1,108 @@
-# Breach & Defend - Deployment Guide
+# Breach & Defend — Deployment Guide
 
-This guide covers two distinct deployment structures:
-1. **Local LAN Network** (Primary target for 30 concurrent players on low bandwidth)
-2. **Vercel** (Secondary target for external testing)
+## Prerequisites
+- **Node.js** v18.17+ installed
+- A running **Neon PostgreSQL** database (free tier at [neon.tech](https://neon.tech))
 
----
+## Environment Variables
 
-## 1. Local LAN Deployment (CSE Lab)
-
-Because this game relies heavily on WebSockets (`socket.io`), the recommended production strategy is to run the custom Next.js Socket.io server locally on a single machine.
-
-### Prerequisites (Central Server PC)
-- **Node.js** (v18.17 or newer)
-- Ensure the Windows Firewall allows incoming connections on port `3000`.
-
-### Step-by-Step Execution
-
-1. **Install Dependencies**
-   Navigate to the project root and run:
-   ```bash
-   npm install
-   ```
-
-2. **Build the Production Application**
-   Create an optimized production build of the Next.js React frontend:
-   ```bash
-   npm run build
-   ```
-
-3. **Start the Game Server**
-   Start the custom backend, which hosts both the API and the WebSockets on port 3000:
-   ```bash
-   NODE_ENV=production node server.js
-   ```
-
-4. **Connect the 30 Players**
-   - Open Command Prompt on the central PC and type `ipconfig`. 
-   - Note the `IPv4 Address` (e.g., `192.168.1.50`).
-   - On the remaining 30 lab computers, open the browser and navigate to `http://192.168.1.50:3000`.
+Create a `.env` file in the project root:
+```env
+DATABASE_URL=postgresql://...your-neon-string...
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-admin-password
+```
 
 ---
 
-## 2. Vercel Deployment (External Testing)
+## Option A: Local LAN Deployment (CSE Lab — Production)
 
-> [!WARNING]
-> Vercel Serverless Functions will fall back from pure WebSockets to HTTP Long-Polling since they do not maintain persistent connections. The app will work, but latency will be slightly higher than the LAN deployment.
+This is the primary deployment target. The custom `server.js` hosts both the Next.js frontend and the Socket.io WebSocket game engine on the same port.
 
-### Step-by-Step Execution
+### Step 1: Install Dependencies
+```bash
+npm install
+```
 
-1. **Change the Build Command**
-   When importing the Github repository to Vercel, ensure the build command is:
-   ```bash
-   npm run build
-   ```
+### Step 2: Build the Production Application
+```bash
+npm run build
+```
 
-2. **Assets Initialization**
-   The Java compilation framework (**CheerpJ 3**), **JSCPP**, and **Pyodide** are structurally placed inside the `/public` folder. Vercel's Edge Network will automatically compress and aggressively cache these assets globally upon deployment.
+### Step 3: Start the Game Server
+```bash
+# On Windows (Command Prompt):
+set NODE_ENV=production && node server.js
 
-3. **Deploy**
-   Click **Deploy**.
+# On Windows (PowerShell):
+$env:NODE_ENV="production"; node server.js
 
-> [!TIP]
-> If you require pure WebSocket performance over Vercel, consider transitioning the `socket.io` integration to **PartyKit** (a Cloudflare worker-based WebSocket platform) or **Pusher**.
+# On Linux/Mac:
+NODE_ENV=production node server.js
+```
+The server starts on **port 3000**.
+
+### Step 4: Open the Firewall
+Ensure Windows Firewall allows incoming connections on port 3000:
+```powershell
+New-NetFirewallRule -DisplayName "Breach and Defend" -Direction Inbound -LocalPort 3000 -Protocol TCP -Action Allow
+```
+
+### Step 5: Find the Server IP
+```bash
+ipconfig
+```
+Look for `IPv4 Address` (e.g., `192.168.1.50`).
+
+### Step 6: Connect 30 Players
+On each lab PC, open a browser and navigate to:
+```
+http://192.168.1.50:3000
+```
+
+### Step 7: Admin Panel
+The game admin navigates to:
+```
+http://192.168.1.50:3000/admin
+```
+- Log in with the credentials from `.env`.
+- Click **Start Game** once all players have joined.
+
+---
+
+## Option B: Vercel Deployment (External Testing)
+
+> **Warning:** Vercel does not support persistent WebSockets. Socket.io will fall back to HTTP long-polling. Performance will be lower than the LAN deployment.
+
+### Step 1: Push to GitHub
+Ensure your repository is pushed to GitHub with all source code.
+
+### Step 2: Import to Vercel
+1. Log into [vercel.com](https://vercel.com).
+2. Click **Add New... > Project** and import the repository.
+3. Add environment variables: `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
+4. Set build command: `npm run build`.
+5. Click **Deploy**.
+
+> **Note:** On Vercel, the custom `server.js` does not run. The Socket.io integration must be replaced with a serverless-compatible provider (Pusher, Ably, or PartyKit) for production-quality WebSocket performance. The LAN deployment is highly recommended for the actual event.
+
+---
+
+## Development Mode
+
+```bash
+npm run dev
+```
+This runs the custom `server.js` in development mode with Next.js hot-reloading.
+
+---
+
+## Scoring Reference
+
+| Action                          | Points |
+|---------------------------------|--------|
+| Your side wins the round        | +3     |
+| Completing a task               | +1     |
+| Successfully hacking a player   | +2     |
+| Last surviving Developer        | +2     |
+| Correctly voting out a Hacker   | +1     |

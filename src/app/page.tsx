@@ -1,96 +1,106 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { Terminal, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ShieldAlert, Terminal, Zap, Users } from 'lucide-react';
 
-let socket: Socket;
+export default function LobbyPage() {
+  const [code, setCode] = useState('');
+  const router = useRouter();
 
-export default function Home() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [room, setRoom] = useState('Breakroom');
-  const [tasksCompleted, setTasksCompleted] = useState(0);
-
-  useEffect(() => {
-    // Only connect once
-    if (!socket) {
-      socket = io();
-      
-      socket.on('connect', () => {
-        setIsConnected(true);
-        socket.emit('join_game', { name: 'Player' + Math.floor(Math.random() * 1000) });
-      });
-
-      socket.on('disconnect', () => {
-        setIsConnected(false);
-      });
-
-      socket.on('player_joined', (playerData) => {
-        console.log('Player Joined:', playerData);
-      });
-    }
-
-    return () => {
-      if (socket) socket.disconnect();
-    };
-  }, []);
-
-  const moveRoom = (newRoom: string) => {
-    setRoom('Moving...');
-    // Simulate the 3-second mandatory delay
-    setTimeout(() => {
-      socket.emit('move_room', newRoom);
-      setRoom(newRoom);
-    }, 3000);
+  const handleJoin = () => {
+    if (code.trim().length < 2) return;
+    // Store access code in sessionStorage for the game page
+    sessionStorage.setItem('playerCode', code.trim());
+    router.push('/game');
   };
 
   return (
-    <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <ShieldAlert color="var(--text-danger)" size={32} />
-          <h1>Breach & Defend</h1>
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', minHeight: '100vh', padding: '24px',
+    }}>
+      {/* Logo / Title */}
+      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
+          <ShieldAlert size={48} color="var(--text-danger)" />
+          <h1 style={{ fontSize: '32px', letterSpacing: '4px', textTransform: 'uppercase' }}>
+            Breach & Defend
+          </h1>
         </div>
-        <div style={{ color: isConnected ? 'var(--text-accent)' : 'var(--text-danger)' }}>
-          {isConnected ? 'SYSTEM ONLINE' : 'CONNECTION LOST'}
-        </div>
-      </header>
+        <p style={{ color: 'var(--text-muted)', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+          A Game of Trial, Trust, and Treason
+        </p>
 
-      <main style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '2rem' }}>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h3>Navigation</h3>
-          {['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab', 'The Log Room', 'Breakroom'].map((r) => (
-            <button key={r} onClick={() => moveRoom(r)} disabled={room === 'Moving...'} style={{ textAlign: 'left', opacity: room === r ? 1 : 0.6 }}>
-              {r === room ? '> ' : ''}{r}
-            </button>
-          ))}
-        </nav>
+        {/* Animated scan line */}
+        <div style={{
+          width: '300px', height: '1px', margin: '24px auto 0',
+          background: 'linear-gradient(90deg, transparent, var(--text-accent), transparent)',
+          animation: 'pulseGlow 2s ease-in-out infinite',
+        }} />
+      </div>
 
-        <section className="terminal-box">
-          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Terminal size={20} />
-            <h2>Current Location: {room}</h2>
-          </div>
-          
-          <div style={{ minHeight: '300px' }}>
-            {room === 'Moving...' ? (
-              <p style={{ color: 'var(--text-secondary)' }}>Transiting network layers... (3s delay)</p>
-            ) : room === 'Breakroom' ? (
-              <p>Safe zone. No tasks here. Emergency Stand-Up can be called from here.</p>
-            ) : (
-              <div>
-                <p>Accessing vulnerable node...</p>
-                <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', border: '1px dashed var(--border-color)' }}>
-                  <code>
-                    // Task: Fix the connection string<br/>
-                    const db = connect(___________);
-                  </code>
-                </div>
+      {/* Join Card */}
+      <div className="terminal-box" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
+        {/* Features display */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px',
+          marginBottom: '32px', textAlign: 'center',
+        }}>
+          {[
+            { icon: <Users size={18} />, label: '30 Players' },
+            { icon: <Terminal size={18} />, label: 'Code Tasks' },
+            { icon: <Zap size={18} />, label: '30 Min' },
+          ].map((f, i) => (
+            <div key={i} style={{
+              padding: '12px 8px', background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-primary)', borderRadius: '4px',
+            }}>
+              <div style={{ color: 'var(--text-accent)', marginBottom: '6px', display: 'flex', justifyContent: 'center' }}>
+                {f.icon}
               </div>
-            )}
-          </div>
-        </section>
-      </main>
+              <span style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase' }}>
+                {f.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Access Code input */}
+        <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+          Enter Access Code
+        </label>
+        <input
+          id="player-code-input"
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          placeholder="e.g. 1234"
+          maxLength={10}
+          autoFocus
+          style={{ marginBottom: '16px' }}
+        />
+
+        <button
+          id="join-game-btn"
+          className="btn-accent"
+          onClick={handleJoin}
+          disabled={code.trim().length < 2}
+          style={{ width: '100%', padding: '12px', fontSize: '13px', letterSpacing: '2px' }}
+        >
+          [ CONNECT TO SERVER ]
+        </button>
+
+        <p style={{ color: 'var(--text-muted)', fontSize: '10px', textAlign: 'center', marginTop: '16px' }}>
+          You will be assigned a role after the admin starts the game.
+        </p>
+      </div>
+
+      {/* Admin link */}
+      <a href="/admin" style={{ color: 'var(--text-muted)', fontSize: '10px', marginTop: '24px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Admin Panel
+      </a>
     </div>
   );
 }

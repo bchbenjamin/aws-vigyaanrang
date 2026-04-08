@@ -1,0 +1,176 @@
+.gameContainer {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto; /* added explicit row for mobile tabs if needed */
+  height: 100vh;
+  overflow: hidden;
+}
+
+.gameHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerCenter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+  max-width: 400px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileTabsContainer {
+  display: none;
+}
+
+.mobileTabBtn {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobileTabBtn[data-active="true"] {
+  color: var(--text-accent);
+  border-bottom: 2px solid var(--text-accent);
+  background: var(--bg-tertiary);
+}
+
+.gameMain {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.mapSection {
+  border-right: 1px solid var(--border-primary);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.taskSection {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gameFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  font-size: 11px;
+}
+
+.roomPlayersPanel {
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+}
+
+.playerListItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid #0a0a0a;
+  font-size: 12px;
+}
+
+.playerListItem:last-child {
+  border-bottom: none;
+}
+
+.hackBtn {
+  font-size: 9px;
+  padding: 2px 8px;
+  color: var(--text-danger);
+  border-color: var(--border-danger);
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.playerListItem:hover .hackBtn {
+  opacity: 1;
+}
+
+.logPanel {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .gameHeader {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .headerCenter {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .mobileTabsContainer {
+    display: flex;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .gameMain {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gameMain[data-mobile-tab="map"] .taskSection {
+    display: none;
+  }
+
+  .gameMain[data-mobile-tab="task"] .mapSection {
+    display: none;
+  }
+
+  .mapSection {
+    flex: 1;
+    border-right: none;
+  }
+
+  .taskSection {
+    flex: 1;
+  }
+}
