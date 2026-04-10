@@ -45,28 +45,43 @@ function createFreshState() {
   };
 }
 
-// ─── TASK POOLS ─────────────────────────────────────────────
-function getRandomTaskId(room) {
-  const taskPools = {
-    'Frontend': ['fe-debug-py-1', 'fe-fill-c-1', 'fe-rearrange-java-1', 'fe-debug-java-1', 'fe-fill-py-1'],
-    'Main Database': ['db-debug-c-1', 'db-fill-java-1', 'db-rearrange-py-1', 'db-debug-py-1'],
-    'API Gateway': ['api-debug-java-1', 'api-fill-c-1', 'api-rearrange-py-1', 'api-fill-py-1'],
-    'Server Room': ['srv-debug-c-1', 'srv-rearrange-java-1', 'srv-fill-c-1', 'srv-debug-py-1'],
-    'QA Testing Lab': ['qa-debug-java-1', 'qa-fill-py-1', 'qa-rearrange-c-1', 'qa-debug-c-1'],
-  };
-  const pool = taskPools[room] || [];
-  if (!pool.length) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+// ─── DATA DRIVEN PUZZLES ────────────────────────────────────
+const puzzlesDB = require('./src/data/puzzles.json');
+const realPuzzlesDB = puzzlesDB.filter(p => !p.isSabotage && !p.isFake);
+const sabotagePuzzlesDB = puzzlesDB.filter(p => p.isSabotage);
+const fakePuzzlesDB = puzzlesDB.filter(p => p.isFake);
+
+function getPointsForDifficulty(difficulty) {
+  if (difficulty === 'hard') return 3;
+  if (difficulty === 'medium') return 2;
+  return 1; // default easy
 }
 
-function getSabotageTaskId() {
-  const ids = ['sab-debug-py-1', 'sab-fill-c-1', 'sab-rearrange-java-1', 'sab-debug-java-1', 'sab-fill-py-1'];
-  return ids[Math.floor(Math.random() * ids.length)];
+function getRandomTaskId(room, playerId) {
+  const solvedObj = playerId && gameState.players[playerId] ? gameState.players[playerId].solvedTasks || [] : [];
+  let pool = realPuzzlesDB.filter(p => p.room === room || p.room === '*');
+  let unsolved = pool.filter(p => !solvedObj.includes(p.id));
+  if (unsolved.length === 0) unsolved = pool; // recycle
+  if (unsolved.length === 0) return null;
+  return unsolved[Math.floor(Math.random() * unsolved.length)].id;
 }
 
-function getFakeTaskId() {
-  const ids = ['fake-debug-py-1', 'fake-fill-c-1', 'fake-rearrange-java-1'];
-  return ids[Math.floor(Math.random() * ids.length)];
+function getSabotageTaskId(playerId) {
+  const solvedObj = playerId && gameState.players[playerId] ? gameState.players[playerId].solvedTasks || [] : [];
+  let pool = sabotagePuzzlesDB;
+  let unsolved = pool.filter(p => !solvedObj.includes(p.id));
+  if (unsolved.length === 0) unsolved = pool;
+  if (unsolved.length === 0) return null;
+  return unsolved[Math.floor(Math.random() * unsolved.length)].id;
+}
+
+function getFakeTaskId(playerId) {
+  const solvedObj = playerId && gameState.players[playerId] ? gameState.players[playerId].solvedTasks || [] : [];
+  let pool = fakePuzzlesDB;
+  let unsolved = pool.filter(p => !solvedObj.includes(p.id));
+  if (unsolved.length === 0) unsolved = pool;
+  if (unsolved.length === 0) return null;
+  return unsolved[Math.floor(Math.random() * unsolved.length)].id;
 }
 
 // ─── HELPERS ────────────────────────────────────────────────
@@ -107,11 +122,12 @@ function addScore(playerId, points) {
 }
 
 function checkWinConditions(io) {
+  console.log("checkWinConditions called!");
   if (gameState.phase !== 'playing') return;
 
   const aliveDevs = getAliveDevelopers();
+  
   const aliveHackers = getAliveHackers();
-
   if (gameState.globalProgress >= 100) {
     endGame(io, 'developers', 'Project completed to 100%!');
     return;
@@ -131,6 +147,7 @@ function checkWinConditions(io) {
 }
 
 function endGame(io, winSide, reason) {
+  console.log("endGame called:", winSide, reason);
   gameState.phase = 'ended';
   gameState.winSide = winSide;
   if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
@@ -150,6 +167,7 @@ function endGame(io, winSide, reason) {
 }
 
 function resolveVoting(io) {
+  console.log("resolveVoting called!");
   if (gameState.phase !== 'standup' || !gameState.standupData) return;
 
   const votes = gameState.standupData.votes;
@@ -232,35 +250,70 @@ app.prepare().then(() => {
       }
       
       const name = registeredName.substring(0, 20);
-      gameState.players[socket.id] = {
-        id: socket.id,
-        name,
-        room: 'Breakroom',
-        role: 'developer',
-        status: 'alive',
-        hackCooldownUntil: 0,
-        anomalyAlertUsed: false,
-        currentTaskId: null,
-        isMoving: false,
-      };
-      gameState.scores[socket.id] = 0;
-      socket.join('Breakroom');
+
+      // Check if this player was disconnected and is reconnecting
+      const oldPlayerEntry = Object.entries(gameState.players).find(
+        ([_, p]) => p.name === name && p.status === 'disconnected'
+      );
+
+      let targetRoom = 'Breakroom';
+
+      if (oldPlayerEntry) {
+        const [oldId, oldP] = oldPlayerEntry;
+        // Restore their state to the new socket connection
+        gameState.players[socket.id] = { ...oldP, id: socket.id, status: 'alive' };
+        gameState.scores[socket.id] = gameState.scores[oldId] || 0;
+        targetRoom = oldP.room;
+
+        // Clean up the old, disconnected ghost record
+        delete gameState.players[oldId];
+        delete gameState.scores[oldId];
+
+        // Also fix standup votes if active
+        if (gameState.standupData && gameState.standupData.votes[oldId]) {
+          gameState.standupData.votes[socket.id] = gameState.standupData.votes[oldId];
+          delete gameState.standupData.votes[oldId];
+        }
+      } else {
+        // Standard totally new player connection
+        gameState.players[socket.id] = {
+          id: socket.id,
+          name,
+          room: 'Breakroom',
+          role: 'developer',
+          status: 'alive',
+          hackCooldownUntil: 0,
+          anomalyAlertUsed: false,
+          currentTaskId: null,
+          isMoving: false,
+          solvedTasks: [],
+        };
+        gameState.scores[socket.id] = 0;
+      }
+      
+      socket.join(targetRoom);
 
       socket.emit('state_sync', {
         phase: gameState.phase,
         you: gameState.players[socket.id],
-        roomPlayers: getPlayersInRoom('Breakroom').map(p => ({ id: p.id, name: p.name, status: p.status })),
+        roomPlayers: getPlayersInRoom(targetRoom).map(p => ({ id: p.id, name: p.name, status: p.status })),
         globalProgress: gameState.globalProgress,
         motionLog: gameState.logsCorrupted ? null : gameState.motionLog,
         logsCorrupted: gameState.logsCorrupted,
       });
 
-      io.to('Breakroom').emit('player_joined', { id: socket.id, name });
-      io.emit('player_count', Object.keys(gameState.players).length);
+      io.to(targetRoom).emit('player_joined', { id: socket.id, name });
+      
+      // Update the room for everyone now that they've appeared/re-appeared
+      io.to(targetRoom).emit('room_update', {
+        players: getPlayersInRoom(targetRoom).map(p => ({ id: p.id, name: p.name, status: p.status })),
+      });
+
+      io.emit('player_count', Object.values(gameState.players).filter(p => p.status !== 'disconnected').length);
     });
 
-    // ── START GAME ────────────────────────────────────────
-    socket.on('start_game', () => {
+    // ── ADMIN START WITH ROLES ────────────────────────────
+    socket.on('admin_start_with_roles', (rolesMap) => {
       if (gameState.phase !== 'lobby') return;
 
       const playerIds = Object.keys(gameState.players);
@@ -269,15 +322,22 @@ app.prepare().then(() => {
         return;
       }
 
+      // Count hackers in the provided mapping
+      let hackerCount = 0;
+      for (const id of playerIds) {
+        if (rolesMap[id] === 'hacker') hackerCount++;
+      }
+
+      if (hackerCount < 1) {
+        socket.emit('error_msg', 'Cannot start game without at least 1 Hacker.');
+        return;
+      }
+
       gameState.phase = 'playing';
       gameState.gameStartTime = Date.now();
 
-      const hackerCount = Math.max(1, Math.floor(playerIds.length / 6));
-      const shuffled = [...playerIds].sort(() => Math.random() - 0.5);
-      const hackerIds = new Set(shuffled.slice(0, hackerCount));
-
       playerIds.forEach(id => {
-        gameState.players[id].role = hackerIds.has(id) ? 'hacker' : 'developer';
+        gameState.players[id].role = rolesMap[id] === 'hacker' ? 'hacker' : 'developer';
         gameState.players[id].status = 'alive';
       });
 
@@ -301,6 +361,24 @@ app.prepare().then(() => {
       }, GAME_DURATION_MS);
 
       io.emit('phase_change', { phase: 'playing' });
+    });
+
+    // ── ADMIN STOP GAME ──────────────────────────────────
+    socket.on('admin_stop_game', () => {
+      // Disconnect clients to login page
+      io.emit('force_disconnect');
+
+      // Clear timers
+      if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
+      if (gameState.logsCorruptedTimer) clearTimeout(gameState.logsCorruptedTimer);
+      
+      // Reset State
+      const oldUsers = gameState.registeredUsers; 
+      gameState = createFreshState();
+      gameState.registeredUsers = oldUsers;
+      globalThis.__gameState = gameState;
+      
+      io.emit('game_reset');
     });
 
     // ── MOVE ROOM ────────────────────────────────────────
@@ -341,10 +419,10 @@ app.prepare().then(() => {
           roomData.logsCorrupted = gameState.logsCorrupted;
         } else if (TASK_ROOMS.includes(targetRoom)) {
           if (player.role === 'hacker') {
-            roomData.fakeTaskId = getFakeTaskId();
-            roomData.sabotageTaskId = getSabotageTaskId();
+            roomData.fakeTaskId = getFakeTaskId(socket.id);
+            roomData.sabotageTaskId = getSabotageTaskId(socket.id);
           } else if (player.status === 'alive') {
-            roomData.taskId = getRandomTaskId(targetRoom);
+            roomData.taskId = getRandomTaskId(targetRoom, socket.id);
           }
         }
         socket.emit('entered_room', roomData);
@@ -360,9 +438,9 @@ app.prepare().then(() => {
       if (!TASK_ROOMS.includes(player.room)) return;
 
       if (player.role === 'hacker') {
-        socket.emit('task_assigned', { fakeTaskId: getFakeTaskId(), sabotageTaskId: getSabotageTaskId() });
+        socket.emit('task_assigned', { fakeTaskId: getFakeTaskId(socket.id), sabotageTaskId: getSabotageTaskId(socket.id) });
       } else {
-        socket.emit('task_assigned', { taskId: getRandomTaskId(player.room) });
+        socket.emit('task_assigned', { taskId: getRandomTaskId(player.room, socket.id) });
       }
     });
 
@@ -371,16 +449,37 @@ app.prepare().then(() => {
       const player = gameState.players[socket.id];
       if (!player || player.status !== 'alive' || gameState.phase !== 'playing') return;
 
+      if (data.taskId && player.solvedTasks && player.solvedTasks.includes(data.taskId)) {
+        return; // Prevent spamming duplicate submissions
+      }
+
       if (data.isSabotage) {
         gameState.totalSabotageDone++;
-        addScore(player.id, 1);
+        
+        const sabotageTaskDef = sabotagePuzzlesDB.find(p => p.id === data.taskId);
+        const pts = sabotageTaskDef ? getPointsForDifficulty(sabotageTaskDef.difficulty) : 1;
+        gameState.scores[socket.id] = (gameState.scores[socket.id] || 0) + pts;
+        
+        if (sabotageTaskDef && player.solvedTasks) {
+           player.solvedTasks.push(data.taskId);
+        }
+        
         socket.emit('task_result', { success: true, message: 'Sabotage planted successfully.', isSabotage: true });
+        io.emit('sabotage_alert', { room: player.room, msg: `Critical corruption unfolding in ${player.room}!` });
       } else {
-        gameState.totalTasksSolved++;
+        // Complete real task or fake task
+        const taskDef = realPuzzlesDB.find(p => p.id === data.taskId) || fakePuzzlesDB.find(p => p.id === data.taskId);
+        const pts = taskDef ? getPointsForDifficulty(taskDef.difficulty) : 1;
+        gameState.scores[socket.id] = (gameState.scores[socket.id] || 0) + pts;
+        
+        if (player.solvedTasks && taskDef) {
+           player.solvedTasks.push(data.taskId);
+        }
+
+        gameState.totalTasksSolved += 1;
         if (player.role === 'developer') {
           const increment = (1 / TASKS_FOR_WIN) * 100;
           gameState.globalProgress = Math.min(100, gameState.globalProgress + increment);
-          addScore(player.id, 1);
         }
         socket.emit('task_result', { success: true, message: 'Task completed.', isSabotage: false });
       }
@@ -392,9 +491,9 @@ app.prepare().then(() => {
 
       if (TASK_ROOMS.includes(player.room)) {
         if (player.role === 'hacker') {
-          socket.emit('task_assigned', { fakeTaskId: getFakeTaskId(), sabotageTaskId: getSabotageTaskId() });
+          socket.emit('task_assigned', { fakeTaskId: getFakeTaskId(socket.id), sabotageTaskId: getSabotageTaskId(socket.id) });
         } else {
-          socket.emit('task_assigned', { taskId: getRandomTaskId(player.room) });
+          socket.emit('task_assigned', { taskId: getRandomTaskId(player.room, socket.id) });
         }
       }
 

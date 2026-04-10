@@ -1,0 +1,145 @@
+[
+  {
+    "id": "mc-easy-1",
+    "room": "Frontend",
+    "format": "multiple_choice",
+    "difficulty": "easy",
+    "title": "Printing Output",
+    "description": "Select the correct syntax to output 'Hello'.",
+    "versions": {
+      "python": {
+        "question": "How do you print 'Hello' in Python?",
+        "options": ["echo 'Hello'", "print('Hello')", "console.log('Hello')", "System.out.println('Hello')"],
+        "correctAnswer": "print('Hello')"
+      },
+      "java": {
+        "question": "How do you print 'Hello' in Java?",
+        "options": ["echo 'Hello'", "print('Hello')", "console.log('Hello')", "System.out.println(\"Hello\");"],
+        "correctAnswer": "System.out.println(\"Hello\");"
+      },
+      "c": {
+        "question": "How do you print 'Hello' in C?",
+        "options": ["echo 'Hello'", "print('Hello')", "printf(\"Hello\");", "System.out.println('Hello')"],
+        "correctAnswer": "printf(\"Hello\");"
+      }
+    }
+  },
+  {
+    "id": "fill-med-1",
+    "room": "Main Database",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "title": "Array Initialization",
+    "description": "Fill in the exact single missing value to properly instantiate an array of size 10.",
+    "versions": {
+      "python": {
+        "blankCode": "arr = [0] * _____",
+        "correctAnswer": "10"
+      },
+      "java": {
+        "blankCode": "int[] arr = new int[_____];",
+        "correctAnswer": "10"
+      },
+      "c": {
+        "blankCode": "int arr[_____];",
+        "correctAnswer": "10"
+      }
+    }
+  },
+  {
+    "id": "dragfill-hard-1",
+    "room": "API Gateway",
+    "format": "drag_and_fill",
+    "difficulty": "hard",
+    "title": "Complete the Function",
+    "description": "Drag the options into the correct blanks to make a function that calculates the sum of a and b.",
+    "versions": {
+      "python": {
+        "blankCode": "def add(a, b):\n    _____ a _____ b",
+        "options": ["+", "-", "return", "var"],
+        "correctOrder": ["return", "+"]
+      },
+      "java": {
+        "blankCode": "public _____ add(int a, int b) {\n    return a _____ b;\n}",
+        "options": ["+", "-", "void", "int"],
+        "correctOrder": ["int", "+"]
+      },
+      "c": {
+        "blankCode": "_____ add(int a, int b) {\n    return a _____ b;\n}",
+        "options": ["+", "-", "void", "int"],
+        "correctOrder": ["int", "+"]
+      }
+    }
+  },
+  {
+    "id": "reorder-easy-1",
+    "room": "Server Room",
+    "format": "rearrange",
+    "difficulty": "easy",
+    "title": "Return the Sum",
+    "description": "Arrange the lines to create a valid function that returns the sum of two integers.",
+    "versions": {
+      "python": {
+        "shuffledLines": ["    return a + b", "def add(a, b):"],
+        "correctOrder": [1, 0]
+      },
+      "java": {
+        "shuffledLines": ["    return a + b;", "public int add(int a, int b) {", "}"],
+        "correctOrder": [1, 0, 2]
+      },
+      "c": {
+        "shuffledLines": ["    return a + b;", "}", "int add(int a, int b) {"],
+        "correctOrder": [2, 0, 1]
+      }
+    }
+  },
+  {
+    "id": "sab-drag-1",
+    "room": "QA Testing Lab",
+    "format": "drag_and_fill",
+    "difficulty": "hard",
+    "title": "[SABOTAGE] Data Exfiltration",
+    "description": "As a hacker, craft a line that bypasses authentication checking by overriding the logic to true.",
+    "isSabotage": true,
+    "versions": {
+      "python": {
+        "blankCode": "if user_auth == _____\n    bypass()",
+        "options": ["True:", "False:"],
+        "correctOrder": ["True:"]
+      },
+      "java": {
+        "blankCode": "if (user_auth == _____) {\n    bypass();\n}",
+        "options": ["true", "false"],
+        "correctOrder": ["true"]
+      },
+      "c": {
+        "blankCode": "if (user_auth == _____) {\n    bypass();\n}",
+        "options": ["1", "0"],
+        "correctOrder": ["1"]
+      }
+    }
+  },
+  {
+    "id": "fake-fill-1",
+    "room": "Breakroom",
+    "format": "fill_blank",
+    "difficulty": "easy",
+    "title": "Equality Check",
+    "description": "Fill in the blank to check if two variables are equal. (Cover Task)",
+    "isFake": true,
+    "versions": {
+      "python": {
+        "blankCode": "if a _____ b:\n    print('Equal')",
+        "correctAnswer": "=="
+      },
+      "java": {
+        "blankCode": "if (a _____ b) {\n    System.out.print(\"Equal\");\n}",
+        "correctAnswer": "=="
+      },
+      "c": {
+        "blankCode": "if (a _____ b) {\n    printf(\"Equal\");\n}",
+        "correctAnswer": "=="
+      }
+    }
+  }
+]

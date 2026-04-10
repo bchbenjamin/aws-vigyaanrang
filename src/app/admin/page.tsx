@@ -39,6 +39,15 @@ export default function AdminPage() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [regName, setRegName] = useState('');
   const [regCode, setRegCode] = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [rolesMap, setRolesMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (sessionStorage.getItem('adminToken')) {
+      setAuthenticated(true);
+    }
+  }, []);
 
   // ── LOGIN ────────────────────────────────────────────────
   const handleLogin = async () => {
@@ -81,6 +90,10 @@ export default function AdminPage() {
 
     adminSocket.on('connect', () => setSocketConnected(true));
     adminSocket.on('disconnect', () => setSocketConnected(false));
+    adminSocket.on('error_msg', (msg: string) => {
+      setAdminError(msg);
+      setTimeout(() => setAdminError(''), 5000);
+    });
 
     // Poll state every 2 seconds
     fetchState();
@@ -94,7 +107,43 @@ export default function AdminPage() {
   }, [authenticated, fetchState]);
 
   // ── ADMIN ACTIONS ────────────────────────────────────────
-  const startGame = () => adminSocket?.emit('start_game');
+  const openRoleModal = () => {
+    const players = gameState?.players || [];
+    if (players.length < 1) {
+      setAdminError('Need at least 1 player to start');
+      setTimeout(() => setAdminError(''), 5000);
+      return;
+    }
+
+    const newRolesMap: Record<string, string> = {};
+    const hackerCount = Math.max(1, Math.floor(players.length / 6));
+    const shuffledIds = players.map(p => p.id).sort(() => Math.random() - 0.5);
+    const hackerIds = new Set(shuffledIds.slice(0, hackerCount));
+
+    players.forEach(p => {
+      newRolesMap[p.id] = hackerIds.has(p.id) ? 'hacker' : 'developer';
+    });
+    setRolesMap(newRolesMap);
+    setShowRoleModal(true);
+  };
+
+  const confirmAndStartGame = () => {
+    let hackerCount = 0;
+    Object.values(rolesMap).forEach(role => {
+      if (role === 'hacker') hackerCount++;
+    });
+
+    if (hackerCount < 1) {
+      setAdminError('Cannot start game without at least 1 Hacker.');
+      setTimeout(() => setAdminError(''), 5000);
+      return;
+    }
+
+    adminSocket?.emit('admin_start_with_roles', rolesMap);
+    setShowRoleModal(false);
+  };
+
+  const stopGame = () => adminSocket?.emit('admin_stop_game');
   const resetGame = () => adminSocket?.emit('admin_reset');
   const registerUser = () => {
     if (regName && regCode) {
@@ -174,10 +223,19 @@ export default function AdminPage() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn-accent" onClick={startGame} disabled={gameState?.phase !== 'lobby'}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {adminError && (
+            <span style={{ color: 'var(--text-danger)', fontSize: '12px', marginRight: '16px' }}>
+              {adminError}
+            </span>
+          )}
+          <button className="btn-accent" onClick={openRoleModal} disabled={gameState?.phase !== 'lobby'}>
             <Play size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
             Start Game
+          </button>
+          <button className="btn-warning" onClick={stopGame} disabled={gameState?.phase === 'lobby'}>
+            <XCircle size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+            Stop Game
           </button>
           <button className="btn-danger" onClick={resetGame}>
             <RotateCcw size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
@@ -185,6 +243,41 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      {/* ── GAME OVER SCOREBOARD ──────────────────────────────── */}
+      {gameState?.phase === 'ended' && (
+        <div className="terminal-box" style={{ marginBottom: '24px', textAlign: 'center' }}>
+          <h2 style={{
+            fontSize: '20px', letterSpacing: '3px', textTransform: 'uppercase',
+            color: gameState.winSide === 'developers' ? 'var(--text-accent)' : 'var(--text-danger)',
+            marginBottom: '16px',
+          }}>
+            {gameState.winSide === 'developers' ? 'DEVELOPERS WIN' : 'HACKERS WIN'}
+          </h2>
+
+          <h3 style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', textTransform: 'uppercase' }}>
+            Top 3 MVP {gameState.winSide === 'developers' ? 'Developers' : 'Hackers'}
+          </h3>
+          <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
+            {(gameState.players || [])
+              .filter(p => (gameState.winSide === 'developers' && p.role === 'developer') || (gameState.winSide === 'hackers' && p.role === 'hacker'))
+              .map(p => ({ id: p.id, name: p.name, score: gameState.scores?.[p.id] || 0 }))
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3)
+              .map((p, idx) => (
+                <div key={p.id} style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  padding: '8px 12px', borderBottom: '1px solid var(--border-primary)',
+                  fontSize: '13px', background: idx === 0 ? 'var(--bg-tertiary)' : 'transparent',
+                  alignItems: 'center'
+                }}>
+                  <span>{idx === 0 ? '👑 ' : ''}{p.name}</span>
+                  <span style={{ color: 'var(--text-accent)', fontWeight: idx === 0 ? 'bold' : 'normal' }}>{p.score} pts</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '24px' }}>
@@ -313,6 +406,42 @@ export default function AdminPage() {
           </table>
         </div>
       </div>
+
+      {showRoleModal && (
+        <div className="overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="terminal-box" style={{ width: '400px', padding: '24px', background: 'var(--bg-primary)', position: 'relative' }}>
+            <button onClick={() => setShowRoleModal(false)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'transparent', border: 'none', color: 'var(--text-muted)' }}>
+              [X]
+            </button>
+            <h3 style={{ fontSize: '16px', textTransform: 'uppercase', marginBottom: '16px', color: 'var(--text-accent)' }}>
+              Assign Roles
+            </h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Review and adjust the randomly suggested roles before starting the game. You must select at least 1 Hacker.
+            </p>
+
+            <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '16px', border: '1px solid var(--border-primary)', padding: '8px' }}>
+              {(gameState?.players || []).map(p => (
+                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--bg-tertiary)' }}>
+                  <span style={{ fontSize: '12px' }}>{p.name}</span>
+                  <select
+                    value={rolesMap[p.id]}
+                    onChange={(e) => setRolesMap({ ...rolesMap, [p.id]: e.target.value })}
+                    style={{ padding: '4px', fontSize: '11px', background: 'var(--bg-secondary)', color: rolesMap[p.id] === 'hacker' ? 'var(--text-danger)' : 'var(--text-accent)', border: '1px solid var(--border-primary)' }}
+                  >
+                    <option value="developer">Developer</option>
+                    <option value="hacker">Hacker</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            <button className="btn-accent" onClick={confirmAndStartGame} style={{ width: '100%' }}>
+              Confirm & Start Game
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

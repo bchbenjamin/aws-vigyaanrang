@@ -9,7 +9,7 @@ export default function LobbyPage() {
   const router = useRouter();
 
   const handleJoin = () => {
-    if (code.trim().length < 2) return;
+    if (code.trim().length < 1) return;
     // Store access code in sessionStorage for the game page
     sessionStorage.setItem('playerCode', code.trim());
     router.push('/game');
@@ -86,7 +86,7 @@ export default function LobbyPage() {
           id="join-game-btn"
           className="btn-accent"
           onClick={handleJoin}
-          disabled={code.trim().length < 2}
+          disabled={code.trim().length < 1}
           style={{ width: '100%', padding: '12px', fontSize: '13px', letterSpacing: '2px' }}
         >
           [ CONNECT TO SERVER ]

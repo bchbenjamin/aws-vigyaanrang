@@ -1,0 +1,8 @@
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          36651
+- Dir:          /home/dushyanth/Dushyanth/aws-vigyaanrang
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 36651 to stop it.

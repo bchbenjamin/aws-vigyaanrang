@@ -12,7 +12,7 @@ interface CodeEditorProps {
   sabotageTaskId?: string | null;
   fakeTaskId?: string | null;
   isHacker: boolean;
-  onSubmit: (result: { correct: boolean; isSabotage: boolean }) => void;
+  onSubmit: (result: { correct: boolean; isSabotage: boolean; taskId?: string }) => void;
 }
 
 function findTask(id: string | null): TaskDefinition | null {
@@ -29,8 +29,10 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
   const [showSabotage, setShowSabotage] = useState(false);
   const [userAnswer, setUserAnswer] = useState('');
   const [dragOrder, setDragOrder] = useState<number[]>([]);
+  const [fillState, setFillState] = useState<Record<number, string>>({});
   const [feedback, setFeedback] = useState<{ correct: boolean; msg: string } | null>(null);
   const [activeLang, setActiveLang] = useState<Language>('python');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Determine which task to show
   const activeTaskId = isHacker
@@ -45,7 +47,9 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
     if (!task || !version) {
       setUserAnswer('');
       setDragOrder([]);
+      setFillState({});
       setFeedback(null);
+      setIsSubmitting(false);
       return;
     }
 
@@ -59,6 +63,10 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
       } else {
         setDragOrder(version.shuffledLines.map((_, i) => i));
       }
+    } else if (task.format === 'drag_and_fill') {
+      const stored = sessionStorage.getItem(cacheKeyArr);
+      if (stored) setFillState(JSON.parse(stored));
+      else setFillState({});
     } else {
       const stored = sessionStorage.getItem(cacheKeyText);
       if (stored !== null) {
@@ -68,6 +76,7 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
       }
     }
     setFeedback(null);
+    setIsSubmitting(false);
   }, [task?.id, activeLang, version]);
 
   const updateAnswer = (val: string) => {
@@ -80,6 +89,16 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
     setDragOrder(newOrder);
     if (!task) return;
     sessionStorage.setItem(`drag_${task.id}_${activeLang}`, JSON.stringify(newOrder));
+  };
+
+  const updateFillState = (idx: number, val: string | null) => {
+    setFillState(prev => {
+      const copy = { ...prev };
+      if (val === null) delete copy[idx];
+      else copy[idx] = val;
+      if (task) sessionStorage.setItem(`drag_${task.id}_${activeLang}`, JSON.stringify(copy));
+      return copy;
+    });
   };
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
@@ -106,13 +125,23 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
 
     if (task.format === 'debug') {
       const normalized = userAnswer.trim().replace(/\s+/g, ' ');
-      const expected = version.correctAnswer.replace(/\s+/g, ' ');
+      const expected = (version.correctAnswer || '').replace(/\s+/g, ' ');
       correct = normalized === expected;
     } else if (task.format === 'fill_blank') {
-      correct = userAnswer.trim() === version.correctAnswer.trim();
+      correct = userAnswer.trim() === (version.correctAnswer || '').trim();
+    } else if (task.format === 'multiple_choice') {
+      correct = userAnswer === version.correctAnswer;
     } else if (task.format === 'rearrange') {
       if (version.correctOrder) {
         correct = dragOrder.every((val, idx) => val === version.correctOrder![idx]);
+      }
+    } else if (task.format === 'drag_and_fill') {
+      if (version.correctOrder) {
+        let isCorrect = true;
+        version.correctOrder.forEach((ans, idx) => {
+          if (fillState[idx] !== ans) isCorrect = false;
+        });
+        correct = isCorrect;
       }
     }
 
@@ -126,9 +155,10 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
     });
 
     if (correct) {
-      onSubmit({ correct: true, isSabotage });
+      setIsSubmitting(true);
+      onSubmit({ correct: true, isSabotage, taskId: task.id });
     }
-  }, [task, version, userAnswer, dragOrder, onSubmit]);
+  }, [task, version, userAnswer, dragOrder, fillState, onSubmit]);
 
   if (!task || !version) {
     return (
@@ -151,7 +181,7 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: 'var(--text-accent)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            {task.format === 'debug' ? 'DEBUG' : task.format === 'fill_blank' ? 'FILL BLANK' : 'REARRANGE'}
+            {task.format.replace('_', ' ')} — {task.difficulty}
           </span>
         </div>
 
@@ -199,6 +229,8 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
             {task.format === 'debug' && 'Find and fix the bug in the code.'}
             {task.format === 'fill_blank' && 'Type the missing keyword or expression.'}
             {task.format === 'rearrange' && 'Drag and drop lines into the correct order.'}
+            {task.format === 'multiple_choice' && 'Select the correct option.'}
+            {task.format === 'drag_and_fill' && 'Drag options into the blanks to complete the code.'}
           </div>
         </div>
 
@@ -270,16 +302,105 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
                   >
                     <GripVertical size={14} color="var(--text-muted)" />
                     <span style={{ color: 'var(--text-muted)', minWidth: '20px' }}>{visualIdx + 1}.</span>
-                    <code>{version.shuffledLines![lineIdx]}</code>
+                    <code>{version.shuffledLines![lineIdx as number]}</code>
                   </div>
                 ))}
               </div>
             </>
           )}
 
+          {/* ── MULTIPLE CHOICE ─────────────────── */}
+          {task.format === 'multiple_choice' && version.options && (
+            <>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                {version.question || 'Select the correct option:'}
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                {version.options.map((opt, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => updateAnswer(opt)}
+                    style={{
+                      padding: '12px',
+                      background: userAnswer === opt ? 'var(--bg-elevated)' : 'var(--bg-tertiary)',
+                      border: `1px solid ${userAnswer === opt ? 'var(--text-accent)' : 'var(--border-primary)'}`,
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--text-primary)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <code>{opt}</code>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ── DRAG AND FILL ───────────────────── */}
+          {task.format === 'drag_and_fill' && version.blankCode && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                Drag options to blanks:
+              </label>
+              
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {version.options?.map((opt, i) => (
+                  <div
+                    key={i}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData('text/plain', opt)}
+                    style={{
+                      padding: '4px 8px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)',
+                      cursor: 'grab', fontSize: '12px', fontFamily: 'var(--font-mono)',
+                      userSelect: 'none'
+                    }}
+                  >
+                    {opt}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{
+                background: 'var(--bg-tertiary)', padding: '16px',
+                border: '1px solid var(--border-primary)', borderRadius: '4px',
+                color: 'var(--text-accent)', fontSize: '13px', lineHeight: '1.8',
+                fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap'
+              }}>
+                {version.blankCode.split('_____').map((chunk, idx, arr) => (
+                   <React.Fragment key={idx}>
+                     <span>{chunk}</span>
+                     {idx < arr.length - 1 && (
+                        <span
+                           onDragOver={e => e.preventDefault()}
+                           onDrop={(e) => { e.preventDefault(); updateFillState(idx, e.dataTransfer.getData('text/plain')); }}
+                           onClick={() => updateFillState(idx, null)}
+                           style={{ 
+                              display: 'inline-block', minWidth: '60px', padding: '0 8px', 
+                              borderBottom: '2px solid var(--text-accent)', 
+                              cursor: 'pointer', color: 'var(--text-accent)',
+                              textAlign: 'center', background: 'rgba(0,0,0,0.2)'
+                           }}
+                        >
+                           {fillState[idx] || 'drop here'}
+                        </span>
+                     )}
+                   </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── SUBMIT + FEEDBACK ──────────────── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-            <button className="btn-accent" onClick={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+               className="btn-accent"
+               onClick={handleSubmit} 
+               disabled={isSubmitting}
+               style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: isSubmitting ? 0.5 : 1 }}
+            >
               <Play size={14} /> Submit
             </button>
 

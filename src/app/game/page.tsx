@@ -64,6 +64,7 @@ export default function GamePage() {
     winSide: string;
     reason: string;
     scores: Record<string, number>;
+    players: Record<string, any>;
   } | null>(null);
 
   // ── Timer ───────────────────────────────────────────────
@@ -207,6 +208,7 @@ export default function GamePage() {
         winSide: data.winSide,
         reason: data.reason,
         scores: data.scores,
+        players: data.players,
       });
     });
 
@@ -246,9 +248,9 @@ export default function GamePage() {
     socket.emit('move_room', targetRoom);
   }, [isMoving, room, phase]);
 
-  const handleTaskSubmit = useCallback((result: { correct: boolean; isSabotage: boolean }) => {
+  const handleTaskSubmit = useCallback((result: { correct: boolean; isSabotage: boolean; taskId?: string }) => {
     if (!socket || !result.correct) return;
-    socket.emit('task_complete', { isSabotage: result.isSabotage });
+    socket.emit('task_complete', { isSabotage: result.isSabotage, taskId: result.taskId });
   }, []);
 
   const handleHack = useCallback((targetId: string) => {
@@ -322,24 +324,6 @@ export default function GamePage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '24px' }}>
             {endData.reason}
           </p>
-
-          <h3 style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', textTransform: 'uppercase' }}>
-            Scoreboard
-          </h3>
-          <div style={{ textAlign: 'left' }}>
-            {Object.entries(endData.scores)
-              .sort(([, a], [, b]) => b - a)
-              .map(([id, score]) => (
-                <div key={id} style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  padding: '6px 12px', borderBottom: '1px solid var(--border-primary)',
-                  fontSize: '12px',
-                }}>
-                  <span>{id.substring(0, 12)}...</span>
-                  <span style={{ color: 'var(--text-accent)' }}>{score} pts</span>
-                </div>
-              ))}
-          </div>
 
           <button className="btn-accent" onClick={() => window.location.href = '/'} style={{ marginTop: '24px', width: '100%' }}>
             Return to Lobby
@@ -530,8 +514,8 @@ export default function GamePage() {
           {playerName} | {room}
         </span>
         <span style={{ color: 'var(--text-muted)' }}>
-          Role: <span style={{ color: 'var(--text-accent)' }}>
-            DEVELOPER
+          Role: <span style={{ color: role === 'hacker' ? 'var(--text-danger)' : 'var(--text-accent)' }}>
+            {role.toUpperCase()}
           </span>
         </span>
         <span style={{ color: 'var(--text-muted)' }}>
