@@ -26,6 +26,23 @@ interface GameState {
   roomCounts: Record<string, number>;
   winSide: string | null;
   gameStartTime: number | null;
+  adminConfig?: {
+    pointsEasy: number;
+    pointsMedium: number;
+    pointsHard: number;
+    pointsSabotage: number;
+    pointsEjectHacker: number;
+    pointsSurvive: number;
+    pointsWin: number;
+    standupDurationMs: number;
+    firewallBufferMs: number;
+    easySpeedLimitMs: number;
+    easyCooldownMs: number;
+  };
+  standupData?: {
+    reportedBy: string;
+    startTime: number;
+  };
 }
 
 let adminSocket: Socket | null = null;
@@ -243,6 +260,49 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      {/* Admin Actions mid-game */}
+      {gameState?.phase === 'standup' && (
+        <div className="terminal-box" style={{ marginBottom: '24px', borderColor: 'var(--text-warning)' }}>
+          <h3 style={{ fontSize: '14px', color: 'var(--text-warning)', textTransform: 'uppercase', marginBottom: '12px' }}>
+            Live Event: Emergency Stand-Up
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '16px' }}>
+            Voting is currently active.
+          </p>
+          <button className="btn-warning" onClick={() => adminSocket?.emit('admin_add_standup_time', 30000)}>
+            +30s to Discussion Timer
+          </button>
+        </div>
+      )}
+
+      {/* Admin Config Override */}
+      {gameState?.adminConfig && gameState.phase === 'lobby' && (
+        <div className="terminal-box" style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+            Game Rules & Constraints
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+            {Object.entries(gameState.adminConfig).map(([key, val]) => (
+               <div key={key}>
+                 <label style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{key}</label>
+                 <input
+                   type="number"
+                   defaultValue={val}
+                   style={{ width: '100%', marginTop: '4px' }}
+                   onBlur={(e) => {
+                     const num = parseInt(e.target.value);
+                     if (!isNaN(num)) {
+                       adminSocket?.emit('admin_update_config', { [key]: num });
+                     }
+                   }}
+                 />
+               </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '12px' }}>* Settings can only be safely modified while in the lobby.</p>
+        </div>
+      )}
 
       {/* ── GAME OVER SCOREBOARD ──────────────────────────────── */}
       {gameState?.phase === 'ended' && (

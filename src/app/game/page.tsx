@@ -141,9 +141,13 @@ export default function GamePage() {
 
     // ── TASK ASSIGNMENTS ──────────────────────────────
     socket.on('task_assigned', (data) => {
-      if (data.taskId) setTaskId(data.taskId);
-      if (data.sabotageTaskId) setSabotageTaskId(data.sabotageTaskId);
-      if (data.fakeTaskId) setFakeTaskId(data.fakeTaskId);
+      if (data.taskId !== undefined) setTaskId(data.taskId);
+      if (data.sabotageTaskId !== undefined) setSabotageTaskId(data.sabotageTaskId);
+      if (data.fakeTaskId !== undefined) setFakeTaskId(data.fakeTaskId);
+    });
+
+    socket.on('task_cooldown', (data) => {
+       showAlert('warning', data.msg || `Tasks on cooldown. Please wait ${data.remaining}s.`);
     });
 
     // ── HACK EVENTS ───────────────────────────────────
@@ -158,6 +162,11 @@ export default function GamePage() {
 
     socket.on('hack_success', (data) => {
       setHackCooldownUntil(data.cooldownUntil);
+    });
+
+    socket.on('hack_cooldown_reset', (data) => {
+      setHackCooldownUntil(0);
+      showAlert('warning', data.message);
     });
 
     // ── ANOMALY ALERT ─────────────────────────────────
@@ -185,6 +194,10 @@ export default function GamePage() {
         durationMs: data.duration,
         alivePlayers: data.alivePlayers,
       });
+    });
+
+    socket.on('standup_time_added', (data) => {
+      setStandupData(prev => prev ? { ...prev, durationMs: data.newRemaining } : null);
     });
 
     socket.on('standup_resolved', (data) => {
@@ -467,17 +480,20 @@ export default function GamePage() {
           )}
         </div>
 
-        {/* RIGHT: Task / Code Editor */}
-        <div className={styles.taskSection}>
-          {isInTaskRoom ? (
-            <CodeEditor
-              taskId={taskId}
-              sabotageTaskId={sabotageTaskId}
-              fakeTaskId={fakeTaskId}
-              isHacker={role === 'hacker'}
-              onSubmit={handleTaskSubmit}
-            />
-          ) : isInLogRoom ? (
+          {/* Right/Bottom: Code Editor */}
+          <div className={styles.taskSection}>
+            {isInTaskRoom ? (
+              <CodeEditor
+                taskId={taskId}
+                sabotageTaskId={sabotageTaskId}
+                fakeTaskId={fakeTaskId}
+                isHacker={role === 'hacker' && status === 'alive'}
+                onRequestTask={(diff) => {
+                  if (socket) socket.emit('request_task', { difficulty: diff });
+                }}
+                onSubmit={handleTaskSubmit}
+              />
+            ) : isInLogRoom ? (
             <div className="terminal-box" style={{ margin: '16px', flex: 1 }}>
               <h3 style={{ fontSize: '14px', color: 'var(--text-info)', marginBottom: '8px' }}>
                 Security & Auth — The Log Room

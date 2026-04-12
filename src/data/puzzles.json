@@ -141,5 +141,49 @@
         "correctAnswer": "=="
       }
     }
+  },
+  {
+    "id": "lc-hard-twosum",
+    "room": "*",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "title": "Two Sum Optimization",
+    "description": "Given a map 'seen' that stores {value_needed_to_reach_target: index}, fill in the blank to check if we have seen the required pair.",
+    "versions": {
+      "python": {
+        "blankCode": "if num in ____:\n    return [seen[num], i]",
+        "correctAnswer": "seen"
+      },
+      "java": {
+        "blankCode": "if (seen.____(num)) {\n    return new int[]{seen.get(num), i};\n}",
+        "correctAnswer": "containsKey"
+      },
+      "c": {
+        "blankCode": "if (hashmap_____(seen, num)) {\n    return new int[]{hashmap_get(seen, num), i};\n}",
+        "correctAnswer": "contains"
+      }
+    }
+  },
+  {
+    "id": "lc-hard-invertbin",
+    "room": "*",
+    "format": "rearrange",
+    "difficulty": "hard",
+    "title": "Invert Binary Tree",
+    "description": "Rearrange the lines to properly perform a recursive inversion of a binary tree node.",
+    "versions": {
+      "python": {
+        "shuffledLines": ["    return root", "    root.left, root.right = root.right, root.left", "    invertTree(root.left)", "    invertTree(root.right)", "def invertTree(root):", "    if not root: return None"],
+        "correctOrder": [4, 5, 1, 2, 3, 0]
+      },
+      "java": {
+        "shuffledLines": ["        invertTree(root.left);", "        invertTree(root.right);", "    public TreeNode invertTree(TreeNode root) {", "        if (root == null) return null;", "        TreeNode temp = root.left; root.left = root.right; root.right = temp;", "        return root;", "    }"],
+        "correctOrder": [2, 3, 4, 0, 1, 5, 6]
+      },
+      "c": {
+        "shuffledLines": ["    invertTree(root->left);", "    invertTree(root->right);", "struct TreeNode* invertTree(struct TreeNode* root) {", "    if (root == NULL) return NULL;", "    struct TreeNode* temp = root->left; root->left = root->right; root->right = temp;", "    return root;", "}"],
+        "correctOrder": [2, 3, 4, 0, 1, 5, 6]
+      }
+    }
   }
 ]

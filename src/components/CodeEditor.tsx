@@ -12,6 +12,7 @@ interface CodeEditorProps {
   sabotageTaskId?: string | null;
   fakeTaskId?: string | null;
   isHacker: boolean;
+  onRequestTask: (difficulty: 'easy' | 'medium' | 'hard') => void;
   onSubmit: (result: { correct: boolean; isSabotage: boolean; taskId?: string }) => void;
 }
 
@@ -32,7 +33,15 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
   const [fillState, setFillState] = useState<Record<number, string>>({});
   const [feedback, setFeedback] = useState<{ correct: boolean; msg: string } | null>(null);
   const [activeLang, setActiveLang] = useState<Language>('python');
+  const [activeDifficulty, setActiveDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync activeDifficulty when task prop changes from external sources
+  useEffect(() => {
+    if (task && task.difficulty !== activeDifficulty && !task.isSabotage && !task.isFake) {
+      setActiveDifficulty(task.difficulty as 'easy' | 'medium' | 'hard');
+    }
+  }, [task?.id]);
 
   // Determine which task to show
   const activeTaskId = isHacker
@@ -185,8 +194,22 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
           </span>
         </div>
 
-        {/* Language & Hacker toggle */}
+        {/* Language, Difficulty, & Hacker toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <select
+            value={activeDifficulty}
+            onChange={(e) => {
+              const diff = e.target.value as 'easy' | 'medium' | 'hard';
+              setActiveDifficulty(diff);
+              onRequestTask(diff);
+            }}
+            style={{ width: 'auto', padding: '4px 8px', fontSize: '11px', background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            {isHacker && <option value="hard">Hard</option>}
+          </select>
+
           <select
             value={activeLang}
             onChange={(e) => setActiveLang(e.target.value as Language)}
