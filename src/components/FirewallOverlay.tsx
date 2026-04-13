@@ -1,18 +1,30 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, Radio, ShieldOff } from 'lucide-react';
+import { Eye, ShieldOff } from 'lucide-react';
 
 interface FirewallOverlayProps {
   rooms: string[];
   currentRoom: string;
-  onAnomalyAlert: (room: string) => void;
-  anomalyUsed: boolean;
+  aliveDevelopers: { id: string; name: string }[];
+  selectedProtectTargetId: string | null;
+  onSelectProtectTarget: (targetId: string) => void;
   onNavigate: (room: string) => void;
 }
 
-export default function FirewallOverlay({ rooms, currentRoom, onAnomalyAlert, anomalyUsed, onNavigate }: FirewallOverlayProps) {
+export default function FirewallOverlay({
+  rooms,
+  currentRoom,
+  aliveDevelopers,
+  selectedProtectTargetId,
+  onSelectProtectTarget,
+  onNavigate,
+}: FirewallOverlayProps) {
   const [selectedRoom, setSelectedRoom] = useState(currentRoom);
+
+  React.useEffect(() => {
+    setSelectedRoom(currentRoom);
+  }, [currentRoom]);
 
   return (
     <div style={{
@@ -42,7 +54,10 @@ export default function FirewallOverlay({ rooms, currentRoom, onAnomalyAlert, an
           {rooms.map(room => (
             <button
               key={room}
-              onClick={() => onNavigate(room)}
+              onClick={() => {
+                setSelectedRoom(room);
+                onNavigate(room);
+              }}
               style={{
                 fontSize: '9px', padding: '4px 8px',
                 background: currentRoom === room ? '#1a1100' : 'var(--bg-elevated)',
@@ -55,16 +70,26 @@ export default function FirewallOverlay({ rooms, currentRoom, onAnomalyAlert, an
           ))}
         </div>
 
-        {/* Anomaly Alert button */}
-        <button
-          className="btn-warning"
-          disabled={anomalyUsed}
-          onClick={() => onAnomalyAlert(selectedRoom)}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}
+        <select
+          value={selectedProtectTargetId || ''}
+          onChange={(event) => onSelectProtectTarget(event.target.value)}
+          style={{
+            minWidth: '190px',
+            padding: '6px 8px',
+            fontSize: '11px',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-primary)',
+            color: 'var(--text-primary)',
+          }}
         >
-          <Radio size={14} />
-          {anomalyUsed ? 'ALERT USED' : 'ISSUE ANOMALY ALERT'}
-        </button>
+          <option value="">Select Developer</option>
+          {aliveDevelopers.map(player => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+        </select>
+
       </div>
     </div>
   );

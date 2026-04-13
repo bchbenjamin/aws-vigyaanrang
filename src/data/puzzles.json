@@ -1,188 +1,327 @@
 [
   {
-    "id": "mc-easy-1",
-    "room": "Frontend",
+    "id": "mc-easy-2",
     "format": "multiple_choice",
     "difficulty": "easy",
-    "title": "Printing Output",
-    "description": "Select the correct syntax to output 'Hello'.",
+    "title": "Variable Declaration",
+    "description": "Choose the correct way to declare a variable with value 10.",
     "versions": {
       "python": {
-        "question": "How do you print 'Hello' in Python?",
-        "options": ["echo 'Hello'", "print('Hello')", "console.log('Hello')", "System.out.println('Hello')"],
-        "correctAnswer": "print('Hello')"
+        "question": "Declare variable x = 10",
+        "options": ["int x = 10", "x = 10", "let x = 10", "var x = 10"],
+        "correctAnswer": "x = 10"
       },
       "java": {
-        "question": "How do you print 'Hello' in Java?",
-        "options": ["echo 'Hello'", "print('Hello')", "console.log('Hello')", "System.out.println(\"Hello\");"],
-        "correctAnswer": "System.out.println(\"Hello\");"
+        "question": "Declare variable x = 10",
+        "options": ["x = 10", "int x = 10;", "let x = 10", "var x = 10"],
+        "correctAnswer": "int x = 10;"
       },
       "c": {
-        "question": "How do you print 'Hello' in C?",
-        "options": ["echo 'Hello'", "print('Hello')", "printf(\"Hello\");", "System.out.println('Hello')"],
-        "correctAnswer": "printf(\"Hello\");"
+        "question": "Declare variable x = 10",
+        "options": ["x = 10", "int x = 10;", "let x = 10", "var x = 10"],
+        "correctAnswer": "int x = 10;"
       }
     }
   },
   {
-    "id": "fill-med-1",
-    "room": "Main Database",
+    "id": "fill-easy-2",
+    "format": "fill_blank",
+    "difficulty": "easy",
+    "title": "Loop Range",
+    "description": "Fill missing value to print 5 times.",
+    "versions": {
+      "python": {
+        "blankCode": "for i in range(_____): print(i)",
+        "correctAnswer": "5"
+      },
+      "java": {
+        "blankCode": "for(int i=0;i<_____;i++){}",
+        "correctAnswer": "5"
+      },
+      "c": {
+        "blankCode": "for(int i=0;i<_____;i++){}",
+        "correctAnswer": "5"
+      }
+    }
+  },
+  {
+    "id": "reorder-easy-2",
+    "format": "rearrange",
+    "difficulty": "easy",
+    "title": "Print Numbers",
+    "versions": {
+      "python": {
+        "shuffledLines": ["for i in range(3):", "    print(i)"],
+        "correctOrder": [0,1]
+      },
+      "java": {
+        "shuffledLines": ["System.out.println(i);", "for(int i=0;i<3;i++){", "}"],
+        "correctOrder": [1,0,2]
+      },
+      "c": {
+        "shuffledLines": ["printf(\"%d\", i);", "for(int i=0;i<3;i++){", "}"],
+        "correctOrder": [1,0,2]
+      }
+    }
+  },
+  {
+    "id": "mc-easy-3",
+    "format": "multiple_choice",
+    "difficulty": "easy",
+    "title": "Operator Check",
+    "versions": {
+      "python": {
+        "question": "Which operator is used for multiplication?",
+        "options": ["+", "-", "*", "/"],
+        "correctAnswer": "*"
+      },
+      "java": {
+        "question": "Which operator is used for multiplication?",
+        "options": ["+", "-", "*", "/"],
+        "correctAnswer": "*"
+      },
+      "c": {
+        "question": "Which operator is used for multiplication?",
+        "options": ["+", "-", "*", "/"],
+        "correctAnswer": "*"
+      }
+    }
+  },
+  {
+    "id": "fill-easy-3",
+    "format": "fill_blank",
+    "difficulty": "easy",
+    "title": "Function Call",
+    "versions": {
+      "python": {
+        "blankCode": "print(_____)",
+        "correctAnswer": "\"Hello\""
+      },
+      "java": {
+        "blankCode": "System.out.println(_____);",
+        "correctAnswer": "\"Hello\""
+      },
+      "c": {
+        "blankCode": "printf(_____);",
+        "correctAnswer": "\"Hello\""
+      }
+    }
+  },
+  {
+    "id": "fill-med-2",
     "format": "fill_blank",
     "difficulty": "medium",
-    "title": "Array Initialization",
-    "description": "Fill in the exact single missing value to properly instantiate an array of size 10.",
+    "title": "Even Check",
     "versions": {
       "python": {
-        "blankCode": "arr = [0] * _____",
-        "correctAnswer": "10"
+        "blankCode": "if n % 2 _____ 0:",
+        "correctAnswer": "=="
       },
       "java": {
-        "blankCode": "int[] arr = new int[_____];",
-        "correctAnswer": "10"
+        "blankCode": "if(n % 2 _____ 0){}",
+        "correctAnswer": "=="
       },
       "c": {
-        "blankCode": "int arr[_____];",
-        "correctAnswer": "10"
+        "blankCode": "if(n % 2 _____ 0){}",
+        "correctAnswer": "=="
       }
     }
   },
   {
-    "id": "dragfill-hard-1",
-    "room": "API Gateway",
-    "format": "drag_and_fill",
-    "difficulty": "hard",
-    "title": "Complete the Function",
-    "description": "Drag the options into the correct blanks to make a function that calculates the sum of a and b.",
+    "id": "mc-med-2",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "title": "Output Prediction",
     "versions": {
       "python": {
-        "blankCode": "def add(a, b):\n    _____ a _____ b",
-        "options": ["+", "-", "return", "var"],
-        "correctOrder": ["return", "+"]
+        "question": "print(len(\"abc\"))",
+        "options": ["2", "3", "4", "Error"],
+        "correctAnswer": "3"
       },
       "java": {
-        "blankCode": "public _____ add(int a, int b) {\n    return a _____ b;\n}",
-        "options": ["+", "-", "void", "int"],
-        "correctOrder": ["int", "+"]
+        "question": "\"abc\".length();",
+        "options": ["2", "3", "4", "Error"],
+        "correctAnswer": "3"
       },
       "c": {
-        "blankCode": "_____ add(int a, int b) {\n    return a _____ b;\n}",
-        "options": ["+", "-", "void", "int"],
-        "correctOrder": ["int", "+"]
+        "question": "strlen(\"abc\");",
+        "options": ["2", "3", "4", "Error"],
+        "correctAnswer": "3"
       }
     }
   },
   {
-    "id": "reorder-easy-1",
-    "room": "Server Room",
+    "id": "reorder-med-2",
     "format": "rearrange",
-    "difficulty": "easy",
-    "title": "Return the Sum",
-    "description": "Arrange the lines to create a valid function that returns the sum of two integers.",
+    "difficulty": "medium",
+    "title": "Max of Two",
     "versions": {
       "python": {
-        "shuffledLines": ["    return a + b", "def add(a, b):"],
-        "correctOrder": [1, 0]
+        "shuffledLines": ["if a > b:", "    print(a)", "else:", "    print(b)"],
+        "correctOrder": [0,1,2,3]
       },
       "java": {
-        "shuffledLines": ["    return a + b;", "public int add(int a, int b) {", "}"],
-        "correctOrder": [1, 0, 2]
+        "shuffledLines": ["if(a>b){", "System.out.println(a);", "}else{", "System.out.println(b);", "}"],
+        "correctOrder": [0,1,2,3,4]
       },
       "c": {
-        "shuffledLines": ["    return a + b;", "}", "int add(int a, int b) {"],
-        "correctOrder": [2, 0, 1]
+        "shuffledLines": ["if(a>b){", "printf(\"%d\",a);", "}else{", "printf(\"%d\",b);", "}"],
+        "correctOrder": [0,1,2,3,4]
       }
     }
   },
   {
-    "id": "sab-drag-1",
-    "room": "QA Testing Lab",
+    "id": "drag-med-1",
     "format": "drag_and_fill",
-    "difficulty": "hard",
-    "title": "[SABOTAGE] Data Exfiltration",
-    "description": "As a hacker, craft a line that bypasses authentication checking by overriding the logic to true.",
-    "isSabotage": true,
+    "difficulty": "medium",
+    "title": "Sum Loop",
     "versions": {
       "python": {
-        "blankCode": "if user_auth == _____\n    bypass()",
-        "options": ["True:", "False:"],
-        "correctOrder": ["True:"]
+        "blankCode": "sum = 0\nfor i in range(5):\n    sum _____ i",
+        "options": ["+=", "-=", "*=", "="],
+        "correctOrder": ["+="]
       },
       "java": {
-        "blankCode": "if (user_auth == _____) {\n    bypass();\n}",
+        "blankCode": "int sum=0;\nfor(int i=0;i<5;i++){\n    sum _____ i;\n}",
+        "options": ["+=", "-=", "*=", "="],
+        "correctOrder": ["+="]
+      },
+      "c": {
+        "blankCode": "int sum=0;\nfor(int i=0;i<5;i++){\n    sum _____ i;\n}",
+        "options": ["+=", "-=", "*=", "="],
+        "correctOrder": ["+="]
+      }
+    }
+  },
+  {
+    "id": "mc-med-3",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "title": "List Access",
+    "versions": {
+      "python": {
+        "question": "arr=[10,20,30]\narr[1] = ?",
+        "options": ["10", "20", "30", "Error"],
+        "correctAnswer": "20"
+      },
+      "java": {
+        "question": "arr[1] in int arr[]={10,20,30}",
+        "options": ["10", "20", "30", "Error"],
+        "correctAnswer": "20"
+      },
+      "c": {
+        "question": "arr[1] in int arr[]={10,20,30}",
+        "options": ["10", "20", "30", "Error"],
+        "correctAnswer": "20"
+      }
+    }
+  },
+  {
+    "id": "mc-hard-1",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "title": "Tricky Output",
+    "versions": {
+      "python": {
+        "question": "print(2**3**2)",
+        "options": ["64", "512", "256", "Error"],
+        "correctAnswer": "512"
+      },
+      "java": {
+        "question": "Math.pow(2, Math.pow(3,2))",
+        "options": ["64", "512", "256", "Error"],
+        "correctAnswer": "512"
+      },
+      "c": {
+        "question": "pow(2, pow(3,2))",
+        "options": ["64", "512", "256", "Error"],
+        "correctAnswer": "512"
+      }
+    }
+  },
+  {
+    "id": "fill-hard-2",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "title": "Reverse Loop",
+    "versions": {
+      "python": {
+        "blankCode": "for i in range(5,0,_____): print(i)",
+        "correctAnswer": "-1"
+      },
+      "java": {
+        "blankCode": "for(int i=5;i>0;i_____){ }",
+        "correctAnswer": "--"
+      },
+      "c": {
+        "blankCode": "for(int i=5;i>0;i_____){ }",
+        "correctAnswer": "--"
+      }
+    }
+  },
+  {
+    "id": "drag-hard-2",
+    "format": "drag_and_fill",
+    "difficulty": "hard",
+    "title": "Swap Without Temp",
+    "versions": {
+      "python": {
+        "blankCode": "a, b = b, _____",
+        "options": ["a", "b", "a+b", "a-b"],
+        "correctOrder": ["a"]
+      },
+      "java": {
+        "blankCode": "a = a ^ b;\nb = a ^ b;\na = a ^ _____;",
+        "options": ["b", "a", "a+b"],
+        "correctOrder": ["b"]
+      },
+      "c": {
+        "blankCode": "a = a ^ b;\nb = a ^ b;\na = a ^ _____;",
+        "options": ["b", "a", "a+b"],
+        "correctOrder": ["b"]
+      }
+    }
+  },
+  {
+    "id": "reorder-hard-2",
+    "format": "rearrange",
+    "difficulty": "hard",
+    "title": "Factorial Logic",
+    "versions": {
+      "python": {
+        "shuffledLines": ["for i in range(1,n+1):", "fact*=i", "fact=1"],
+        "correctOrder": [2,0,1]
+      },
+      "java": {
+        "shuffledLines": ["fact=1;", "for(int i=1;i<=n;i++){", "fact*=i;", "}"],
+        "correctOrder": [0,1,2,3]
+      },
+      "c": {
+        "shuffledLines": ["fact=1;", "for(int i=1;i<=n;i++){", "fact*=i;", "}"],
+        "correctOrder": [0,1,2,3]
+      }
+    }
+  },
+  {
+    "id": "mc-hard-2",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "title": "Logical Puzzle",
+    "versions": {
+      "python": {
+        "question": "print(True and False or True)",
+        "options": ["True", "False"],
+        "correctAnswer": "True"
+      },
+      "java": {
+        "question": "true && false || true",
         "options": ["true", "false"],
-        "correctOrder": ["true"]
+        "correctAnswer": "true"
       },
       "c": {
-        "blankCode": "if (user_auth == _____) {\n    bypass();\n}",
+        "question": "1 && 0 || 1",
         "options": ["1", "0"],
-        "correctOrder": ["1"]
-      }
-    }
-  },
-  {
-    "id": "fake-fill-1",
-    "room": "Breakroom",
-    "format": "fill_blank",
-    "difficulty": "easy",
-    "title": "Equality Check",
-    "description": "Fill in the blank to check if two variables are equal. (Cover Task)",
-    "isFake": true,
-    "versions": {
-      "python": {
-        "blankCode": "if a _____ b:\n    print('Equal')",
-        "correctAnswer": "=="
-      },
-      "java": {
-        "blankCode": "if (a _____ b) {\n    System.out.print(\"Equal\");\n}",
-        "correctAnswer": "=="
-      },
-      "c": {
-        "blankCode": "if (a _____ b) {\n    printf(\"Equal\");\n}",
-        "correctAnswer": "=="
-      }
-    }
-  },
-  {
-    "id": "lc-hard-twosum",
-    "room": "*",
-    "format": "fill_blank",
-    "difficulty": "hard",
-    "title": "Two Sum Optimization",
-    "description": "Given a map 'seen' that stores {value_needed_to_reach_target: index}, fill in the blank to check if we have seen the required pair.",
-    "versions": {
-      "python": {
-        "blankCode": "if num in ____:\n    return [seen[num], i]",
-        "correctAnswer": "seen"
-      },
-      "java": {
-        "blankCode": "if (seen.____(num)) {\n    return new int[]{seen.get(num), i};\n}",
-        "correctAnswer": "containsKey"
-      },
-      "c": {
-        "blankCode": "if (hashmap_____(seen, num)) {\n    return new int[]{hashmap_get(seen, num), i};\n}",
-        "correctAnswer": "contains"
-      }
-    }
-  },
-  {
-    "id": "lc-hard-invertbin",
-    "room": "*",
-    "format": "rearrange",
-    "difficulty": "hard",
-    "title": "Invert Binary Tree",
-    "description": "Rearrange the lines to properly perform a recursive inversion of a binary tree node.",
-    "versions": {
-      "python": {
-        "shuffledLines": ["    return root", "    root.left, root.right = root.right, root.left", "    invertTree(root.left)", "    invertTree(root.right)", "def invertTree(root):", "    if not root: return None"],
-        "correctOrder": [4, 5, 1, 2, 3, 0]
-      },
-      "java": {
-        "shuffledLines": ["        invertTree(root.left);", "        invertTree(root.right);", "    public TreeNode invertTree(TreeNode root) {", "        if (root == null) return null;", "        TreeNode temp = root.left; root.left = root.right; root.right = temp;", "        return root;", "    }"],
-        "correctOrder": [2, 3, 4, 0, 1, 5, 6]
-      },
-      "c": {
-        "shuffledLines": ["    invertTree(root->left);", "    invertTree(root->right);", "struct TreeNode* invertTree(struct TreeNode* root) {", "    if (root == NULL) return NULL;", "    struct TreeNode* temp = root->left; root->left = root->right; root->right = temp;", "    return root;", "}"],
-        "correctOrder": [2, 3, 4, 0, 1, 5, 6]
+        "correctAnswer": "1"
       }
     }
   }

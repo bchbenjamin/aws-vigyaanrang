@@ -16,6 +16,10 @@ export default function VotingOverlay({ reportedBy, durationMs, alivePlayers, on
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
+    setTimeLeft(Math.ceil(durationMs / 1000));
+  }, [durationMs]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 0) { clearInterval(interval); return 0; }

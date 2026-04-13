@@ -33,22 +33,23 @@ export interface TaskDefinition {
   title: string;
   description: string;
   versions: Record<Language, TaskVersion>;
-  isSabotage?: boolean;
+  isHack?: boolean;
   isFake?: boolean;
 }
 
 // Ensure the JSON matches our defined types
 const allPuzzles = puzzlesData as TaskDefinition[];
 
-export const ALL_REAL_TASKS = allPuzzles.filter(p => !p.isSabotage && !p.isFake);
-export const ALL_SABOTAGE_TASKS = allPuzzles.filter(p => p.isSabotage);
-export const ALL_FAKE_TASKS = allPuzzles.filter(p => p.isFake);
+export const ALL_REAL_TASKS = allPuzzles;
+export const ALL_HACK_TASKS = allPuzzles.filter(p => p.difficulty === 'hard');
+export const ALL_FAKE_TASKS: TaskDefinition[] = [];
 
 export const ALL_ROOMS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab', 'The Log Room', 'Breakroom'];
 export const ROOMS_WITH_TASKS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab'];
 
 export function getTasksForRoom(room: string): TaskDefinition[] {
-  return ALL_REAL_TASKS.filter((t) => t.room === room || t.room === '*');
+  void room;
+  return ALL_REAL_TASKS;
 }
 
 export function getRandomTask(room: string): TaskDefinition | null {
@@ -57,8 +58,8 @@ export function getRandomTask(room: string): TaskDefinition | null {
   return tasks[Math.floor(Math.random() * tasks.length)];
 }
 
-export function getRandomSabotageTask(): TaskDefinition {
-  return ALL_SABOTAGE_TASKS[Math.floor(Math.random() * ALL_SABOTAGE_TASKS.length)];
+export function getRandomHackTask(): TaskDefinition {
+  return ALL_HACK_TASKS[Math.floor(Math.random() * ALL_HACK_TASKS.length)];
 }
 
 export function getRandomFakeTask(): TaskDefinition {

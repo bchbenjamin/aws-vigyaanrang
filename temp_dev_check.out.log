@@ -1,0 +1,10 @@
+
+> breach-and-defend@0.1.0 dev
+> node server.js
+
+Creating turbopack project {
+  dir: 'C:\\Users\\Benjamin B C H\\OneDrive\\Documents\\B.E\\BenjaminsPrograms\\Web Development\\Vigyaanrang-AWS',
+  testMode: true
+}
+Failed to benchmark file I/O: Access is denied. (os error 5)
+Terminate batch job (Y/N)? 

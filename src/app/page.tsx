@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { ShieldAlert, Terminal, Zap, Users } from 'lucide-react';
 
 export default function LobbyPage() {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('playerCode') || '';
+  });
   const router = useRouter();
 
   const handleJoin = () => {
     if (code.trim().length < 1) return;
-    // Store access code in sessionStorage for the game page
-    sessionStorage.setItem('playerCode', code.trim());
+    localStorage.setItem('playerCode', code.trim());
     router.push('/game');
   };
 

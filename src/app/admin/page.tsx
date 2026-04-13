@@ -7,45 +7,10 @@ import {
   Wifi, MapPin, Skull, CheckCircle, XCircle,
 } from 'lucide-react';
 
-interface PlayerInfo {
-  id: string;
-  name: string;
-  room: string;
-  role: string;
-  status: string;
-}
-
-interface GameState {
-  phase: string;
-  playerCount: number;
-  players: PlayerInfo[];
-  globalProgress: number;
-  totalTasksSolved: number;
-  totalSabotageDone: number;
-  scores: Record<string, number>;
-  roomCounts: Record<string, number>;
-  winSide: string | null;
-  gameStartTime: number | null;
-  adminConfig?: {
-    pointsEasy: number;
-    pointsMedium: number;
-    pointsHard: number;
-    pointsSabotage: number;
-    pointsEjectHacker: number;
-    pointsSurvive: number;
-    pointsWin: number;
-    standupDurationMs: number;
-    firewallBufferMs: number;
-    easySpeedLimitMs: number;
-    easyCooldownMs: number;
-  };
-  standupData?: {
-    reportedBy: string;
-    startTime: number;
-  };
-}
+import { GameState, PlayerInfo } from '@/lib/types';
 
 let adminSocket: Socket | null = null;
+type StopMode = 'retain' | 'discard' | 'fresh';
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -56,9 +21,27 @@ export default function AdminPage() {
   const [socketConnected, setSocketConnected] = useState(false);
   const [regName, setRegName] = useState('');
   const [regCode, setRegCode] = useState('');
+  const [bulkNames, setBulkNames] = useState('');
   const [adminError, setAdminError] = useState('');
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [rolesMap, setRolesMap] = useState<Record<string, string>>({});
+  const [standupDurationInput, setStandupDurationInput] = useState('90000');
+  const [showEndStopPopup, setShowEndStopPopup] = useState(false);
+
+  const CONFIG_LABELS: Record<string, string> = {
+    pointsEasy: 'Points for Easy Tasks',
+    pointsMedium: 'Points for Medium Tasks',
+    pointsHard: 'Points for Hard Tasks',
+    pointsSabotage: 'Points for Hack Puzzles',
+    pointsEjectHacker: 'Points for Ejecting Hacker',
+    pointsSurvive: 'Points for Win Survival',
+    pointsWin: 'Base Game Win Points',
+    standupDurationMs: 'Voting Discussion (ms)',
+    firewallBufferMs: 'Firewall Task Shield Cooldown (ms)',
+    easySpeedLimitMs: 'Speedrun Threshold (ms)',
+    easyCooldownMs: 'Speedrun Penalty Cooldown (ms)'
+  };
+  const [showStopMenu, setShowStopMenu] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem('adminToken')) {
@@ -86,16 +69,7 @@ export default function AdminPage() {
     }
   };
 
-  // ── POLL GAME STATE ──────────────────────────────────────
-  const fetchState = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/state');
-      if (res.ok) {
-        const data = await res.json();
-        setGameState(data);
-      }
-    } catch { /* ignore */ }
-  }, []);
+
 
   useEffect(() => {
     if (!authenticated) return;
@@ -105,29 +79,54 @@ export default function AdminPage() {
       transports: ['websocket', 'polling'],
     });
 
-    adminSocket.on('connect', () => setSocketConnected(true));
+    adminSocket.on('connect', () => {
+      setSocketConnected(true);
+      adminSocket?.emit('admin_get_state');
+    });
+    
     adminSocket.on('disconnect', () => setSocketConnected(false));
+    
+    adminSocket.on('admin_state', (data: GameState) => {
+      setGameState(data);
+      if (data.adminConfig?.standupDurationMs !== undefined) {
+        setStandupDurationInput(String(data.adminConfig.standupDurationMs));
+      }
+    });
+
     adminSocket.on('error_msg', (msg: string) => {
       setAdminError(msg);
       setTimeout(() => setAdminError(''), 5000);
     });
 
-    // Poll state every 2 seconds
-    fetchState();
-    const interval = setInterval(fetchState, 2000);
+    // Poll state every 2 seconds quietly over WebSocket
+    const interval = setInterval(() => {
+      if (adminSocket && adminSocket.connected) {
+        adminSocket.emit('admin_get_state');
+      }
+    }, 2000);
 
     return () => {
       clearInterval(interval);
       adminSocket?.disconnect();
       adminSocket = null;
     };
-  }, [authenticated, fetchState]);
+  }, [authenticated]);
+
+  useEffect(() => {
+    if (gameState?.phase === 'ended') {
+      setShowEndStopPopup(true);
+    } else if (gameState?.phase !== 'ended') {
+      setShowEndStopPopup(false);
+    }
+  }, [gameState?.phase]);
 
   // ── ADMIN ACTIONS ────────────────────────────────────────
   const openRoleModal = () => {
     const players = gameState?.players || [];
-    if (players.length < 1) {
-      setAdminError('Need at least 1 player to start');
+    const activePlayers = players.filter(p => p.status !== 'disconnected');
+    
+    if (activePlayers.length < 1) {
+      setAdminError('Start Aborted: 0 players hold active connections. Registered users must join using their Access Codes on their physical devices before starting the game.');
       setTimeout(() => setAdminError(''), 5000);
       return;
     }
@@ -160,7 +159,11 @@ export default function AdminPage() {
     setShowRoleModal(false);
   };
 
-  const stopGame = () => adminSocket?.emit('admin_stop_game');
+  const stopGame = (mode: StopMode) => {
+    adminSocket?.emit('admin_stop_game', mode);
+    setShowStopMenu(false);
+    setShowEndStopPopup(false);
+  };
   const resetGame = () => adminSocket?.emit('admin_reset');
   const registerUser = () => {
     if (regName && regCode) {
@@ -168,6 +171,19 @@ export default function AdminPage() {
       setRegName('');
       setRegCode('');
     }
+  };
+  const bulkRegister = () => {
+    if (!bulkNames.trim()) return;
+    const names = bulkNames.split('\n').map(n => n.trim()).filter(n => n);
+    names.forEach(name => {
+      const cleanName = name.replace(/[^a-zA-Z]/g, '') || 'XXX';
+      const prefix = cleanName.substring(0, 3).toUpperCase().padEnd(3, 'X');
+      const letter1 = cleanName[Math.floor(Math.random() * cleanName.length)].toUpperCase();
+      const letter2 = cleanName[Math.floor(Math.random() * cleanName.length)].toUpperCase();
+      const code = `${prefix}-${letter1}${letter2}`;
+      adminSocket?.emit('admin_register_user', { name, code });
+    });
+    setBulkNames('');
   };
   const removeUser = (code: string) => {
     adminSocket?.emit('admin_remove_user', code);
@@ -205,6 +221,8 @@ export default function AdminPage() {
           <input
             id="admin-password"
             type="password"
+            name="admin-pass"
+            autoComplete="new-password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
@@ -250,10 +268,33 @@ export default function AdminPage() {
             <Play size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
             Start Game
           </button>
-          <button className="btn-warning" onClick={stopGame} disabled={gameState?.phase === 'lobby'}>
-            <XCircle size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-            Stop Game
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button className="btn-warning" onClick={() => setShowStopMenu(!showStopMenu)} disabled={gameState?.phase === 'lobby'}>
+              <XCircle size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+              Stop Game ▾
+            </button>
+            {showStopMenu && (
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: '4px', zIndex: 100,
+                background: 'var(--bg-primary)', border: '1px solid var(--border-primary)',
+                borderRadius: '6px', padding: '8px', minWidth: '220px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+              }}>
+                <button onClick={() => stopGame('retain')} style={{ width: '100%', textAlign: 'left', padding: '8px', fontSize: '11px', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                  🏆 Retain Points & Restart
+                  <br /><span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>Cumulative scores saved to DB</span>
+                </button>
+                <button onClick={() => stopGame('discard')} style={{ width: '100%', textAlign: 'left', padding: '8px', fontSize: '11px', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', borderTop: '1px solid var(--border-primary)' }}>
+                  🗑️ Discard Round & Restart
+                  <br /><span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>Points from this round discarded</span>
+                </button>
+                <button onClick={() => stopGame('fresh')} style={{ width: '100%', textAlign: 'left', padding: '8px', fontSize: '11px', background: 'transparent', border: 'none', color: 'var(--text-danger)', cursor: 'pointer', borderTop: '1px solid var(--border-primary)' }}>
+                  💀 Full Reset (Nuke)
+                  <br /><span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>Wipes everything including DB scores</span>
+                </button>
+              </div>
+            )}
+          </div>
           <button className="btn-danger" onClick={resetGame}>
             <RotateCcw size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
             Reset
@@ -270,9 +311,33 @@ export default function AdminPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '16px' }}>
             Voting is currently active.
           </p>
-          <button className="btn-warning" onClick={() => adminSocket?.emit('admin_add_standup_time', 30000)}>
-            +30s to Discussion Timer
-          </button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'end', flexWrap: 'wrap' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                Discussion Length (ms)
+              </label>
+              <input
+                type="number"
+                value={standupDurationInput}
+                onChange={(e) => setStandupDurationInput(e.target.value)}
+                style={{ width: '180px' }}
+              />
+            </div>
+            <button
+              className="btn-accent"
+              onClick={() => {
+                const nextValue = parseInt(standupDurationInput, 10);
+                if (!Number.isNaN(nextValue)) {
+                  adminSocket?.emit('admin_update_config', { standupDurationMs: nextValue });
+                }
+              }}
+            >
+              Apply Length
+            </button>
+            <button className="btn-warning" onClick={() => adminSocket?.emit('admin_extend_standup', { amount: 30000 })}>
+              +30s Discussion
+            </button>
+          </div>
         </div>
       )}
 
@@ -285,7 +350,7 @@ export default function AdminPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
             {Object.entries(gameState.adminConfig).map(([key, val]) => (
                <div key={key}>
-                 <label style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{key}</label>
+                 <label style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{CONFIG_LABELS[key] || key}</label>
                  <input
                    type="number"
                    defaultValue={val}
@@ -373,18 +438,31 @@ export default function AdminPage() {
               />
               <input
                 type="text"
-                placeholder="Access Code (e.g. 1234)"
+                placeholder="Code (max 6)"
                 value={regCode}
-                onChange={e => setRegCode(e.target.value)}
-                style={{ width: '150px' }}
+                onChange={e => setRegCode(e.target.value.substring(0, 6).toUpperCase())}
+                maxLength={6}
+                style={{ width: '150px', textTransform: 'uppercase' }}
               />
               <button className="btn-accent" onClick={registerUser} disabled={!regName || !regCode}>
                 Register
               </button>
             </div>
-            <p style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-              Give players their access code to connect via the lobby.
+            <p style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Access codes max 6 characters. Give players their code to connect.
             </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>BULK REGISTRATION</div>
+              <textarea
+                placeholder="Paste names here (one per line)...&#10;Benjamin&#10;Yogeetha"
+                value={bulkNames}
+                onChange={e => setBulkNames(e.target.value)}
+                style={{ width: '100%', height: '80px', padding: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)', borderRadius: '4px', resize: 'vertical', fontSize: '12px' }}
+              />
+              <button className="btn-accent" onClick={bulkRegister} disabled={!bulkNames.trim()} style={{ alignSelf: 'flex-start' }}>
+                Bulk Generate & Register
+              </button>
+            </div>
           </div>
           <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border-primary)', padding: '8px', borderRadius: '4px' }}>
             {Object.entries((gameState as any)?.registeredUsers || {}).map(([code, name]) => (
@@ -467,6 +545,36 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Live Cumulative Scoreboard */}
+      {(gameState as any)?.nameScores && Object.keys((gameState as any).nameScores).length > 0 && (
+        <div className="terminal-box" style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+            Live Scoreboard (Cumulative)
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '10px' }}>#</th>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '10px' }}>Player</th>
+                  <th style={{ padding: '8px', textAlign: 'right', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '10px' }}>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries((gameState as any).nameScores)
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .map(([name, score], idx) => (
+                    <tr key={name} style={{ borderBottom: '1px solid #0a0a0a', background: idx === 0 ? 'var(--bg-tertiary)' : 'transparent' }}>
+                      <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                      <td style={{ padding: '8px' }}>{idx === 0 ? '\ud83d\udc51 ' : ''}{name}</td>
+                      <td style={{ padding: '8px', textAlign: 'right', color: 'var(--text-accent)', fontWeight: idx < 3 ? 'bold' : 'normal' }}>{score as number} pts</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       {showRoleModal && (
         <div className="overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="terminal-box" style={{ width: '400px', padding: '24px', background: 'var(--bg-primary)', position: 'relative' }}>
@@ -499,6 +607,29 @@ export default function AdminPage() {
             <button className="btn-accent" onClick={confirmAndStartGame} style={{ width: '100%' }}>
               Confirm & Start Game
             </button>
+          </div>
+        </div>
+      )}
+      {showEndStopPopup && (
+        <div className="overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div className="terminal-box" style={{ width: '420px', padding: '24px' }}>
+            <h3 style={{ fontSize: '16px', textTransform: 'uppercase', marginBottom: '12px', color: 'var(--text-warning)' }}>
+              Round Ended
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Choose how to stop and reset the game.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button className="btn-accent" onClick={() => stopGame('retain')}>
+                Retain Points & Restart
+              </button>
+              <button className="btn-warning" onClick={() => stopGame('discard')}>
+                Discard Round & Restart
+              </button>
+              <button className="btn-danger" onClick={() => stopGame('fresh')}>
+                Full Reset
+              </button>
+            </div>
           </div>
         </div>
       )}

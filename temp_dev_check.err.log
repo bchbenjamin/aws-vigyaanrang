@@ -1,0 +1,9 @@
+Node.js fs rename failed after 101 retries with error Error: EPERM: operation not permitted, rename 'C:\Users\Benjamin B C H\OneDrive\Documents\B.E\BenjaminsPrograms\Web Development\Vigyaanrang-AWS\.next\dev\server\server-reference-manifest.json.tmp.3gu1ktut5my' -> 'C:\Users\Benjamin B C H\OneDrive\Documents\B.E\BenjaminsPrograms\Web Development\Vigyaanrang-AWS\.next\dev\server\server-reference-manifest.json'
+Unhandled Rejection: Error: EPERM: operation not permitted, rename 'C:\Users\Benjamin B C H\OneDrive\Documents\B.E\BenjaminsPrograms\Web Development\Vigyaanrang-AWS\.next\dev\server\server-reference-manifest.json.tmp.3gu1ktut5my' -> 'C:\Users\Benjamin B C H\OneDrive\Documents\B.E\BenjaminsPrograms\Web Development\Vigyaanrang-AWS\.next\dev\server\server-reference-manifest.json'
+    at ignore-listed frames {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'rename',
+  path: 'C:\\Users\\Benjamin B C H\\OneDrive\\Documents\\B.E\\BenjaminsPrograms\\Web Development\\Vigyaanrang-AWS\\.next\\dev\\server\\server-reference-manifest.json.tmp.3gu1ktut5my',
+  dest: 'C:\\Users\\Benjamin B C H\\OneDrive\\Documents\\B.E\\BenjaminsPrograms\\Web Development\\Vigyaanrang-AWS\\.next\\dev\\server\\server-reference-manifest.json'
+}

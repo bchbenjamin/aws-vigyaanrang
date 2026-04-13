@@ -3,31 +3,42 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Play, GripVertical, Check, X } from 'lucide-react';
 import {
-  ALL_REAL_TASKS, ALL_SABOTAGE_TASKS, ALL_FAKE_TASKS,
+  ALL_REAL_TASKS, ALL_HACK_TASKS,
   type TaskDefinition, type Language,
 } from '@/lib/tasks';
 
 interface CodeEditorProps {
   taskId: string | null;
-  sabotageTaskId?: string | null;
-  fakeTaskId?: string | null;
+  hackTaskId?: string | null;
   isHacker: boolean;
+  isFirewall?: boolean;
+  canRequestHard?: boolean;
+  selectedProtectTargetId?: string | null;
+  selectedProtectTargetName?: string | null;
   onRequestTask: (difficulty: 'easy' | 'medium' | 'hard') => void;
-  onSubmit: (result: { correct: boolean; isSabotage: boolean; taskId?: string }) => void;
+  onSubmit: (result: { correct: boolean; isHackTask: boolean; taskId?: string; protectedTargetId?: string }) => void;
 }
 
 function findTask(id: string | null): TaskDefinition | null {
   if (!id) return null;
   return (
     ALL_REAL_TASKS.find(t => t.id === id) ||
-    ALL_SABOTAGE_TASKS.find(t => t.id === id) ||
-    ALL_FAKE_TASKS.find(t => t.id === id) ||
+    ALL_HACK_TASKS.find(t => t.id === id) ||
     null
   );
 }
 
-export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacker, onSubmit }: CodeEditorProps) {
-  const [showSabotage, setShowSabotage] = useState(false);
+export default function CodeEditor({
+  taskId,
+  hackTaskId,
+  isHacker,
+  isFirewall,
+  canRequestHard,
+  selectedProtectTargetId,
+  selectedProtectTargetName,
+  onRequestTask,
+  onSubmit,
+}: CodeEditorProps) {
   const [userAnswer, setUserAnswer] = useState('');
   const [dragOrder, setDragOrder] = useState<number[]>([]);
   const [fillState, setFillState] = useState<Record<number, string>>({});
@@ -35,18 +46,8 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
   const [activeLang, setActiveLang] = useState<Language>('python');
   const [activeDifficulty, setActiveDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Sync activeDifficulty when task prop changes from external sources
-  useEffect(() => {
-    if (task && task.difficulty !== activeDifficulty && !task.isSabotage && !task.isFake) {
-      setActiveDifficulty(task.difficulty as 'easy' | 'medium' | 'hard');
-    }
-  }, [task?.id]);
-
   // Determine which task to show
-  const activeTaskId = isHacker
-    ? (showSabotage ? sabotageTaskId : fakeTaskId)
-    : taskId;
+  const activeTaskId = hackTaskId || taskId;
 
   const task = findTask(activeTaskId || null);
   const version = task ? task.versions[activeLang] : null;
@@ -54,6 +55,7 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
   // Load from session storage when task/language changes
   useEffect(() => {
     if (!task || !version) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserAnswer('');
       setDragOrder([]);
       setFillState({});
@@ -154,20 +156,36 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
       }
     }
 
-    const isSabotage = task.isSabotage || false;
+    const isHackTask = task.isHack || false;
 
     setFeedback({
       correct,
       msg: correct
-        ? (isSabotage ? 'Sabotage deployed.' : 'Task passed all tests.')
+        ? (isHackTask ? 'Hack algorithm verified. Executing...' : 'Task passed all tests.')
         : 'Incorrect. Try again.',
     });
 
     if (correct) {
       setIsSubmitting(true);
-      onSubmit({ correct: true, isSabotage, taskId: task.id });
+      onSubmit({
+        correct: true,
+        isHackTask,
+        taskId: task.id,
+        protectedTargetId: selectedProtectTargetId || undefined,
+      });
     }
-  }, [task, version, userAnswer, dragOrder, fillState, onSubmit]);
+  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId]);
+
+  if (isFirewall && !selectedProtectTargetId) {
+    return (
+      <div className="terminal-box" style={{ textAlign: 'center', padding: '48px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <h3 style={{ color: 'var(--text-warning)' }}>Protection Target Required</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '8px', maxWidth: '300px' }}>
+          Select an active developer in the firewall panel before requesting a task.
+        </p>
+      </div>
+    )
+  }
 
   if (!task || !version) {
     return (
@@ -197,7 +215,7 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
         {/* Language, Difficulty, & Hacker toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <select
-            value={activeDifficulty}
+            value={task && !task.isHack && !task.isFake ? task.difficulty : activeDifficulty}
             onChange={(e) => {
               const diff = e.target.value as 'easy' | 'medium' | 'hard';
               setActiveDifficulty(diff);
@@ -207,7 +225,7 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
-            {isHacker && <option value="hard">Hard</option>}
+            {canRequestHard && <option value="hard">Hard</option>}
           </select>
 
           <select
@@ -219,16 +237,6 @@ export default function CodeEditor({ taskId, sabotageTaskId, fakeTaskId, isHacke
             <option value="java">Java</option>
             <option value="c">C</option>
           </select>
-
-          {isHacker && (
-            <button
-              onClick={() => setShowSabotage(!showSabotage)}
-              className={showSabotage ? 'btn-danger' : 'btn-accent'}
-              style={{ fontSize: '10px', padding: '4px 10px' }}
-            >
-              {showSabotage ? 'SABOTAGE MODE' : 'COVER MODE'}
-            </button>
-          )}
         </div>
       </div>
 
