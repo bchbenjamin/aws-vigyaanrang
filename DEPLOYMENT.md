@@ -1,108 +1,123 @@
-# Breach & Defend — Deployment Guide
+# Deployment Guide
 
-## Prerequisites
-- **Node.js** v18.17+ installed
-- A running **Neon PostgreSQL** database (free tier at [neon.tech](https://neon.tech))
+## Supported deployment model
 
-## Environment Variables
+This project is built around a long-lived custom `server.js` process that owns both Next.js and Socket.io state. The supported target is a persistent Node.js host on a local network or LAN-accessible machine.
+
+Unsupported assumption:
+- Vercel-style serverless deployment for the live game loop
+
+## Environment variables
 
 Create a `.env` file in the project root:
+
 ```env
 DATABASE_URL=postgresql://...your-neon-string...
 ADMIN_USERNAME=your-admin-username
 ADMIN_PASSWORD=your-admin-password
+PORT=3000
 ```
 
----
+## Local development
 
-## Option A: Local LAN Deployment (CSE Lab — Production)
+```bash
+npm install
+npm run dev
+```
 
-This is the primary deployment target. The custom `server.js` hosts both the Next.js frontend and the Socket.io WebSocket game engine on the same port.
+The development command runs the custom `server.js` entrypoint, not plain `next dev`.
 
-### Step 1: Install Dependencies
+## LAN production run
+
+### 1. Install dependencies
+
 ```bash
 npm install
 ```
 
-### Step 2: Build the Production Application
+### 2. Build the app
+
 ```bash
 npm run build
 ```
 
-### Step 3: Start the Game Server
+### 3. Start the server
+
+Windows PowerShell:
+
+```powershell
+$env:NODE_ENV="production"
+node server.js
+```
+
+Windows Command Prompt:
+
+```bat
+set NODE_ENV=production
+node server.js
+```
+
+Linux/macOS:
+
 ```bash
-# On Windows (Command Prompt):
-set NODE_ENV=production && node server.js
-
-# On Windows (PowerShell):
-$env:NODE_ENV="production"; node server.js
-
-# On Linux/Mac:
 NODE_ENV=production node server.js
 ```
-The server starts on **port 3000**.
 
-### Step 4: Open the Firewall
-Ensure Windows Firewall allows incoming connections on port 3000:
+### 4. Open port `3000`
+
+Example PowerShell command:
+
 ```powershell
 New-NetFirewallRule -DisplayName "Breach and Defend" -Direction Inbound -LocalPort 3000 -Protocol TCP -Action Allow
 ```
 
-### Step 5: Find the Server IP
+### 5. Find the LAN IP
+
 ```bash
 ipconfig
 ```
-Look for `IPv4 Address` (e.g., `192.168.1.50`).
 
-### Step 6: Connect 30 Players
-On each lab PC, open a browser and navigate to:
-```
+Use the machine's IPv4 address, for example `192.168.1.50`.
+
+### 6. Player and admin URLs
+
+Players:
+
+```text
 http://192.168.1.50:3000
 ```
 
-### Step 7: Admin Panel
-The game admin navigates to:
-```
+Admin:
+
+```text
 http://192.168.1.50:3000/admin
 ```
-- Log in with the credentials from `.env`.
-- Click **Start Game** once all players have joined.
 
----
+## Current operational behavior
 
-## Option B: Vercel Deployment (External Testing)
+- Player codes persist locally until the player logs out.
+- Duplicate live joins for the same access code are blocked.
+- Invalid access codes are rejected with immediate client feedback.
+- The match timer is server-synchronized across tabs.
+- Admins can extend stand-up time and kick players from the active round.
+- End-of-round admin handling uses the three stop modes already exposed in the UI.
 
-> **Warning:** Vercel does not support persistent WebSockets. Socket.io will fall back to HTTP long-polling. Performance will be lower than the LAN deployment.
+## Data and persistence
 
-### Step 1: Push to GitHub
-Ensure your repository is pushed to GitHub with all source code.
+Database-backed tables/config:
+- `registered_users`
+- `admin_config`
+- `cumulative_scores`
 
-### Step 2: Import to Vercel
-1. Log into [vercel.com](https://vercel.com).
-2. Click **Add New... > Project** and import the repository.
-3. Add environment variables: `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
-4. Set build command: `npm run build`.
-5. Click **Deploy**.
+Puzzle source:
+- `src/data/puzzles.json`
 
-> **Note:** On Vercel, the custom `server.js` does not run. The Socket.io integration must be replaced with a serverless-compatible provider (Pusher, Ably, or PartyKit) for production-quality WebSocket performance. The LAN deployment is highly recommended for the actual event.
+## Troubleshooting
 
----
+### Hydration warning on the lobby page
 
-## Development Mode
+The lobby now reads saved access codes after mount, so server and client markup stay aligned. If you still see a hydration mismatch, clear stale browser extensions or cached dev bundles and retry.
 
-```bash
-npm run dev
-```
-This runs the custom `server.js` in development mode with Next.js hot-reloading.
+### Dev server does not stop on its own
 
----
-
-## Scoring Reference
-
-| Action                          | Points |
-|---------------------------------|--------|
-| Your side wins the round        | +3     |
-| Completing a task               | +1     |
-| Successfully hacking a player   | +2     |
-| Last surviving Developer        | +2     |
-| Correctly voting out a Hacker   | +1     |
+`npm run dev` keeps the custom server running until you terminate it. Stop it manually with `Ctrl+C` or by ending the spawned `node` process.

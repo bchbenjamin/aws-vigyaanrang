@@ -50,6 +50,7 @@ export default function CodeEditor({
   const activeTaskId = hackTaskId || taskId;
 
   const task = findTask(activeTaskId || null);
+  const isHackTaskActive = Boolean(hackTaskId && task && task.id === hackTaskId);
   const version = task ? task.versions[activeLang] : null;
 
   // Load from session storage when task/language changes
@@ -156,7 +157,7 @@ export default function CodeEditor({
       }
     }
 
-    const isHackTask = task.isHack || false;
+    const isHackTask = isHackTaskActive;
 
     setFeedback({
       correct,
@@ -174,7 +175,7 @@ export default function CodeEditor({
         protectedTargetId: selectedProtectTargetId || undefined,
       });
     }
-  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId]);
+  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId, isHackTaskActive]);
 
   if (isFirewall && !selectedProtectTargetId) {
     return (
@@ -215,7 +216,7 @@ export default function CodeEditor({
         {/* Language, Difficulty, & Hacker toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <select
-            value={task && !task.isHack && !task.isFake ? task.difficulty : activeDifficulty}
+            value={task ? task.difficulty : activeDifficulty}
             onChange={(e) => {
               const diff = e.target.value as 'easy' | 'medium' | 'hard';
               setActiveDifficulty(diff);
@@ -237,6 +238,12 @@ export default function CodeEditor({
             <option value="java">Java</option>
             <option value="c">C</option>
           </select>
+
+          {isFirewall && selectedProtectTargetName && (
+            <span style={{ fontSize: '10px', color: 'var(--text-warning)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              Protecting {selectedProtectTargetName}
+            </span>
+          )}
         </div>
       </div>
 

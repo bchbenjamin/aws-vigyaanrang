@@ -123,7 +123,7 @@ export default function AdminPage() {
   // ── ADMIN ACTIONS ────────────────────────────────────────
   const openRoleModal = () => {
     const players = gameState?.players || [];
-    const activePlayers = players.filter(p => p.status !== 'disconnected');
+    const activePlayers = players.filter(p => p.status !== 'disconnected' && p.status !== 'ejected');
     
     if (activePlayers.length < 1) {
       setAdminError('Start Aborted: 0 players hold active connections. Registered users must join using their Access Codes on their physical devices before starting the game.');
@@ -506,7 +506,7 @@ export default function AdminPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
-                {['Name', 'Room', 'Role', 'Status', 'Score'].map(h => (
+                {['Name', 'Room', 'Role', 'Status', 'Score', 'Action'].map(h => (
                   <th key={h} style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>
                     {h}
                   </th>
@@ -537,6 +537,19 @@ export default function AdminPage() {
                   </td>
                   <td style={{ padding: '8px', color: 'var(--text-accent)' }}>
                     {gameState?.scores[p.id] || 0}
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    {gameState?.phase === 'playing' && p.status !== 'disconnected' && p.status !== 'ejected' ? (
+                      <button
+                        className="btn-danger"
+                        style={{ padding: '6px 10px', fontSize: '10px' }}
+                        onClick={() => adminSocket?.emit('admin_kick_player', p.id)}
+                      >
+                        Kick
+                      </button>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>-</span>
+                    )}
                   </td>
                 </tr>
               ))}

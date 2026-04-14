@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import {
@@ -70,16 +70,23 @@ export default function GamePage() {
   } | null>(null);
 
   // ── Timer ───────────────────────────────────────────────
-  const [gameTime, setGameTime] = useState(0);
+  const [gameEndTime, setGameEndTime] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   // ── FAB & Confirmation ─────────────────────────────────
   const [fabOpen, setFabOpen] = useState(false);
   const [showStandupConfirm, setShowStandupConfirm] = useState(false);
   const [myScore, setMyScore] = useState(0);
+  const [completionFx, setCompletionFx] = useState<{ message: string; tone: 'task' | 'hack' } | null>(null);
+  const fabButtonRef = useRef<HTMLButtonElement | null>(null);
+  const fabPanelRef = useRef<HTMLDivElement | null>(null);
   const showAlert = useCallback((type: string, message: string) => {
     setAlertBanner({ type, message });
     setTimeout(() => setAlertBanner(null), 5000);
+  }, []);
+  const triggerCompletionFx = useCallback((message: string, tone: 'task' | 'hack') => {
+    setCompletionFx({ message, tone });
+    setTimeout(() => setCompletionFx(null), 1800);
   }, []);
 
   // ── Connect to Socket.io ────────────────────────────────
@@ -116,6 +123,7 @@ export default function GamePage() {
       setStatus(data.you?.status || 'alive');
       setRoom(data.you?.room || 'Breakroom');
       setHackCooldownUntil(data.you?.hackCooldownUntil || 0);
+      setGameEndTime(data.gameEndTime || null);
       if (data.roomPlayers) setRoomPlayers(data.roomPlayers);
       if (data.aliveDevelopers) setAliveDevelopers(data.aliveDevelopers);
       setGlobalProgress(data.globalProgress);
@@ -129,6 +137,7 @@ export default function GamePage() {
       setRole(data.role);
       setStatus('alive');
       setProtectTargetId(null);
+      setGameEndTime(data.gameEndTime || null);
     });
 
     socket.on('phase_change', (data) => setPhase(data.phase));
@@ -166,6 +175,12 @@ export default function GamePage() {
       if (data.hackTaskId !== undefined) setHackTaskId(data.hackTaskId);
     });
 
+    socket.on('task_result', (data) => {
+      if (data?.success) {
+        triggerCompletionFx(data.message || 'Task completed.', 'task');
+      }
+    });
+
     socket.on('task_cooldown', (data) => {
        showAlert('warning', data.msg || `Tasks on cooldown. Please wait ${data.remaining}s.`);
     });
@@ -187,6 +202,7 @@ export default function GamePage() {
 
     socket.on('hack_success', (data) => {
       setHackCooldownUntil(data.cooldownUntil);
+      triggerCompletionFx(data.message || `Hack executed on ${data.target}.`, 'hack');
     });
 
     socket.on('hack_cooldown_reset', (data) => {
@@ -252,6 +268,7 @@ export default function GamePage() {
       setPhase('ended');
       setHackTargetId(null);
       setProtectTargetId(null);
+      setGameEndTime(null);
       setEndData({
         winSide: data.winSide,
         reason: data.reason,
@@ -271,6 +288,7 @@ export default function GamePage() {
       setHackTargetId(null);
       setProtectTargetId(null);
       setHackCooldownUntil(0);
+      setGameEndTime(null);
       setEndData(null);
     });
 
@@ -280,7 +298,6 @@ export default function GamePage() {
 
     // Timer
     const timer = setInterval(() => {
-      setGameTime(prev => prev + 1);
       setNowMs(Date.now());
     }, 1000);
 
@@ -289,7 +306,25 @@ export default function GamePage() {
       socket?.disconnect();
       socket = null;
     };
-  }, [router]);
+  }, [router, triggerCompletionFx]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        fabOpen &&
+        fabPanelRef.current &&
+        fabButtonRef.current &&
+        !fabPanelRef.current.contains(target) &&
+        !fabButtonRef.current.contains(target)
+      ) {
+        setFabOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [fabOpen]);
 
   // ── HELPERS ─────────────────────────────────────────────
   const handleNavigate = useCallback((targetRoom: string) => {
@@ -351,6 +386,8 @@ export default function GamePage() {
     return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
 
+  const remainingGameSeconds = gameEndTime ? Math.max(0, Math.ceil((gameEndTime - nowMs) / 1000)) : 0;
+
   useEffect(() => {
     if (protectTargetId && !aliveDevelopers.some(player => player.id === protectTargetId)) {
       setProtectTargetId(aliveDevelopers[0]?.id || null);
@@ -407,7 +444,7 @@ export default function GamePage() {
   const isInTaskRoom = TASK_ROOMS.includes(room) && !isMoving;
   const isInLogRoom = room === 'The Log Room' && !isMoving;
   const selectedProtectTarget = aliveDevelopers.find(player => player.id === protectTargetId) || null;
-  const canUseCodeEditor = status === 'firewall' || isInTaskRoom;
+  const canUseCodeEditor = status === 'firewall' || isInTaskRoom || !!hackTaskId;
 
   return (
     <div className={styles.gameContainer}>
@@ -416,6 +453,37 @@ export default function GamePage() {
         <div className={`alert-banner ${alertBanner.type === 'danger' ? 'alert-danger' : 'alert-warning'}`}>
           {alertBanner.type === 'danger' ? <WifiOff size={16} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> : null}
           {alertBanner.message}
+        </div>
+      )}
+
+      {completionFx && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9997,
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: completionFx.tone === 'hack' ? 'radial-gradient(circle, rgba(255,70,70,0.22), transparent 65%)' : 'radial-gradient(circle, rgba(0,255,136,0.2), transparent 65%)',
+          }}
+        >
+          <div
+            className="terminal-box"
+            style={{
+              minWidth: '280px',
+              textAlign: 'center',
+              padding: '24px 28px',
+              borderColor: completionFx.tone === 'hack' ? 'var(--text-danger)' : 'var(--text-accent)',
+              boxShadow: completionFx.tone === 'hack' ? '0 0 32px rgba(255,70,70,0.22)' : '0 0 32px rgba(0,255,136,0.2)',
+            }}
+          >
+            <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: completionFx.tone === 'hack' ? 'var(--text-danger)' : 'var(--text-accent)', marginBottom: '8px' }}>
+              {completionFx.tone === 'hack' ? 'Hack Executed' : 'Task Completed'}
+            </div>
+            <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{completionFx.message}</div>
+          </div>
         </div>
       )}
 
@@ -453,7 +521,7 @@ export default function GamePage() {
         <div className={styles.headerRight}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Clock size={12} color="var(--text-muted)" />
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{formatTime(gameTime)}</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{formatTime(remainingGameSeconds)}</span>
           </div>
         </div>
       </header>
@@ -570,7 +638,12 @@ export default function GamePage() {
               selectedProtectTargetId={selectedProtectTarget?.id || null}
               selectedProtectTargetName={selectedProtectTarget?.name || null}
               onRequestTask={(diff) => {
-                if (socket) socket.emit('request_task', { difficulty: diff, protectTargetId: selectedProtectTarget?.id || null });
+                if (diff !== 'hard') {
+                  setHackTaskId(null);
+                }
+                if (socket) {
+                  socket.emit('request_task', { difficulty: diff, protectTargetId: selectedProtectTarget?.id || null });
+                }
               }}
               onSubmit={handleTaskSubmit}
             />
@@ -652,6 +725,7 @@ export default function GamePage() {
       {phase === 'playing' && (
         <>
           <button
+            ref={fabButtonRef}
             onClick={() => setFabOpen(!fabOpen)}
             style={{
               position: 'fixed', bottom: '20px', right: '20px', zIndex: 9990,
@@ -668,7 +742,7 @@ export default function GamePage() {
           </button>
 
           {fabOpen && (
-            <div style={{
+            <div ref={fabPanelRef} style={{
               position: 'fixed', bottom: '80px', right: '20px', zIndex: 9989,
               background: 'var(--bg-primary)', border: '1px solid var(--border-primary)',
               borderRadius: '8px', padding: '16px', width: '220px',
@@ -696,25 +770,6 @@ export default function GamePage() {
                     : 'Hack Ready'}
                 </div>
               )}
-
-              {/* Difficulty selector */}
-              <div style={{ marginBottom: '10px' }}>
-                <label style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Request Task</label>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {(['easy', 'medium'] as const).map(d => (
-                    <button key={d}
-                      onClick={() => { if (socket) socket.emit('request_task', { difficulty: d, protectTargetId }); setFabOpen(false); }}
-                      style={{ flex: 1, padding: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }}
-                    >{d}</button>
-                  ))}
-                  {((role === 'hacker' && status === 'alive') || status === 'firewall') && (
-                    <button
-                      onClick={() => { if (socket) socket.emit('request_task', { difficulty: 'hard', protectTargetId }); setFabOpen(false); }}
-                      style={{ flex: 1, padding: '6px', fontSize: '10px', textTransform: 'uppercase', background: 'rgba(255,50,50,0.1)', border: '1px solid var(--text-danger)', color: 'var(--text-danger)', cursor: 'pointer', borderRadius: '4px' }}
-                    >Hard</button>
-                  )}
-                </div>
-              </div>
 
               <button
                 onClick={handleLogout}

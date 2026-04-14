@@ -1,159 +1,111 @@
-# Breach & Defend: Game Rules & Parameters
+# Breach & Defend
 
-**Breach & Defend** is a real-time, local-LAN social deduction cybersecurity simulation designed for 30 concurrent players. 
-This document serves as the strict, definitive rulebook detailing every mechanic, cooldown, timer, and configurable parameter in the server logic.
+`Breach & Defend` is a LAN-hosted, real-time social deduction coding game built on a custom Next.js + Socket.io server. The game is designed for a persistent Node runtime and should be treated as a local/LAN deployment project, not a serverless app.
 
----
+## Current gameplay model
 
-## 1. Roles & Objectives
-Players spawn into the `Breakroom` as one of two roles assigned by the Admin. 
+### Roles
+- `Developer`: advances the shared progress bar by solving coding puzzles.
+- `Hacker`: hacks developers in the same room and tries to force a hacker win.
+- `Firewall`: a hacked developer who still moves and now actively protects living developers.
 
-### Developers (The Core Team)
-* **Objective:** Successfully complete tasks across multiple rooms until the Global Progress Bar reaches **100%**. If time runs out and the progress bar is >= 50%, the Developers win.
-* **Secondary Objective:** Identify and eject all Hackers via Emergency Stand-Ups.
+### Rooms
+- Task rooms: `Frontend`, `Main Database`, `API Gateway`, `Server Room`, `QA Testing Lab`
+- Non-task rooms: `The Log Room`, `Breakroom`
+- Normal movement has a `3s` delay.
+- Firewalls move instantly.
+- Every move writes to the live log feed.
 
-### Hackers (The Infiltrators)
-* **Objective:** Prevent the Developers from completing the project. If time runs out and the progress bar is < 50%, the Hackers win.
-* **Secondary Objective:** Hack Developers to eliminate them. If the number of alive Developers drops below or equals the number of alive Hackers, the Hackers achieve a majority and win instantly.
+### Win conditions
+- Developers win at `100%` progress.
+- Developers also win if all hackers are gone.
+- Hackers win if alive hackers are greater than or equal to alive developers.
+- On timeout, developers win only if progress is at least `50%`; otherwise hackers win.
 
----
+## Tasks and difficulty
 
-## 2. Core Mechanics
+- Tasks are loaded directly from `src/data/puzzles.json`.
+- Tasks are no longer tied to individual rooms. They come from a global difficulty pool: `easy`, `medium`, `hard`.
+- The in-editor difficulty selector is the source of truth for requesting new tasks.
+- Task answers and in-progress work are cached in browser storage so a refresh does not wipe a player�s current task state.
 
-### Movement
-* Players navigate between 6 rooms: `Frontend`, `Main Database`, `API Gateway`, `Server Room`, `QA Testing Lab`, and `The Log Room`.
-* Moving rooms incurs a strict **3-second delay** (except for Firewalls, who instantly move).
-* All movement emits a motion event to `The Log Room` in real-time.
+### Difficulty rules
+- Developers can request `easy` and `medium`.
+- Hackers can request `easy` and `medium` as normal coding tasks.
+- Hackers can request `hard` only after selecting a live target to hack.
+- Solving a `hard` task clears hack cooldown only when the hard task is tied to an active selected hack target.
+- Firewalls can solve any difficulty, but only after selecting a live developer to protect.
 
-### Task Completion
-* Tasks are presented in C, Java, or Python and share a **global pool**.
-* Players can switch languages mid-question — all three versions of every task are always available.
-* Tasks must be requested via the ⚙ FAB (Floating Action Button) at the bottom-right.
-* **Developers:** Completing an Easy or Medium task increments the Global Progress Bar.
-* **Hackers:** Can perform "Cover Tasks" (fake tasks to look busy), or "Hard Tasks" (LeetCode algorithm problems). Solving a **Hard Task** instantly resets their hack cooldown.
-* Progress is persisted in `sessionStorage` — so page reloads or tab switches won't lose code.
+## Hacking and firewall protection
 
-### Hacking Mechanics
-* A Hacker can attempt to eliminate a Developer if they are in the same room by requesting a Hack Puzzle.
-* **The Hack Puzzle:** The hacker must successfully solve a complex code puzzle.
-* **Target Escaping:** If the target moves to another room before the Hacker solves the puzzle, the hack fails, but the Hacker still receives points for solving it.
-* **Firewall Error:** If a Hacker attempts to hack another Hacker or a Developer protected by a Firewall Shield, the hack fails, and a global "FIREWALL ERROR" is logged to The Log Room.
-* **Cooldown:** Hacking incurs a **3-minute cooldown**. (Unless bypassed by solving a Hard Task).
+- A hacker can hack only a living developer in the same room.
+- Self-hacking is blocked on both client and server.
+- Hack attempts work in task rooms and in `The Log Room`.
+- If the target escapes before submission resolves, the hacker still keeps puzzle points but the target is not converted.
+- If the target is protected, the hack bounces, the target loses the protection flag, and the hacker receives cooldown without a conversion.
 
-### The Firewall State (The Afterlife)
-* Hacked Developers transition into a **Firewall**.
-* Firewalls have instant movement speed and act primarily as Observers initially.
-* **Firewall Shields:** Firewalls can target an unprotected alive Developer in their room and click the "PROTECT" button to request a task. Upon successfully solving it, the target receives a **Firewall Shield** which protects them from exactly one hack attempt.
-* **Anomaly Alert:** A Firewall has a one-time-use `Radio Alert` (accessible via ⚙ FAB) that can broadcast a suspicious room warning to the entire team.
+### Firewall behavior
+- Firewalls do not self-protect and cannot protect each other.
+- Firewalls no longer have an anomaly alert action.
+- A firewall must select a living developer from the firewall overlay before solving a task.
+- Completing any firewall task grants the same one-time protection effect. Harder tasks only affect scoring.
 
-### The Log Room
-* The Log Room tracks the last 15 room-entry events along with precise timestamps.
-* **Live Feed:** The log is now updated in real-time regardless of which room the viewer is in — the data arrives via a global event.
-* Hackers entering the Log Room can trigger a **Wipe Logs** command, replacing the history with `ERROR: LOGS CORRUPTED` for **60 seconds**.
+## UI and session behavior
 
-### Emergency Stand-Up (Voting)
-* Any alive player can call an Emergency Stand-Up from the ⚙ FAB (any room, any time during gameplay).
-* A **confirmation dialog** appears before the stand-up is triggered.
-* All alive players are instantly teleported to the `Breakroom`.
-* A 90-second (default) discussion timer begins. The Admin can manually add **+30 seconds** incrementally.
-* Players vote to eject a suspect or skip. Highest votes is ejected. Ties result in no ejection.
+- Player codes persist in `localStorage`, so refreshes do not require re-entering the code.
+- Players also have an explicit logout action that clears the stored code.
+- Invalid access codes show an immediate visible error.
+- The same access code cannot be active in multiple live tabs or devices at once.
+- The large player-facing disconnect popup has been removed.
+- The FAB contains role, score, cooldown state, logout, and stand-up controls. The old FAB task selector has been removed.
+- The FAB closes when the user clicks outside it.
+- Successful task completion and successful hack resolution use the same completion-effect pattern.
+- Match time is synchronized from the server, so all player tabs render the same remaining time.
 
----
+## Admin features
 
-## 3. The ⚙ FAB (Floating Action Button)
+- Register and remove users from the admin panel.
+- Start a round with assigned roles.
+- Extend stand-up discussion time in `+30s` increments.
+- Kick a player out of the active round.
+- When a round ends, the admin gets a popup with the three stop/reset modes:
+  - `Retain Points & Restart`
+  - `Discard Round & Restart`
+  - `Full Reset`
 
-During gameplay, a gear icon appears fixed at the bottom-right. It contains:
+## Configuration and persistence
 
-| Feature | Who Can See |
-|:---|:---|
-| Role pill (Developer/Hacker) | Everyone |
-| Personal score | Everyone |
-| Hack cooldown timer | Hackers only |
-| Difficulty selector | Developers only |
-| Hard task request button | Hackers only |
-| Anomaly Alert button | Firewalls only (one-time use) |
-| Emergency Stand-Up button | All alive players |
+Runtime configuration is stored through `admin_config`.
 
----
+Important defaults:
+- Match duration: `30 minutes`
+- Move delay: `3 seconds`
+- Hack cooldown: `3 minutes`
+- Stand-up duration: `90 seconds`
+- Firewall task buffer: `5 minutes`
+- Easy-task anti-speedrun window: `10 easy solves inside 2 minutes`
+- Easy-task penalty cooldown: `1 minute`
 
-## 4. Admin Panel (`/admin`)
+Database-backed data:
+- `registered_users`
+- `admin_config`
+- `cumulative_scores`
 
-### Authenticaton
-* Secured via `ADMIN_USERNAME` and `ADMIN_PASSWORD` environment variables.
+## Runtime notes
 
-### User Registration
-* Access codes are generated universally in **UPPERCASE**.
-* Admins register players before the game starts — no self-registration.
-* Codes are synced with the Neon PostgreSQL DB to persist through server restarts!
+- Local and LAN execution use the custom `server.js` entrypoint.
+- The runtime reads puzzle data from JSON directly. It no longer relies on Node loading `src/lib/tasks` for server-side task assignment.
+- The app is intended for persistent Node hosting and LAN play. Serverless hosting assumptions should be treated as unsupported.
 
-### Game Controls — Three Stop Modes
+## Development
 
-| Button | Behaviour |
-|:---|:---|
-| **🏆 Retain Points & Restart** | Saves this round's scores to the database (cumulative). Keeps registered users. |
-| **🗑️ Discard Round & Restart** | Throws away this round's scores. Keeps registered users. |
-| **💀 Full Reset (Nuke)** | Wipes everything — scores, DB history, registered users. All players disconnected. |
+```bash
+npm install
+npm run dev
+```
 
-### Game Rules & Constraints Panel
-* Dynamically modify all point values, timers, and cooldowns.
-* Changes are **persisted to Neon PostgreSQL** so they survive server restarts.
+Production-style run:
 
----
-
-## 5. Configurable Parameters & Timing
-
-### Timing & Penalties
-| Variable | Default | Description |
-|:---|:---|:---|
-| `gameDurationMs` | 30 min | Hard-coded maximum duration of a single match. |
-| `moveDelayMs` | 3 sec | Delay time for walking from one room to another. |
-| `hackCooldownMs` | 3 min | Hacker's global cooldown after eliminating a Developer. |
-| `standupDurationMs` | 90 sec | Base discussion time. |
-| `firewallBufferMs` | 5 min | Lockout penalty between a Firewall's task submissions. |
-| `easySpeedLimitMs` | 2 min | Timeframe for 10-easy-task speed detection. |
-| `easyCooldownMs` | 1 min | Penalty applied if speed threshold is violated. |
-
-### Sabotage Limits
-| Variable | Default | Description |
-|:---|:---|:---|
-| `TASKS_FOR_WIN` | 50 tasks | Tasks Developers must solve to reach 100%. |
-
-### Game Point Rewards
-| Act | Default Pts | Description |
-|:---|:---|:---|
-| Solve Easy Task | 1 | Basic trivia/fill-blank. |
-| Solve Medium Task | 2 | Mid-tier logic questions. |
-| Solve Hard Task | 3 | LeetCode algorithms (Hackers only). |
-| Solve Hack Puzzle | 2 | Completing a hack attempt. |
-| Eject Hacker | 2 | Awarded to every player who voted correctly. |
-| Survive | 3 | Sole-surviving Developer clutch bonus. |
-| Win | 3 | Flat bonus for every player on the winning faction. |
-
----
-
-## 6. Database (Neon PostgreSQL)
-
-Two base tables and a config mapping exist:
-* `admin_config`: Persists all point/timer values.
-* `cumulative_scores`: Tracks player scores across rounds.
-* `registered_users`: Stores access codes.
-
----
-
-## 7. Deployment
-
-> **⚠️ CRITICAL ARCHITECTURE REQUIREMENT**: 
-> This application uses a custom in-memory game state layer built directly around a long-living `Socket.io` server. 
-> Because of this, it **cannot** be deployed to Serverless platforms like Vercel or Netlify. 
-> Serverless functions spin up and rapidly spin down after finishing an HTTP response, which severs WebSockets and wipes the `gameState` object in RAM instantly.
-> 
-> You **MUST** run this project on an environment capable of persistent, long-running Node.js processes, such as:
-> - **AWS EC2**
-> - **Render Web Services**
-> - **Railway**
-> - **DigitalOcean App Platform**
-
-### Running on persistent infrastructure (like AWS EC2)
 ```bash
 npm install
 npm run build

@@ -1,26 +1,65 @@
-# Breach & Defend: Initial Scaffolding Walkthrough
+# Current Project Walkthrough
 
-The foundational structure for your "AMOLED Developer Vibes" multiplayer game has been fully initialized according to the updated architectural plan.
+This file documents the current state of the application rather than the original scaffold.
 
-## 1. Codebase Setup
-- **Framework Initialization**: Generated a fresh Next.js standard `app/` router environment configured strictly without Tailwind CSS (to adhere to your web app design constraint) by initializing using `npx create-next-app` non-interactively and structuring the source correctly inside your working directory.
-- **Dependencies**: The `lucide-react` (SVG icons) and `socket.io` libraries are installing in the background to handle icons and network connections locally.
+## Architecture
 
-## 2. Core Realtime Architecture (`server.js`)
-I've scaffolded a highly robust `server.js` file at the root. Rather than using standard Vercel serverless functions, I created a **Next.js Custom Server** wrapper that:
-- Serves the compiled Next.js output securely.
-- Initiates an instance of the `socket.io` game state server directly on the same port (3000).
-- Applies `perMessageDeflate: true` payload compression directly to `socket.io` to optimize for local area network saturation across 30 active clients.
-- Pre-built the `move_room` syntax structure mimicking the requested backend latency.
+- Next.js app-router frontend
+- Custom `server.js` process hosting both HTTP and Socket.io
+- In-memory live round state with database-backed persistence for config, registered users, and cumulative scores
+- Puzzle content sourced from `src/data/puzzles.json`
 
-## 3. The AMOLED Black UI Construction 
-Consistent with the pure hacker aesthetics:
-- Fully wiped standard CSS and structured `globals.css` using `Fira Code` (a monospaced font family), pure `#000000` blacks, harsh `#ff3333` warning reds, and `#00ff00` hacker greens (`--text-accent`).
-- Designed the primary `src/app/page.tsx` UI to incorporate a layout heavily dependent on simple DOM interactions to maintain massive low-end hardware performance. 
-- Integrated the "Mandatory 3-Second Delay vulnerability window" on the client, forcing network delays visually before processing Socket events.
+## Player flow
 
-## 4. Deployment Guides
-- Generated `DEPLOYMENT.md` containing straightforward 4-step instructions heavily prioritized towards the central localized Socket.io server deployment method for the lab network. 
-- Reflected the asset setup constraints needed on Vercel to cache the new client-side execution binaries for C, Java (CheerpJ), and Python.
+### Lobby
+- Players enter an admin-issued access code.
+- The code is persisted locally until logout.
+- Duplicate active joins for the same code are rejected.
+- Invalid codes produce an immediate visible error.
 
-The environment is cleanly organized, visually functional, and technically rigged exactly to specifications. The infrastructure is primed to begin plugging in the respective CheerpJ, JSCPP, and Pyodide Web Workers!
+### Match start
+- Admin registers users, assigns roles, and starts the round.
+- The server broadcasts a shared round end timestamp so every client renders the same remaining time.
+
+### During play
+- Developers solve global-difficulty tasks to advance progress.
+- Hackers select a target in the same room to enter the hack flow.
+- Hard tasks are gated behind an active selected target for hackers.
+- Firewalls select a living developer to protect, then solve any difficulty task to apply one protection charge.
+- The log room shows motion history and still allows active hack flow when a hacker and target are both there.
+
+### Stand-up
+- Any alive player can trigger an emergency stand-up.
+- The admin can extend discussion time in `+30s` increments.
+- Voting resolves to an ejection or no-ejection result.
+
+### Round end
+- Players see the end screen.
+- Admin sees an automatic popup with the three stop/reset actions.
+
+## Major recent changes
+
+- Replaced server-side task loading from `src/lib/tasks` with direct JSON parsing from `src/data/puzzles.json`
+- Removed Vercel-specific deployment assumptions from the runtime model
+- Switched task assignment to global `easy` / `medium` / `hard` pools
+- Added active firewall protection flow and removed firewall anomaly alerts
+- Removed hacker log wiping
+- Removed self-hack behavior
+- Removed the large player disconnect popup
+- Added logout while keeping access-code persistence until logout
+- Added duplicate-session prevention
+- Added admin kick control
+- Added synchronized match timer across tabs
+- Added shared completion visuals for tasks and hack resolution
+- Fixed FAB behavior so it closes on outside click and no longer duplicates task difficulty controls
+- Fixed the lobby hydration mismatch by loading saved code after mount instead of during SSR markup generation
+
+## Files to know
+
+- `server.js`: live game engine, sockets, round state, timers, admin actions
+- `src/app/page.tsx`: lobby and code persistence entry point
+- `src/app/game/page.tsx`: player runtime UI and socket event handling
+- `src/app/admin/page.tsx`: admin control surface
+- `src/components/CodeEditor.tsx`: task and difficulty interaction
+- `src/components/FirewallOverlay.tsx`: firewall target selection and instant movement UI
+- `src/data/puzzles.json`: canonical puzzle data source

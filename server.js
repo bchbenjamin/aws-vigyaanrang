@@ -112,7 +112,7 @@ function getFakeTaskId(playerId) {
 
 // ─── HELPERS ────────────────────────────────────────────────
 function getPlayersInRoom(room) {
-  return Object.values(gameState.players).filter(p => p.room === room && p.status !== 'disconnected');
+  return Object.values(gameState.players).filter(p => p.room === room && p.status !== 'disconnected' && p.status !== 'ejected');
 }
 
 function getAlivePlayers() {
@@ -133,6 +133,10 @@ function getRoomCounts() {
     counts[room] = getPlayersInRoom(room).length;
   });
   return counts;
+}
+
+function getConnectedPlayerCount() {
+  return Object.values(gameState.players).filter(p => p.status !== 'disconnected' && p.status !== 'ejected').length;
 }
 
 function getRoomPlayers(room) {
@@ -167,11 +171,18 @@ function clearAllActiveTasks(io) {
   Object.values(gameState.players).forEach(player => {
     if (player.status === 'disconnected') return;
     player.currentTaskId = null;
+    player.activeHackTargetId = null;
     const playerSocket = io.sockets.sockets.get(player.id);
     if (playerSocket) {
       playerSocket.emit('task_assigned', { taskId: null, hackTaskId: null });
     }
   });
+}
+
+function getGameEndTime() {
+  if (gameState.gameEndTime) return gameState.gameEndTime;
+  if (!gameState.gameStartTime) return null;
+  return gameState.gameStartTime + GAME_DURATION_MS;
 }
 
 function checkWinConditions(io) {
@@ -204,6 +215,7 @@ function checkWinConditions(io) {
 function endGame(io, winSide, reason) {
   gameState.phase = 'ended';
   gameState.winSide = winSide;
+  gameState.gameEndTime = Date.now();
   if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
   if (gameState.standupTimerId) clearTimeout(gameState.standupTimerId);
   clearAllActiveTasks(io);
@@ -318,11 +330,24 @@ app.prepare().then(async () => {
       
       if (!registeredName) {
         socket.emit('error_msg', 'Invalid access code! Get an access code from the admin.');
-        socket.emit('force_disconnect'); // Custom event for the frontend
         return;
       }
       
       const name = registeredName.substring(0, 20);
+      const activePlayerEntry = Object.entries(gameState.players).find(
+        ([id, p]) => id !== socket.id && p.name === name && p.status !== 'disconnected'
+      );
+      if (activePlayerEntry) {
+        socket.emit('error_msg', 'This access code is already active in another tab or device.');
+        return;
+      }
+      const ejectedPlayerEntry = Object.entries(gameState.players).find(
+        ([_, p]) => p.name === name && p.status === 'ejected'
+      );
+      if (ejectedPlayerEntry && gameState.phase !== 'lobby') {
+        socket.emit('error_msg', 'You were removed from the active round by the admin.');
+        return;
+      }
 
       // Check if this player was disconnected and is reconnecting
       const oldPlayerEntry = Object.entries(gameState.players).find(
@@ -365,6 +390,7 @@ app.prepare().then(async () => {
           hackCooldownUntil: 0,
           anomalyAlertUsed: false,
           currentTaskId: null,
+          activeHackTargetId: null,
           isMoving: false,
           solvedTasks: [],
           isProtected: false,
@@ -385,6 +411,7 @@ app.prepare().then(async () => {
         globalProgress: gameState.globalProgress,
         motionLog: gameState.logsCorrupted ? null : gameState.motionLog,
         logsCorrupted: gameState.logsCorrupted,
+        gameEndTime: getGameEndTime(),
       });
 
       io.to(targetRoom).emit('player_joined', { id: socket.id, name });
@@ -394,7 +421,7 @@ app.prepare().then(async () => {
         players: getRoomPlayers(targetRoom),
       });
 
-      io.emit('player_count', Object.values(gameState.players).filter(p => p.status !== 'disconnected').length);
+      io.emit('player_count', getConnectedPlayerCount());
     });
 
     // ── ADMIN START WITH ROLES ────────────────────────────
@@ -420,10 +447,12 @@ app.prepare().then(async () => {
 
       gameState.phase = 'playing';
       gameState.gameStartTime = Date.now();
+      gameState.gameEndTime = getGameEndTime();
 
       playerIds.forEach(id => {
         gameState.players[id].role = rolesMap[id] === 'hacker' ? 'hacker' : 'developer';
         gameState.players[id].status = 'alive';
+        gameState.players[id].activeHackTargetId = null;
       });
 
       playerIds.forEach(id => {
@@ -433,6 +462,7 @@ app.prepare().then(async () => {
             role: gameState.players[id].role,
             hackerCount,
             totalPlayers: playerIds.length,
+            gameEndTime: gameState.gameEndTime,
           });
         }
       });
@@ -512,6 +542,9 @@ app.prepare().then(async () => {
         player.room = targetRoom;
         socket.join(targetRoom);
         player.currentTaskId = null;
+        if (player.role === 'hacker') {
+          player.activeHackTargetId = null;
+        }
 
         addMotionEvent(targetRoom);
 
@@ -553,6 +586,11 @@ app.prepare().then(async () => {
         return;
       }
 
+      if (difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive' && !player.activeHackTargetId) {
+        socket.emit('error_msg', 'Select a target before requesting a Hard task.');
+        return;
+      }
+
       if (player.status === 'firewall' && !data?.protectTargetId) {
         socket.emit('error_msg', 'Select a developer to protect before requesting a task.');
         return;
@@ -570,7 +608,11 @@ app.prepare().then(async () => {
 
       const nextTaskId = getRandomTaskId(socket.id, difficulty);
       player.currentTaskId = nextTaskId;
-      socket.emit('task_assigned', { taskId: nextTaskId });
+      if (difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive') {
+        socket.emit('task_assigned', { hackTaskId: nextTaskId, taskId: null });
+        return;
+      }
+      socket.emit('task_assigned', { taskId: nextTaskId, hackTaskId: null });
     });
 
     // ── SUBMIT TASK ───────────────────────────────────────
@@ -603,7 +645,7 @@ app.prepare().then(async () => {
         gameState.globalProgress = Math.min(100, gameState.globalProgress + increment);
       }
 
-      if (taskDef.difficulty === 'hard' && player.role === 'hacker') {
+      if (taskDef.difficulty === 'hard' && player.role === 'hacker' && player.activeHackTargetId) {
         player.hackCooldownUntil = 0;
         socket.emit('hack_cooldown_reset', { message: 'Hard task solved! Hack cooldown eliminated.' });
       }
@@ -632,6 +674,9 @@ app.prepare().then(async () => {
       }
 
       player.currentTaskId = null;
+      if (player.status !== 'firewall') {
+        player.activeHackTargetId = null;
+      }
 
       io.emit('progress_update', {
         globalProgress: Math.round(gameState.globalProgress * 100) / 100,
@@ -664,6 +709,7 @@ app.prepare().then(async () => {
       }
       if (gameState.phase !== 'playing') return;
 
+      hacker.activeHackTargetId = targetId;
       const hackTaskId = getHackTaskId(socket.id);
       hacker.currentTaskId = hackTaskId;
       socket.emit('task_assigned', { hackTaskId });
@@ -690,6 +736,8 @@ app.prepare().then(async () => {
       if (!target || target.room !== hacker.room || target.status !== 'alive') {
         socket.emit('hack_success', { target: target ? target.name : 'Unknown', cooldownUntil: Date.now() + 15000, message: 'Target escaped. Puzzle solved, points awarded.' });
         hacker.hackCooldownUntil = Date.now() + 15000;
+        hacker.currentTaskId = null;
+        hacker.activeHackTargetId = null;
         return;
       }
 
@@ -703,6 +751,7 @@ app.prepare().then(async () => {
         io.emit('sabotage_alert', { room: hacker.room, msg: `FIREWALL ERROR: Unauthorized access blocked in ${hacker.room}` });
         hacker.hackCooldownUntil = Date.now() + 15000;
         hacker.currentTaskId = null;
+        hacker.activeHackTargetId = null;
         io.to(target.room).emit('room_update', { players: getRoomPlayers(target.room) });
         socket.emit('error_msg', `${target.name} was protected. The hack bounced.`);
         socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Hack attempt blocked by firewall protection.' });
@@ -714,6 +763,7 @@ app.prepare().then(async () => {
       target.isProtected = false;
       hacker.hackCooldownUntil = Date.now() + HACK_COOLDOWN_MS;
       hacker.currentTaskId = null;
+      hacker.activeHackTargetId = null;
 
       const victimSocket = io.sockets.sockets.get(data.targetId);
       if (victimSocket) {
@@ -792,6 +842,27 @@ app.prepare().then(async () => {
       }, newRemaining);
     });
 
+    socket.on('admin_kick_player', (targetId) => {
+      const target = gameState.players[targetId];
+      if (!target) return;
+
+      const targetRoom = target.room;
+      target._preDisconnectStatus = 'ejected';
+      target.status = 'ejected';
+      target.currentTaskId = null;
+      target.activeHackTargetId = null;
+
+      const targetSocket = io.sockets.sockets.get(targetId);
+      if (targetSocket) {
+        targetSocket.emit('error_msg', 'You were removed from the current round by the admin.');
+        targetSocket.emit('force_disconnect');
+      }
+
+      io.to(targetRoom).emit('room_update', { players: getRoomPlayers(targetRoom) });
+      io.emit('player_count', getConnectedPlayerCount());
+      checkWinConditions(io);
+    });
+
     // ── ADMIN STATE SYNC ─────────────────────────────────────
     socket.on('admin_get_state', () => {
       if (globalThis.__getGameState) {
@@ -837,7 +908,7 @@ app.prepare().then(async () => {
         io.to(room).emit('room_update', {
           players: getRoomPlayers(room),
         });
-        io.emit('player_count', Object.values(gameState.players).filter(p => p.status !== 'disconnected').length);
+        io.emit('player_count', getConnectedPlayerCount());
       }
     });
 
@@ -880,7 +951,7 @@ app.prepare().then(async () => {
     });
     return {
       phase: gameState.phase,
-      playerCount: Object.values(gameState.players).filter(p => p.status !== 'disconnected').length,
+      playerCount: getConnectedPlayerCount(),
       players: Object.values(gameState.players).map(p => ({
         id: p.id, name: p.name, room: p.room, role: p.role, status: p.status,
       })),
@@ -893,6 +964,7 @@ app.prepare().then(async () => {
       roomCounts: getRoomCounts(),
       winSide: gameState.winSide,
       gameStartTime: gameState.gameStartTime,
+      gameEndTime: getGameEndTime(),
       adminConfig: gameState.adminConfig,
       standupData: gameState.standupData,
     };
