@@ -35,7 +35,6 @@ export default function FirewallOverlay({
       zIndex: 900,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ShieldOff size={20} color="var(--text-warning)" />
           <div>
@@ -43,12 +42,11 @@ export default function FirewallOverlay({
               Firewall Mode
             </p>
             <p style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-              Observer state — no tasks, no voting, instant movement
+              Protect players, solve tasks, no voting, instant movement
             </p>
           </div>
         </div>
 
-        {/* Quick room nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Eye size={14} color="var(--text-muted)" style={{ marginRight: '8px' }} />
           {rooms.map(room => (
@@ -82,14 +80,13 @@ export default function FirewallOverlay({
             color: 'var(--text-primary)',
           }}
         >
-          <option value="">Select Developer</option>
+          <option value="">Select Player</option>
           {aliveDevelopers.map(player => (
             <option key={player.id} value={player.id}>
               {player.name}
             </option>
           ))}
         </select>
-
       </div>
     </div>
   );

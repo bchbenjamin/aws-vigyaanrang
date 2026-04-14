@@ -129,6 +129,10 @@ function getAliveDevelopers() {
   return getAlivePlayers().filter(p => p.role === 'developer');
 }
 
+function getProtectablePlayers() {
+  return getAlivePlayers();
+}
+
 function getRoomCounts() {
   const counts = {};
   ALL_ROOMS.forEach(room => {
@@ -207,7 +211,7 @@ function checkWinConditions(io) {
   const aliveDevs = getAliveDevelopers();
   const aliveHackers = getAliveHackers();
   
-  io.emit('alive_developers_update', aliveDevs.map(p => ({ id: p.id, name: p.name })));
+  io.emit('alive_developers_update', getProtectablePlayers().map(p => ({ id: p.id, name: p.name })));
   
   if (gameState.globalProgress >= 100) {
     endGame(io, 'developers', 'Project completed to 100%!');
@@ -423,7 +427,7 @@ app.prepare().then(async () => {
         phase: gameState.phase,
         you: gameState.players[socket.id],
         roomPlayers: getRoomPlayers(targetRoom),
-        aliveDevelopers: getAliveDevelopers().map(p => ({ id: p.id, name: p.name })),
+        aliveDevelopers: getProtectablePlayers().map(p => ({ id: p.id, name: p.name })),
         globalProgress: gameState.globalProgress,
         motionLog: gameState.logsCorrupted ? null : gameState.motionLog,
         logsCorrupted: gameState.logsCorrupted,
@@ -644,7 +648,7 @@ app.prepare().then(async () => {
       const taskDef = realPuzzlesDB.find(p => p.id === data.taskId);
       if (!taskDef) return;
       const protectedTarget = player.status === 'firewall' ? gameState.players[data.protectedTargetId] : null;
-      if (player.status === 'firewall' && (!protectedTarget || protectedTarget.status !== 'alive' || protectedTarget.role !== 'developer')) {
+      if (player.status === 'firewall' && (!protectedTarget || protectedTarget.status !== 'alive' || protectedTarget.status === 'firewall')) {
         socket.emit('error_msg', 'Protection target is no longer valid.');
         return;
       }

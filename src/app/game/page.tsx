@@ -661,7 +661,7 @@ export default function GamePage() {
             <div className="terminal-box" style={{ margin: '16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '16px' }}>
               <h3 style={{ fontSize: '14px', marginBottom: '8px' }}>The Breakroom</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '12px', textAlign: 'center' }}>
-                Safe zone. No tasks here. Use the ⚙ button to call an Emergency Stand-Up.
+                No coding tasks here. Players can still gather, move through, call a stand-up, and remain vulnerable to hacks.
               </p>
             </div>
           ) : (

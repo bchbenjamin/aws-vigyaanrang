@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Play, GripVertical, Check, X } from 'lucide-react';
 import {
   ALL_REAL_TASKS, ALL_HACK_TASKS,
@@ -46,6 +46,7 @@ export default function CodeEditor({
   const [activeLang, setActiveLang] = useState<Language>('python');
   const [activeDifficulty, setActiveDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Determine which task to show
   const activeTaskId = hackTaskId || taskId;
 
@@ -91,6 +92,14 @@ export default function CodeEditor({
     setIsSubmitting(false);
   }, [task?.id, activeLang, version]);
 
+  useEffect(() => {
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+      }
+    };
+  }, []);
+
   const updateAnswer = (val: string) => {
     setUserAnswer(val);
     if (!task) return;
@@ -132,6 +141,10 @@ export default function CodeEditor({
 
   const handleSubmit = useCallback(() => {
     if (!task || !version) return;
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
 
     let correct = false;
 
@@ -163,7 +176,7 @@ export default function CodeEditor({
       correct,
       msg: correct
         ? (isHackTask ? 'Hack algorithm verified. Executing...' : 'Task passed all tests.')
-        : 'Incorrect. Try again.',
+        : 'Incorrect. Loading a new question...',
     });
 
     if (correct) {
@@ -174,8 +187,17 @@ export default function CodeEditor({
         taskId: task.id,
         protectedTargetId: selectedProtectTargetId || undefined,
       });
+    } else {
+      retryTimerRef.current = setTimeout(() => {
+        setFeedback(null);
+        setUserAnswer('');
+        setDragOrder([]);
+        setFillState({});
+        setIsSubmitting(false);
+        onRequestTask(task.difficulty);
+      }, 1500);
     }
-  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId, isHackTaskActive]);
+  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId, isHackTaskActive, onRequestTask]);
 
   if (isFirewall && !selectedProtectTargetId) {
     return (
