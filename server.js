@@ -4,6 +4,7 @@
 // ============================================================
 require('dotenv').config();
 const { createServer } = require('http');
+const os = require('os');
 const next = require('next');
 const { Server } = require('socket.io');
 const { 
@@ -14,6 +15,7 @@ const {
 
 const dev = process.env.NODE_ENV !== 'production';
 const port = parseInt(process.env.PORT || '3000', 10);
+const host = process.env.HOST || '0.0.0.0';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
@@ -183,6 +185,20 @@ function getGameEndTime() {
   if (gameState.gameEndTime) return gameState.gameEndTime;
   if (!gameState.gameStartTime) return null;
   return gameState.gameStartTime + GAME_DURATION_MS;
+}
+
+function getNetworkUrls(portNumber) {
+  const interfaces = os.networkInterfaces();
+  const urls = [];
+
+  Object.values(interfaces).forEach(entries => {
+    (entries || []).forEach(entry => {
+      if (!entry || entry.internal || entry.family !== 'IPv4') return;
+      urls.push(`http://${entry.address}:${portNumber}`);
+    });
+  });
+
+  return [...new Set(urls)];
 }
 
 function checkWinConditions(io) {
@@ -970,7 +986,11 @@ app.prepare().then(async () => {
     };
   };
 
-  server.listen(port, () => {
-    console.log(`> Breach & Defend Server Ready on http://localhost:${port}`);
+  server.listen(port, host, () => {
+    console.log(`> Breach & Defend Server Ready`);
+    console.log(`> Local:   http://localhost:${port}`);
+    getNetworkUrls(port).forEach((url, index) => {
+      console.log(`> Network ${index + 1}: ${url}`);
+    });
   });
 });

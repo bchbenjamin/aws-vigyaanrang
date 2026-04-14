@@ -16,6 +16,7 @@ DATABASE_URL=postgresql://...your-neon-string...
 ADMIN_USERNAME=your-admin-username
 ADMIN_PASSWORD=your-admin-password
 PORT=3000
+HOST=0.0.0.0
 ```
 
 ## Local development
@@ -26,6 +27,7 @@ npm run dev
 ```
 
 The development command runs the custom `server.js` entrypoint, not plain `next dev`.
+It now binds to `0.0.0.0` by default and prints both the local and LAN-facing URLs on startup.
 
 ## LAN production run
 
