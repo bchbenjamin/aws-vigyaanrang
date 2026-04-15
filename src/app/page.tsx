@@ -9,12 +9,12 @@ export default function LobbyPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setCode(localStorage.getItem('playerCode') || '');
+    setCode(sessionStorage.getItem('playerCode') || '');
   }, []);
 
   const handleJoin = () => {
     if (code.trim().length < 1) return;
-    localStorage.setItem('playerCode', code.trim());
+    sessionStorage.setItem('playerCode', code.trim());
     router.push('/game');
   };
 

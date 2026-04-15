@@ -258,6 +258,11 @@ function resolveVoting(io) {
   console.log("resolveVoting called!");
   if (gameState.phase !== 'standup' || !gameState.standupData) return;
 
+  if (gameState.standupTimerId) {
+    clearTimeout(gameState.standupTimerId);
+    gameState.standupTimerId = null;
+  }
+
   const votes = gameState.standupData.votes;
   const tally = {};
 
@@ -432,6 +437,12 @@ app.prepare().then(async () => {
         motionLog: gameState.logsCorrupted ? null : gameState.motionLog,
         logsCorrupted: gameState.logsCorrupted,
         gameEndTime: getGameEndTime(),
+        standupData: gameState.phase === 'standup' && gameState.standupData ? {
+          reportedBy: gameState.standupData.reportedBy,
+          durationMs: Math.max(0, gameState.standupData.durationMs - (Date.now() - gameState.standupData.startTime)),
+          alivePlayers: getAlivePlayers().map(p => ({ id: p.id, name: p.name }))
+        } : null,
+        hasVoted: gameState.phase === 'standup' && gameState.standupData ? (gameState.standupData.votes[socket.id] !== undefined) : false
       });
 
       io.to(targetRoom).emit('player_joined', { id: socket.id, name });

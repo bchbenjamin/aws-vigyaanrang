@@ -91,7 +91,7 @@ export default function GamePage() {
 
   // ── Connect to Socket.io ────────────────────────────────
   useEffect(() => {
-    const code = localStorage.getItem('playerCode') || sessionStorage.getItem('playerCode');
+    const code = sessionStorage.getItem('playerCode');
     if (!code) {
       router.push('/');
       return;
@@ -129,6 +129,8 @@ export default function GamePage() {
       setGlobalProgress(data.globalProgress);
       if (data.motionLog) setMotionLog(data.motionLog);
       setLogsCorrupted(data.logsCorrupted);
+      if (data.standupData !== undefined) setStandupData(data.standupData);
+      if (data.hasVoted !== undefined) setHasVoted(data.hasVoted);
     });
 
     // ── GAME STARTED ──────────────────────────────────
@@ -358,7 +360,6 @@ export default function GamePage() {
   }, [hackCooldownUntil, myId]);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('playerCode');
     sessionStorage.removeItem('playerCode');
     socket?.disconnect();
     router.push('/');
@@ -414,6 +415,8 @@ export default function GamePage() {
 
   // Game ended overlay
   if (phase === 'ended' && endData) {
+    const hackers = Object.values(endData.players || {}).filter((p: any) => p.role === 'hacker');
+
     return (
       <div className="overlay">
         <div className="overlay-content" style={{ textAlign: 'center' }}>
@@ -424,9 +427,23 @@ export default function GamePage() {
           }}>
             {endData.winSide === 'developers' ? 'DEVELOPERS WIN' : 'HACKERS WIN'}
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '24px' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px' }}>
             {endData.reason}
           </p>
+
+          <div style={{ margin: '16px 0', padding: '12px', background: 'var(--bg-tertiary)', border: '1px solid var(--text-danger)', borderRadius: '4px' }}>
+            <h4 style={{ color: 'var(--text-danger)', fontSize: '11px', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Hacker Identities Revealed
+            </h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+              {hackers.map((h: any) => (
+                <span key={h.id} style={{ color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold' }}>
+                  {h.name}
+                </span>
+              ))}
+              {hackers.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No hackers found.</span>}
+            </div>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
             <button className="btn-accent" onClick={() => router.push('/')} style={{ width: '100%' }}>
