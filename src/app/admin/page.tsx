@@ -353,7 +353,7 @@ export default function AdminPage() {
                  <label style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{CONFIG_LABELS[key] || key}</label>
                  <input
                    type="number"
-                   defaultValue={val}
+                   defaultValue={val as string | number}
                    style={{ width: '100%', marginTop: '4px' }}
                    onBlur={(e) => {
                      const num = parseInt(e.target.value);

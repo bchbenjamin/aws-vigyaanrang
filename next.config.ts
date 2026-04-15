@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     "localhost",
     "127.0.0.1",
     "192.168.0.102",
+    "10.115.12.170",
     ...envAllowedOrigins,
   ],
 };
