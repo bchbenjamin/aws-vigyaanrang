@@ -298,6 +298,10 @@ export default function GamePage() {
       showAlert('danger', msg);
     });
 
+    socket.on('global_alert', (data) => {
+      showAlert(data.type, data.message);
+    });
+
     // Timer
     const timer = setInterval(() => {
       setNowMs(Date.now());

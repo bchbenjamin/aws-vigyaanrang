@@ -779,7 +779,7 @@ app.prepare().then(async () => {
 
       if (target.isProtected) {
         target.isProtected = false;
-        io.emit('sabotage_alert', { room: hacker.room, msg: `FIREWALL ERROR: Unauthorized access blocked in ${hacker.room}` });
+        io.emit('global_alert', { type: 'warning', message: `🛡️ FIREWALL EVENT: Unauthorized access completely blocked in ${hacker.room}!` });
         hacker.hackCooldownUntil = Date.now() + 15000;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;
@@ -802,6 +802,8 @@ app.prepare().then(async () => {
       }
 
       socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: `Successfully compromised ${target.name}.` });
+
+      io.emit('global_alert', { type: 'danger', message: `⚠️ BREACH WARNING: ${target.name} has been eliminated in ${target.room}!` });
 
       io.to(target.room).emit('room_update', { players: getRoomPlayers(target.room) });
 

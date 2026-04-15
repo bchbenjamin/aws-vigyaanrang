@@ -273,6 +273,15 @@ export default function CodeEditor({
       <div className="split-pane">
         {/* LEFT/TOP: Problem Description */}
         <div className="split-pane-desc">
+          {isHackTaskActive && (
+            <div style={{
+              marginBottom: '16px', padding: '12px', background: 'rgba(255, 70, 70, 0.1)',
+              borderLeft: '4px solid var(--text-danger)', color: 'var(--text-danger)',
+              fontSize: '12px', animation: 'pulse 2s infinite'
+            }}>
+              <strong>⚠️ SABOTAGE INITIATED:</strong> Solve this algorithm quickly before the firewall detects your intrusion!
+            </div>
+          )}
           <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '12px' }}>
             {task.title}
           </h3>
