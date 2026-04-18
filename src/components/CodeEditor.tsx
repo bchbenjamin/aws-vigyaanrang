@@ -30,14 +30,11 @@ function getStoredDifficulty(): 'easy' | 'medium' | 'hard' {
 
 interface CodeEditorProps {
   taskId: string | null;
-  hackTaskId?: string | null;
-  isFirewall?: boolean;
-  canRequestHard?: boolean;
+  difficultiesAllowed: ('easy' | 'medium' | 'hard')[];
   systemStatusHint?: string | null;
-  selectedProtectTargetId?: string | null;
-  selectedProtectTargetName?: string | null;
+  disabledMsg?: string | null;
   onRequestTask: (difficulty: 'easy' | 'medium' | 'hard') => void;
-  onSubmit: (result: { correct: boolean; isHackTask: boolean; taskId?: string; protectedTargetId?: string }) => void;
+  onSubmit: (result: { correct: boolean; taskId?: string }) => void;
 }
 
 function findTask(id: string | null): TaskDefinition | null {
@@ -51,12 +48,9 @@ function findTask(id: string | null): TaskDefinition | null {
 
 export default function CodeEditor({
   taskId,
-  hackTaskId,
-  isFirewall,
-  canRequestHard,
+  difficultiesAllowed,
   systemStatusHint,
-  selectedProtectTargetId,
-  selectedProtectTargetName,
+  disabledMsg,
   onRequestTask,
   onSubmit,
 }: CodeEditorProps) {
@@ -70,11 +64,8 @@ export default function CodeEditor({
   const [displayOptions, setDisplayOptions] = useState<string[]>([]);
   const [reloadPopupMessage, setReloadPopupMessage] = useState<string | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Determine which task to show
-  const activeTaskId = hackTaskId || taskId;
-
-  const task = findTask(activeTaskId || null);
-  const isHackTaskActive = Boolean(hackTaskId && task && task.id === hackTaskId);
+  
+  const task = findTask(taskId || null);
   const version = task ? task.versions[activeLang] : null;
 
   useEffect(() => {
@@ -215,19 +206,15 @@ export default function CodeEditor({
       }
     }
 
-    const isHackTask = isHackTaskActive;
-
     if (correct) {
       setFeedback({
         correct: true,
-        msg: isHackTask ? 'Submitting task...' : 'Checking solution...',
+        msg: 'Checking solution...',
       });
       setIsSubmitting(true);
       onSubmit({
         correct: true,
-        isHackTask,
         taskId: task.id,
-        protectedTargetId: selectedProtectTargetId || undefined,
       });
     } else {
       setFeedback(null);
@@ -242,14 +229,14 @@ export default function CodeEditor({
         onRequestTask(task.difficulty);
       }, 3000);
     }
-  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, selectedProtectTargetId, isHackTaskActive, onRequestTask]);
+  }, [task, version, userAnswer, dragOrder, fillState, onSubmit, onRequestTask]);
 
-  if (isFirewall && !selectedProtectTargetId) {
+  if (disabledMsg) {
     return (
       <div className="terminal-box" style={{ textAlign: 'center', padding: '48px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <h3 style={{ color: 'var(--text-warning)' }}>Protection Target Required</h3>
+        <h3 style={{ color: 'var(--text-warning)' }}>Task System Unavailable</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '8px', maxWidth: '300px' }}>
-          Select an active player in the firewall panel before requesting a task.
+          {disabledMsg}
         </p>
       </div>
     )
@@ -260,7 +247,7 @@ export default function CodeEditor({
       <div className="terminal-box" style={{ textAlign: 'center', padding: '48px 16px' }}>
         <p style={{ color: 'var(--text-muted)' }}>No active task loaded.</p>
         <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '8px' }}>
-          {isFirewall ? 'Select a target and load a task.' : 'Load a task to continue coding.'}
+          Load a task to continue coding.
         </p>
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
           <select
@@ -268,9 +255,9 @@ export default function CodeEditor({
             onChange={(e) => setActiveDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
             style={{ width: 'auto', padding: '4px 8px', fontSize: '11px', background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
           >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            {canRequestHard && <option value="hard">Hard</option>}
+            {difficultiesAllowed.map(diff => (
+               <option key={diff} value={diff}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</option>
+            ))}
           </select>
           <select
             value={activeLang}
@@ -283,7 +270,6 @@ export default function CodeEditor({
           </select>
           <button
             className="btn-accent"
-            disabled={Boolean(isFirewall && !selectedProtectTargetId)}
             onClick={() => onRequestTask(activeDifficulty)}
           >
             Load Task
@@ -323,9 +309,9 @@ export default function CodeEditor({
             }}
             style={{ width: 'auto', padding: '4px 8px', fontSize: '11px', background: 'var(--bg-primary)', border: '1px solid var(--border-primary)', color: 'var(--text-primary)' }}
           >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            {canRequestHard && <option value="hard">Hard</option>}
+            {difficultiesAllowed.map(diff => (
+               <option key={diff} value={diff}>{diff.charAt(0).toUpperCase() + diff.slice(1)}</option>
+            ))}
           </select>
 
           <select
@@ -337,12 +323,6 @@ export default function CodeEditor({
             <option value="java">Java</option>
             <option value="c">C</option>
           </select>
-
-          {isFirewall && selectedProtectTargetName && (
-            <span style={{ fontSize: '10px', color: 'var(--text-warning)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Protecting {selectedProtectTargetName}
-            </span>
-          )}
         </div>
       </div>
 

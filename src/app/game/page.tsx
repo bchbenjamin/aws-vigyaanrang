@@ -693,15 +693,12 @@ export default function GamePage() {
         <div className={styles.taskSection}>
           {canUseCodeEditor ? (
             <CodeEditor
-              taskId={taskId}
-              hackTaskId={hackTaskId}
-              isFirewall={status === 'firewall'}
-              canRequestHard={(role === 'hacker' && status === 'alive') || status === 'firewall'}
+              taskId={hackTaskId || taskId}
+              difficultiesAllowed={((role === 'hacker' && status === 'alive') || status === 'firewall') ? ['easy', 'medium', 'hard'] : ['easy', 'medium']}
               systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
                 ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
                 : null}
-              selectedProtectTargetId={selectedProtectTarget?.id || null}
-              selectedProtectTargetName={selectedProtectTarget?.name || null}
+              disabledMsg={status === 'firewall' && !selectedProtectTarget ? 'Select an active player in the firewall panel before requesting a task.' : null}
               onRequestTask={(diff) => {
                 if (diff !== 'hard') {
                   setHackTaskId(null);
@@ -710,7 +707,15 @@ export default function GamePage() {
                   socket.emit('request_task', { difficulty: diff, protectTargetId: selectedProtectTarget?.id || null });
                 }
               }}
-              onSubmit={handleTaskSubmit}
+              onSubmit={(res) => {
+                const isHackTask = Boolean(hackTaskId && res.taskId === hackTaskId);
+                handleTaskSubmit({
+                  correct: res.correct,
+                  isHackTask,
+                  taskId: res.taskId,
+                  protectedTargetId: selectedProtectTarget?.id || undefined
+                });
+              }}
             />
           ) : isInLogRoom ? (
             <div className="terminal-box" style={{ margin: '16px', flex: 1 }}>
