@@ -1,0 +1,17 @@
+
+> breach-and-defend@0.1.0 dev
+> node server.js
+
+Creating turbopack project {
+  dir: 'C:\\Users\\Benjamin B C H\\OneDrive\\Documents\\B.E\\BenjaminsPrograms\\Web Development\\Vigyaanrang-AWS',
+  testMode: true
+}
+[DB] Tables ensured.
+[DB] Loaded admin config: 11 keys
+[BOOT] Admin config loaded from DB.
+[DB] Loaded registered users: 5
+[BOOT] Registered users loaded from DB.
+> Breach & Defend Server Ready
+> Local:   http://localhost:3000
+> Network 1: http://192.168.0.102:3000
+ GET / 200 in 1023ms (next.js: 452ms, application-code: 571ms)

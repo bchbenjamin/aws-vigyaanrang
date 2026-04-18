@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import {
-  ShieldAlert, Skull, Clock, Settings,
+  ShieldAlert, Clock, Settings,
   Siren, WifiOff, Trash2,
 } from 'lucide-react';
 import CircuitMap from '@/components/CircuitMap';
@@ -51,6 +51,7 @@ export default function GamePage() {
   // ── Alerts ──────────────────────────────────────────────
   const [alertBanner, setAlertBanner] = useState<{ type: string; message: string } | null>(null);
   const [hackCooldownUntil, setHackCooldownUntil] = useState(0);
+  const [firewallNextTaskAt, setFirewallNextTaskAt] = useState(0);
 
   // ── Voting ──────────────────────────────────────────────
   const [standupData, setStandupData] = useState<{
@@ -78,6 +79,7 @@ export default function GamePage() {
   const [showStandupConfirm, setShowStandupConfirm] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [completionFx, setCompletionFx] = useState<{ message: string; tone: 'task' | 'hack' } | null>(null);
+  const [hackerRevealEndsAt, setHackerRevealEndsAt] = useState<number | null>(null);
   const fabButtonRef = useRef<HTMLButtonElement | null>(null);
   const fabPanelRef = useRef<HTMLDivElement | null>(null);
   const showAlert = useCallback((type: string, message: string) => {
@@ -123,8 +125,11 @@ export default function GamePage() {
       setStatus(data.you?.status || 'alive');
       setRoom(data.you?.room || 'Breakroom');
       setHackCooldownUntil(data.you?.hackCooldownUntil || 0);
+      setFirewallNextTaskAt(data.you?.firewallNextTaskAt || 0);
       setGameEndTime(data.gameEndTime || null);
+      setMyScore(data.score || 0);
       if (data.roomPlayers) setRoomPlayers(data.roomPlayers);
+      if (data.roomCounts) setRoomCounts(data.roomCounts);
       if (data.aliveDevelopers) setAliveDevelopers(data.aliveDevelopers);
       setGlobalProgress(data.globalProgress);
       if (data.motionLog) setMotionLog(data.motionLog);
@@ -140,6 +145,7 @@ export default function GamePage() {
       setStatus('alive');
       setProtectTargetId(null);
       setGameEndTime(data.gameEndTime || null);
+      setMyScore(data.score || 0);
     });
 
     socket.on('phase_change', (data) => setPhase(data.phase));
@@ -156,6 +162,7 @@ export default function GamePage() {
       setRoom(data.room);
       setTaskId(data.taskId || null);
       setHackTaskId(data.hackTaskId || null);
+      if (data.taskError) showAlert('warning', data.taskError);
       if (data.motionLog !== undefined) setMotionLog(data.motionLog || []);
       if (data.logsCorrupted !== undefined) setLogsCorrupted(data.logsCorrupted);
       // Auto switch to task tab on entering task room natively
@@ -179,11 +186,17 @@ export default function GamePage() {
 
     socket.on('task_result', (data) => {
       if (data?.success) {
+        if (data.firewallNextTaskAt !== undefined) {
+          setFirewallNextTaskAt(data.firewallNextTaskAt);
+        }
         triggerCompletionFx(data.message || 'Task completed.', 'task');
       }
     });
 
     socket.on('task_cooldown', (data) => {
+       if (data?.cooldownUntil !== undefined) {
+        setFirewallNextTaskAt(data.cooldownUntil);
+       }
        showAlert('warning', data.msg || `Tasks on cooldown. Please wait ${data.remaining}s.`);
     });
 
@@ -195,7 +208,11 @@ export default function GamePage() {
     socket.on('you_were_hacked', () => {
       setStatus('firewall');
       setProtectTargetId(null);
-      showAlert('danger', 'YOU HAVE BEEN HACKED. Transitioning to Firewall mode...');
+      setTaskId(null);
+      setHackTaskId(null);
+      setHackTargetId(null);
+      setFirewallNextTaskAt(0);
+      showAlert('warning', 'Firewall mode enabled.');
     });
 
     socket.on('alive_developers_update', (devs) => {
@@ -204,7 +221,7 @@ export default function GamePage() {
 
     socket.on('hack_success', (data) => {
       setHackCooldownUntil(data.cooldownUntil);
-      triggerCompletionFx(data.message || `Hack executed on ${data.target}.`, 'hack');
+      triggerCompletionFx(data.message || 'Task completed.', 'task');
     });
 
     socket.on('hack_cooldown_reset', (data) => {
@@ -255,10 +272,18 @@ export default function GamePage() {
       setPhase('playing');
       setStandupData(null);
       if (data.ejected) {
+        const wasMe = data.ejected.id === socket?.id;
+        if (wasMe) {
+          setStatus('firewall');
+          setProtectTargetId(null);
+          setFirewallNextTaskAt(0);
+        }
         const roleText = data.ejected.role === 'hacker' ? 'HACKER' : 'DEVELOPER';
         showAlert(
           data.ejected.role === 'hacker' ? 'warning' : 'danger',
-          `${data.ejected.name} was ejected. They were a ${roleText}.`
+          wasMe
+            ? 'You were voted out and converted to Firewall mode.'
+            : `${data.ejected.name} was voted out. They were a ${roleText}.`
         );
       } else {
         showAlert('warning', data.tie ? 'Vote was tied. No one was ejected.' : 'No majority. No one was ejected.');
@@ -270,7 +295,9 @@ export default function GamePage() {
       setPhase('ended');
       setHackTargetId(null);
       setProtectTargetId(null);
+      setFirewallNextTaskAt(0);
       setGameEndTime(null);
+      setHackerRevealEndsAt(data.winSide === 'developers' ? Date.now() + 3000 : null);
       setEndData({
         winSide: data.winSide,
         reason: data.reason,
@@ -290,7 +317,9 @@ export default function GamePage() {
       setHackTargetId(null);
       setProtectTargetId(null);
       setHackCooldownUntil(0);
+      setFirewallNextTaskAt(0);
       setGameEndTime(null);
+      setHackerRevealEndsAt(null);
       setEndData(null);
     });
 
@@ -356,7 +385,7 @@ export default function GamePage() {
     if (targetId === myId) return;
     if (Date.now() < hackCooldownUntil) {
       const secs = Math.ceil((hackCooldownUntil - Date.now()) / 1000);
-      showAlert('danger', `Hack on cooldown: ${secs}s remaining`);
+      showAlert('danger', `System optimization required: ${secs}s remaining`);
       return;
     }
     setHackTargetId(targetId);
@@ -420,6 +449,29 @@ export default function GamePage() {
   // Game ended overlay
   if (phase === 'ended' && endData) {
     const hackers = Object.values(endData.players || {}).filter((p: any) => p.role === 'hacker');
+    const showHackerReveal = endData.winSide === 'developers' && hackerRevealEndsAt !== null && nowMs < hackerRevealEndsAt;
+
+    if (showHackerReveal) {
+      return (
+        <div className="overlay">
+          <div className="overlay-content" style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: '18px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-accent)', marginBottom: '12px' }}>
+              Developers Win
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '20px' }}>
+              Hacker identities revealed
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+              {hackers.map((h: any) => (
+                <span key={h.id} style={{ color: 'var(--text-danger)', border: '1px solid var(--text-danger)', padding: '8px 12px', borderRadius: '999px', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                  {h.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="overlay">
@@ -434,20 +486,6 @@ export default function GamePage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px' }}>
             {endData.reason}
           </p>
-
-          <div style={{ margin: '16px 0', padding: '12px', background: 'var(--bg-tertiary)', border: '1px solid var(--text-danger)', borderRadius: '4px' }}>
-            <h4 style={{ color: 'var(--text-danger)', fontSize: '11px', textTransform: 'uppercase', marginBottom: '8px' }}>
-              Hacker Identities Revealed
-            </h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-              {hackers.map((h: any) => (
-                <span key={h.id} style={{ color: 'var(--text-primary)', fontSize: '12px', fontWeight: 'bold' }}>
-                  {h.name}
-                </span>
-              ))}
-              {hackers.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No hackers found.</span>}
-            </div>
-          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
             <button className="btn-accent" onClick={() => router.push('/')} style={{ width: '100%' }}>
@@ -466,6 +504,9 @@ export default function GamePage() {
   const isInLogRoom = room === 'The Log Room' && !isMoving;
   const selectedProtectTarget = aliveDevelopers.find(player => player.id === protectTargetId) || null;
   const canUseCodeEditor = status === 'firewall' || isInTaskRoom || !!hackTaskId;
+  const firewallCooldownSeconds = Math.max(0, Math.ceil((firewallNextTaskAt - nowMs) / 1000));
+  const timerColor = remainingGameSeconds < 30 ? 'var(--text-danger)' : remainingGameSeconds < 60 ? 'var(--text-warning)' : 'var(--text-secondary)';
+  const timerAnimation = remainingGameSeconds < 10 ? 'pulseGlow 0.25s linear infinite' : remainingGameSeconds < 30 ? 'pulseGlow 0.8s ease-in-out infinite' : 'none';
 
   return (
     <div className={styles.gameContainer}>
@@ -487,7 +528,7 @@ export default function GamePage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: completionFx.tone === 'hack' ? 'radial-gradient(circle, rgba(255,70,70,0.22), transparent 65%)' : 'radial-gradient(circle, rgba(0,255,136,0.2), transparent 65%)',
+            background: 'radial-gradient(circle, rgba(0,255,136,0.2), transparent 65%)',
           }}
         >
           <div
@@ -496,12 +537,12 @@ export default function GamePage() {
               minWidth: '280px',
               textAlign: 'center',
               padding: '24px 28px',
-              borderColor: completionFx.tone === 'hack' ? 'var(--text-danger)' : 'var(--text-accent)',
-              boxShadow: completionFx.tone === 'hack' ? '0 0 32px rgba(255,70,70,0.22)' : '0 0 32px rgba(0,255,136,0.2)',
+              borderColor: 'var(--text-accent)',
+              boxShadow: '0 0 32px rgba(0,255,136,0.2)',
             }}
           >
-            <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: completionFx.tone === 'hack' ? 'var(--text-danger)' : 'var(--text-accent)', marginBottom: '8px' }}>
-              {completionFx.tone === 'hack' ? 'Hack Executed' : 'Task Completed'}
+            <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-accent)', marginBottom: '8px' }}>
+              Task Completed
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{completionFx.message}</div>
           </div>
@@ -541,8 +582,10 @@ export default function GamePage() {
 
         <div className={styles.headerRight}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Clock size={12} color="var(--text-muted)" />
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{formatTime(remainingGameSeconds)}</span>
+            <Clock size={12} color={timerColor} />
+            <span style={{ fontSize: '11px', color: timerColor, animation: timerAnimation, fontWeight: remainingGameSeconds < 60 ? 700 : 400 }}>
+              {formatTime(remainingGameSeconds)}
+            </span>
           </div>
         </div>
       </header>
@@ -604,8 +647,7 @@ export default function GamePage() {
                   {/* Hack button — function for hackers */}
                   {role === 'hacker' && status === 'alive' && p.status === 'alive' && p.id !== myId && p.role === 'developer' && (
                     <button className={styles.hackBtn} onClick={() => handleHack(p.id)}>
-                      <Skull size={10} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                      HACK
+                      ACCESS
                     </button>
                   )}
                 </div>
@@ -653,9 +695,11 @@ export default function GamePage() {
             <CodeEditor
               taskId={taskId}
               hackTaskId={hackTaskId}
-              isHacker={role === 'hacker' && status === 'alive'}
               isFirewall={status === 'firewall'}
               canRequestHard={(role === 'hacker' && status === 'alive') || status === 'firewall'}
+              systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
+                ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
+                : null}
               selectedProtectTargetId={selectedProtectTarget?.id || null}
               selectedProtectTargetName={selectedProtectTarget?.name || null}
               onRequestTask={(diff) => {
@@ -720,6 +764,8 @@ export default function GamePage() {
           currentRoom={room}
           aliveDevelopers={aliveDevelopers}
           selectedProtectTargetId={protectTargetId}
+          firewallMode={role === 'hacker' ? 'hacker' : 'developer'}
+          cooldownSeconds={firewallCooldownSeconds}
           onSelectProtectTarget={setProtectTargetId}
           onNavigate={handleNavigate}
         />
@@ -785,10 +831,10 @@ export default function GamePage() {
               {/* Hack cooldown (Hacker only) */}
               {role === 'hacker' && status === 'alive' && (
                 <div style={{ marginBottom: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  <Skull size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                  <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                   {nowMs < hackCooldownUntil
-                    ? `Hack CD: ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
-                    : 'Hack Ready'}
+                    ? `System Sync: ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
+                    : 'System Ready'}
                 </div>
               )}
 

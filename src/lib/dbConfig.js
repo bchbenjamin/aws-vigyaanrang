@@ -33,6 +33,13 @@ async function ensureTables() {
         name TEXT NOT NULL
       )
     `;
+    await db`
+      CREATE TABLE IF NOT EXISTS live_scores (
+        player_name TEXT PRIMARY KEY,
+        current_score INTEGER DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
     initialized = true;
     console.log('[DB] Tables ensured.');
   } catch (err) {
@@ -160,6 +167,32 @@ async function removeRegisteredUser(code) {
   }
 }
 
+async function saveLiveScore(playerName, currentScore) {
+  await ensureTables();
+  const db = getSql();
+  try {
+    await db`
+      INSERT INTO live_scores (player_name, current_score, updated_at)
+      VALUES (${playerName}, ${currentScore}, NOW())
+      ON CONFLICT (player_name) DO UPDATE
+        SET current_score = ${currentScore},
+            updated_at = NOW()
+    `;
+  } catch (err) {
+    console.error('[DB] Failed to save live score:', err.message);
+  }
+}
+
+async function clearLiveScores() {
+  await ensureTables();
+  const db = getSql();
+  try {
+    await db`DELETE FROM live_scores`;
+  } catch (err) {
+    console.error('[DB] Failed to clear live scores:', err.message);
+  }
+}
+
 module.exports = {
   loadAdminConfig,
   saveAdminConfig,
@@ -169,4 +202,6 @@ module.exports = {
   loadRegisteredUsers,
   saveRegisteredUser,
   removeRegisteredUser,
+  saveLiveScore,
+  clearLiveScores,
 };

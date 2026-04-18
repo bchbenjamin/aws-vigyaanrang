@@ -7,10 +7,16 @@ import {
   Wifi, MapPin, Skull, CheckCircle, XCircle,
 } from 'lucide-react';
 
-import { GameState, PlayerInfo } from '@/lib/types';
+import { GameState } from '@/lib/types';
 
 let adminSocket: Socket | null = null;
 type StopMode = 'retain' | 'discard' | 'fresh';
+const TIMING_CONFIG_KEYS = new Set([
+  'standupDurationMs',
+  'firewallBufferMs',
+  'easySpeedLimitMs',
+  'easyCooldownMs',
+]);
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -25,8 +31,15 @@ export default function AdminPage() {
   const [adminError, setAdminError] = useState('');
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [rolesMap, setRolesMap] = useState<Record<string, string>>({});
-  const [standupDurationInput, setStandupDurationInput] = useState('90000');
+  const [standupDurationInput, setStandupDurationInput] = useState('90');
   const [showEndStopPopup, setShowEndStopPopup] = useState(false);
+  const toAdminValue = useCallback((key: string, value: string | number) => {
+    const numericValue = Number(value) || 0;
+    return TIMING_CONFIG_KEYS.has(key) ? String(Math.round(numericValue / 1000)) : String(value);
+  }, []);
+  const toServerValue = useCallback((key: string, value: number) => {
+    return TIMING_CONFIG_KEYS.has(key) ? Math.max(0, Math.round(value * 1000)) : value;
+  }, []);
 
   const CONFIG_LABELS: Record<string, string> = {
     pointsEasy: 'Points for Easy Tasks',
@@ -36,10 +49,10 @@ export default function AdminPage() {
     pointsEjectHacker: 'Points for Ejecting Hacker',
     pointsSurvive: 'Points for Win Survival',
     pointsWin: 'Base Game Win Points',
-    standupDurationMs: 'Voting Discussion (ms)',
-    firewallBufferMs: 'Firewall Task Shield Cooldown (ms)',
-    easySpeedLimitMs: 'Speedrun Threshold (ms)',
-    easyCooldownMs: 'Speedrun Penalty Cooldown (ms)'
+    standupDurationMs: 'Voting Discussion (s)',
+    firewallBufferMs: 'Firewall Task Shield Cooldown (s)',
+    easySpeedLimitMs: 'Speedrun Threshold (s)',
+    easyCooldownMs: 'Speedrun Penalty Cooldown (s)'
   };
   const [showStopMenu, setShowStopMenu] = useState(false);
 
@@ -89,7 +102,7 @@ export default function AdminPage() {
     adminSocket.on('admin_state', (data: GameState) => {
       setGameState(data);
       if (data.adminConfig?.standupDurationMs !== undefined) {
-        setStandupDurationInput(String(data.adminConfig.standupDurationMs));
+        setStandupDurationInput(toAdminValue('standupDurationMs', data.adminConfig.standupDurationMs));
       }
     });
 
@@ -110,7 +123,7 @@ export default function AdminPage() {
       adminSocket?.disconnect();
       adminSocket = null;
     };
-  }, [authenticated]);
+  }, [authenticated, toAdminValue]);
 
   useEffect(() => {
     if (gameState?.phase === 'ended') {
@@ -314,7 +327,7 @@ export default function AdminPage() {
           <div style={{ display: 'flex', gap: '12px', alignItems: 'end', flexWrap: 'wrap' }}>
             <div>
               <label style={{ display: 'block', fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                Discussion Length (ms)
+                Discussion Length (s)
               </label>
               <input
                 type="number"
@@ -328,14 +341,17 @@ export default function AdminPage() {
               onClick={() => {
                 const nextValue = parseInt(standupDurationInput, 10);
                 if (!Number.isNaN(nextValue)) {
-                  adminSocket?.emit('admin_update_config', { standupDurationMs: nextValue });
+                  adminSocket?.emit('admin_update_config', { standupDurationMs: toServerValue('standupDurationMs', nextValue) });
                 }
               }}
             >
               Apply Length
             </button>
-            <button className="btn-warning" onClick={() => adminSocket?.emit('admin_extend_standup', { amount: 30000 })}>
+            <button className="btn-warning" onClick={() => adminSocket?.emit('admin_extend_standup', { amountSeconds: 30 })}>
               +30s Discussion
+            </button>
+            <button className="btn-danger" onClick={() => adminSocket?.emit('admin_end_standup')}>
+              End Discussion
             </button>
           </div>
         </div>
@@ -353,12 +369,12 @@ export default function AdminPage() {
                  <label style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{CONFIG_LABELS[key] || key}</label>
                  <input
                    type="number"
-                   defaultValue={val as string | number}
+                   defaultValue={toAdminValue(key, val as string | number)}
                    style={{ width: '100%', marginTop: '4px' }}
                    onBlur={(e) => {
                      const num = parseInt(e.target.value);
                      if (!isNaN(num)) {
-                       adminSocket?.emit('admin_update_config', { [key]: num });
+                       adminSocket?.emit('admin_update_config', { [key]: toServerValue(key, num) });
                      }
                    }}
                  />

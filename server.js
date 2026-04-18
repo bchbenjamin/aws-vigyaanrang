@@ -10,7 +10,8 @@ const { Server } = require('socket.io');
 const { 
   loadAdminConfig, saveAdminConfig, 
   saveCumulativeScores, loadCumulativeScores, resetCumulativeScores,
-  loadRegisteredUsers, saveRegisteredUser, removeRegisteredUser 
+  loadRegisteredUsers, saveRegisteredUser, removeRegisteredUser,
+  saveLiveScore, clearLiveScores
 } = require('./src/lib/dbConfig');
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -24,6 +25,7 @@ const ALL_ROOMS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'Q
 const TASK_ROOMS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab'];
 const MOVE_DELAY_MS = 3000;
 const HACK_COOLDOWN_MS = 180000; // 3 minutes
+const HACK_NOTICE_DELAY_MS = 15000; // 15 seconds
 const STANDUP_DURATION_MS = 90000; // 90 seconds
 const GAME_DURATION_MS = 1800000; // 30 minutes
 const TASKS_FOR_WIN = 50;
@@ -48,7 +50,9 @@ function createFreshState() {
     gameStartTime: null,
     gameEndTime: null,
     winSide: null,
+    pendingHackTimers: {},
     scores: {},
+    scoreSyncQueue: {},
     adminConfig: {
       pointsEasy: 1,
       pointsMedium: 2,
@@ -85,22 +89,60 @@ function getPointsForDifficulty(difficulty) {
   return gameState.adminConfig.pointsEasy;
 }
 
+function getFirewallProtectionDurationMs() {
+  return gameState.adminConfig.firewallBufferMs;
+}
+
+function getHackerFirewallBlockDurationMs() {
+  return Math.max(1000, Math.floor(getFirewallProtectionDurationMs() / 2));
+}
+
+function createAssignedTaskHistory() {
+  return {
+    easy: [],
+    medium: [],
+    hard: [],
+  };
+}
+
 function getRandomTaskId(playerId, difficulty = 'easy') {
-  const solvedObj = playerId && gameState.players[playerId] ? gameState.players[playerId].solvedTasks || [] : [];
+  const assignedHistory = playerId && gameState.players[playerId]
+    ? gameState.players[playerId].assignedTasksByDifficulty?.[difficulty] || []
+    : [];
   let pool = realPuzzlesDB.filter(p => p.difficulty === difficulty);
-  let unsolved = pool.filter(p => !solvedObj.includes(p.id));
-  if (unsolved.length === 0) unsolved = pool;
-  if (unsolved.length === 0) return null;
-  return unsolved[Math.floor(Math.random() * unsolved.length)].id;
+  let available = pool.filter(p => !assignedHistory.includes(p.id));
+  if (available.length === 0) {
+    if (playerId && gameState.players[playerId]) {
+      gameState.players[playerId].assignedTasksByDifficulty[difficulty] = [];
+    }
+    available = pool;
+  }
+  if (available.length === 0) return null;
+  const nextTaskId = available[Math.floor(Math.random() * available.length)].id;
+  if (playerId && gameState.players[playerId]) {
+    gameState.players[playerId].assignedTasksByDifficulty[difficulty].push(nextTaskId);
+  }
+  return nextTaskId;
 }
 
 function getHackTaskId(playerId) {
-  const solvedObj = playerId && gameState.players[playerId] ? gameState.players[playerId].solvedTasks || [] : [];
   let pool = hackPuzzlesDB;
-  let unsolved = pool.filter(p => !solvedObj.includes(p.id));
-  if (unsolved.length === 0) unsolved = pool;
-  if (unsolved.length === 0) return null;
-  return unsolved[Math.floor(Math.random() * unsolved.length)].id;
+  const assignedHistory = playerId && gameState.players[playerId]
+    ? gameState.players[playerId].assignedTasksByDifficulty?.hard || []
+    : [];
+  let available = pool.filter(p => !assignedHistory.includes(p.id));
+  if (available.length === 0) {
+    if (playerId && gameState.players[playerId]) {
+      gameState.players[playerId].assignedTasksByDifficulty.hard = [];
+    }
+    available = pool;
+  }
+  if (available.length === 0) return null;
+  const nextTaskId = available[Math.floor(Math.random() * available.length)].id;
+  if (playerId && gameState.players[playerId]) {
+    gameState.players[playerId].assignedTasksByDifficulty.hard.push(nextTaskId);
+  }
+  return nextTaskId;
 }
 
 function getFakeTaskId(playerId) {
@@ -114,10 +156,12 @@ function getFakeTaskId(playerId) {
 
 // ─── HELPERS ────────────────────────────────────────────────
 function getPlayersInRoom(room) {
+  syncTransientPlayerState();
   return Object.values(gameState.players).filter(p => p.room === room && p.status !== 'disconnected' && p.status !== 'ejected');
 }
 
 function getAlivePlayers() {
+  syncTransientPlayerState();
   return Object.values(gameState.players).filter(p => p.status === 'alive');
 }
 
@@ -130,6 +174,7 @@ function getAliveDevelopers() {
 }
 
 function getProtectablePlayers() {
+  syncTransientPlayerState();
   return getAlivePlayers();
 }
 
@@ -146,6 +191,7 @@ function getConnectedPlayerCount() {
 }
 
 function getRoomPlayers(room) {
+  syncTransientPlayerState();
   return getPlayersInRoom(room).map(p => ({
     id: p.id,
     name: p.name,
@@ -171,6 +217,131 @@ function addMotionEvent(room) {
 function addScore(playerId, points) {
   if (!gameState.scores[playerId]) gameState.scores[playerId] = 0;
   gameState.scores[playerId] += points;
+  const player = gameState.players[playerId];
+  if (player?.name) {
+    saveLiveScore(player.name, gameState.scores[playerId]).catch(err => {
+      console.error('[DB] Failed to persist live score:', err.message);
+    });
+  }
+}
+
+function syncTransientPlayerState() {
+  const now = Date.now();
+  Object.values(gameState.players).forEach(player => {
+    if (!player) return;
+    if (player.isProtected && player.protectionExpiresAt && player.protectionExpiresAt <= now) {
+      player.isProtected = false;
+      player.protectionExpiresAt = 0;
+    }
+    if (player.protectionBlockedUntil && player.protectionBlockedUntil <= now) {
+      player.protectionBlockedUntil = 0;
+    }
+  });
+}
+
+function clearPendingHackTimer(playerId) {
+  const timer = gameState.pendingHackTimers[playerId];
+  if (timer) {
+    clearTimeout(timer);
+    delete gameState.pendingHackTimers[playerId];
+  }
+}
+
+function clearAllPendingHackTimers() {
+  Object.keys(gameState.pendingHackTimers).forEach(clearPendingHackTimer);
+}
+
+function convertPlayerToFirewall(player) {
+  if (!player) return;
+  clearPendingHackTimer(player.id);
+  player.pendingHack = null;
+  player.status = 'firewall';
+  player.currentTaskId = null;
+  player.activeHackTargetId = null;
+  player.isProtected = false;
+  player.protectionExpiresAt = 0;
+}
+
+function emitHackNotice(io) {
+  io.emit('global_alert', { type: 'warning', message: 'Someone got hacked.' });
+}
+
+function resolvePendingHack(io, targetId, options = {}) {
+  const target = gameState.players[targetId];
+  if (!target || !target.pendingHack) return false;
+
+  clearPendingHackTimer(targetId);
+
+  if (target.status === 'disconnected') {
+    target.pendingHack = null;
+    target._preDisconnectStatus = 'firewall';
+  } else {
+    convertPlayerToFirewall(target);
+    const victimSocket = io.sockets.sockets.get(targetId);
+    if (victimSocket) {
+      victimSocket.emit('you_were_hacked');
+    }
+  }
+
+  if (options.announce !== false) {
+    emitHackNotice(io);
+  }
+
+  io.to(target.room).emit('room_update', { players: getRoomPlayers(target.room) });
+  io.emit('room_counts', getRoomCounts());
+  io.emit('alive_developers_update', getProtectablePlayers().map(p => ({ id: p.id, name: p.name })));
+
+  return checkWinConditions(io);
+}
+
+function resolveAllPendingHacks(io, options = {}) {
+  const pendingIds = Object.values(gameState.players)
+    .filter(player => player?.pendingHack)
+    .map(player => player.id);
+
+  pendingIds.forEach(playerId => {
+    resolvePendingHack(io, playerId, options);
+  });
+}
+
+function schedulePendingHackReveal(io, targetId, delayMs = HACK_NOTICE_DELAY_MS) {
+  clearPendingHackTimer(targetId);
+  gameState.pendingHackTimers[targetId] = setTimeout(() => {
+    resolvePendingHack(io, targetId);
+  }, delayMs);
+}
+
+function getPreferredDifficulty(player, requestedDifficulty) {
+  const difficulty = requestedDifficulty || player?.preferredDifficulty || 'easy';
+  if (!player) return 'easy';
+  if (player.status === 'firewall') return difficulty;
+  if (player.role === 'developer' && difficulty === 'hard') return 'medium';
+  if (player.role === 'hacker' && difficulty === 'hard' && !player.activeHackTargetId) return 'medium';
+  return difficulty;
+}
+
+function getEligibleTaskRooms(player) {
+  if (!player) return TASK_ROOMS;
+  const visitedRooms = player.visitedTaskRooms || [];
+  let unseenRooms = TASK_ROOMS.filter(room => !visitedRooms.includes(room));
+  if (unseenRooms.length === 0) {
+    player.visitedTaskRooms = [];
+    unseenRooms = [...TASK_ROOMS];
+  }
+  return unseenRooms;
+}
+
+function canAssignTaskInCurrentRoom(player) {
+  if (!player) return false;
+  if (!TASK_ROOMS.includes(player.room)) return false;
+  if (player.lastTaskRoom && player.lastTaskRoom === player.room) return false;
+  const eligibleRooms = getEligibleTaskRooms(player);
+  return eligibleRooms.includes(player.room);
+}
+
+function getTaskRoomGuidance(player) {
+  if (!player) return TASK_ROOMS;
+  return getEligibleTaskRooms(player).filter(room => room !== player.lastTaskRoom);
 }
 
 function clearAllActiveTasks(io) {
@@ -238,6 +409,7 @@ function endGame(io, winSide, reason) {
   gameState.gameEndTime = Date.now();
   if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
   if (gameState.standupTimerId) clearTimeout(gameState.standupTimerId);
+  clearAllPendingHackTimers();
   clearAllActiveTasks(io);
 
   Object.values(gameState.players).forEach(p => {
@@ -290,7 +462,9 @@ function resolveVoting(io) {
   let ejectedPlayer = null;
   if (ejectedId && gameState.players[ejectedId]) {
     ejectedPlayer = gameState.players[ejectedId];
-    ejectedPlayer.status = 'ejected';
+    convertPlayerToFirewall(ejectedPlayer);
+    ejectedPlayer.protectionBlockedUntil = 0;
+    ejectedPlayer.firewallNextTaskAt = 0;
 
     if (ejectedPlayer.role === 'hacker') {
       Object.entries(votes).forEach(([voterId, targetId]) => {
@@ -308,8 +482,16 @@ function resolveVoting(io) {
     tally,
   });
 
+  Object.keys(gameState.scores).forEach(playerId => {
+    const playerSocket = io.sockets.sockets.get(playerId);
+    if (playerSocket) {
+      playerSocket.emit('your_score', { score: gameState.scores[playerId] || 0 });
+    }
+  });
+
   io.to('Breakroom').emit('room_update', { players: getRoomPlayers('Breakroom') });
   io.emit('room_counts', getRoomCounts());
+  io.emit('alive_developers_update', getProtectablePlayers().map(p => ({ id: p.id, name: p.name })));
   checkWinConditions(io);
 }
 
@@ -390,9 +572,20 @@ app.prepare().then(async () => {
           id: socket.id, 
           status: restoredStatus,
           isMoving: false,
+          assignedTasksByDifficulty: oldP.assignedTasksByDifficulty || createAssignedTaskHistory(),
+          visitedTaskRooms: oldP.visitedTaskRooms || [],
+          lastTaskRoom: oldP.lastTaskRoom || null,
+          preferredDifficulty: oldP.preferredDifficulty || 'easy',
         };
         gameState.scores[socket.id] = gameState.scores[oldId] || 0;
         targetRoom = oldP.room;
+
+        if (oldP.pendingHack) {
+          const remainingRevealMs = Math.max(0, oldP.pendingHack.revealAt - Date.now());
+          clearPendingHackTimer(oldId);
+          gameState.players[socket.id].pendingHack = oldP.pendingHack;
+          schedulePendingHackReveal(io, socket.id, remainingRevealMs);
+        }
 
         // Clean up the old, disconnected ghost record
         delete gameState.players[oldId];
@@ -418,10 +611,17 @@ app.prepare().then(async () => {
           activeHackTargetId: null,
           isMoving: false,
           solvedTasks: [],
+          assignedTasksByDifficulty: createAssignedTaskHistory(),
+          visitedTaskRooms: [],
+          lastTaskRoom: null,
+          preferredDifficulty: 'easy',
           isProtected: false,
+          protectionExpiresAt: 0,
+          protectionBlockedUntil: 0,
           firewallNextTaskAt: 0,
           easyCooldownEndsAt: 0,
           recentEasyTimes: [],
+          pendingHack: null,
         };
         gameState.scores[socket.id] = 0;
       }
@@ -437,6 +637,8 @@ app.prepare().then(async () => {
         motionLog: gameState.logsCorrupted ? null : gameState.motionLog,
         logsCorrupted: gameState.logsCorrupted,
         gameEndTime: getGameEndTime(),
+        score: gameState.scores[socket.id] || 0,
+        roomCounts: getRoomCounts(),
         standupData: gameState.phase === 'standup' && gameState.standupData ? {
           reportedBy: gameState.standupData.reportedBy,
           durationMs: Math.max(0, gameState.standupData.durationMs - (Date.now() - gameState.standupData.startTime)),
@@ -479,11 +681,23 @@ app.prepare().then(async () => {
       gameState.phase = 'playing';
       gameState.gameStartTime = Date.now();
       gameState.gameEndTime = getGameEndTime();
+      clearLiveScores().catch(err => console.error('[DB] Failed to clear live scores:', err.message));
 
       playerIds.forEach(id => {
         gameState.players[id].role = rolesMap[id] === 'hacker' ? 'hacker' : 'developer';
         gameState.players[id].status = 'alive';
         gameState.players[id].activeHackTargetId = null;
+        gameState.players[id].currentTaskId = null;
+        gameState.players[id].assignedTasksByDifficulty = createAssignedTaskHistory();
+        gameState.players[id].visitedTaskRooms = [];
+        gameState.players[id].lastTaskRoom = null;
+        gameState.players[id].preferredDifficulty = 'easy';
+        gameState.players[id].isProtected = false;
+        gameState.players[id].protectionExpiresAt = 0;
+        gameState.players[id].protectionBlockedUntil = 0;
+        gameState.players[id].firewallNextTaskAt = 0;
+        gameState.players[id].pendingHack = null;
+        gameState.scores[id] = 0;
       });
 
       playerIds.forEach(id => {
@@ -494,6 +708,7 @@ app.prepare().then(async () => {
             hackerCount,
             totalPlayers: playerIds.length,
             gameEndTime: gameState.gameEndTime,
+            score: gameState.scores[id] || 0,
           });
         }
       });
@@ -504,6 +719,11 @@ app.prepare().then(async () => {
         } else {
           endGame(io, 'hackers', 'Time expired — Hackers prevented project completion!');
         }
+      }, GAME_DURATION_MS);
+
+      clearTimeout(gameState.gameTimer);
+      gameState.gameTimer = setTimeout(() => {
+        endGame(io, 'developers', 'Time expired. Hackers failed to take the servers down.');
       }, GAME_DURATION_MS);
 
       io.emit('phase_change', { phase: 'playing' });
@@ -517,12 +737,14 @@ app.prepare().then(async () => {
       if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
       if (gameState.logsCorruptedTimer) clearTimeout(gameState.logsCorruptedTimer);
       if (gameState.standupTimerId) clearTimeout(gameState.standupTimerId);
+      clearAllPendingHackTimers();
 
       if (stopMode === 'retain') {
         // Save this round's scores to cumulative DB
         await saveCumulativeScores(gameState.scores, gameState.players);
         const oldUsers = gameState.registeredUsers;
         const oldScores = { ...gameState.scores };
+        await clearLiveScores();
         // Build a name->score map for the scoreboard
         const nameScores = {};
         Object.values(gameState.players).forEach(p => {
@@ -536,6 +758,7 @@ app.prepare().then(async () => {
       } else if (stopMode === 'discard') {
         // Don't save points, keep users
         const oldUsers = gameState.registeredUsers;
+        await clearLiveScores();
         gameState = createFreshState();
         gameState.registeredUsers = oldUsers;
         globalThis.__gameState = gameState;
@@ -543,6 +766,7 @@ app.prepare().then(async () => {
       } else {
         // 'fresh' — full nuke
         await resetCumulativeScores();
+        await clearLiveScores();
         gameState = createFreshState();
         globalThis.__gameState = gameState;
         io.emit('force_disconnect');
@@ -592,8 +816,12 @@ app.prepare().then(async () => {
           roomData.motionLog = gameState.logsCorrupted ? null : gameState.motionLog;
           roomData.logsCorrupted = gameState.logsCorrupted;
         } else if (TASK_ROOMS.includes(targetRoom)) {
-          if (player.status === 'alive') {
-            roomData.taskId = getRandomTaskId(socket.id, player.role === 'hacker' ? 'medium' : 'easy');
+          if (player.status === 'alive' && canAssignTaskInCurrentRoom(player)) {
+            const preferredDifficulty = getPreferredDifficulty(player);
+            roomData.taskId = getRandomTaskId(socket.id, preferredDifficulty);
+            player.currentTaskId = roomData.taskId;
+          } else if (player.status === 'alive') {
+            roomData.taskError = 'Move through a different task room before solving another task here.';
           }
         }
         socket.emit('entered_room', roomData);
@@ -604,40 +832,55 @@ app.prepare().then(async () => {
 
     // ── REQUEST TASK ──────────────────────────────────────
     socket.on('request_task', (data) => {
-      const difficulty = data?.difficulty || 'easy';
+      const requestedDifficulty = data?.difficulty || 'easy';
       const player = gameState.players[socket.id];
       if (!player || gameState.phase !== 'playing') return;
       if (player.status === 'ejected' || player.status === 'disconnected') return;
+      syncTransientPlayerState();
       
       // Firewalls can solve from anywhere, devs/hackers need to be in TASK_ROOMS
       if (player.status !== 'firewall' && !TASK_ROOMS.includes(player.room)) return;
 
-      if (difficulty === 'hard' && player.role === 'developer' && player.status === 'alive') {
+      if (player.status === 'alive' && requestedDifficulty !== 'hard' && !canAssignTaskInCurrentRoom(player)) {
+        const nextRooms = getTaskRoomGuidance(player);
+        socket.emit('error_msg', `Move to a different task room next: ${nextRooms.join(', ')}`);
+        return;
+      }
+
+      if (requestedDifficulty === 'hard' && player.role === 'developer' && player.status === 'alive') {
         socket.emit('error_msg', 'Developers cannot access Hard tasks.');
         return;
       }
 
-      if (difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive' && !player.activeHackTargetId) {
+      if (requestedDifficulty === 'hard' && player.role === 'hacker' && player.status === 'alive' && !player.activeHackTargetId) {
         socket.emit('error_msg', 'Select a target before requesting a Hard task.');
         return;
       }
 
       if (player.status === 'firewall' && !data?.protectTargetId) {
-        socket.emit('error_msg', 'Select a developer to protect before requesting a task.');
+        socket.emit('error_msg', 'Select a live player before requesting a task.');
         return;
       }
 
       if (player.status === 'firewall' && player.firewallNextTaskAt > Date.now()) {
-         socket.emit('task_cooldown', { remaining: Math.ceil((player.firewallNextTaskAt - Date.now()) / 1000) });
+         socket.emit('task_cooldown', {
+           remaining: Math.ceil((player.firewallNextTaskAt - Date.now()) / 1000),
+           cooldownUntil: player.firewallNextTaskAt,
+         });
          return;
       }
 
-      if (difficulty === 'easy' && player.easyCooldownEndsAt > Date.now()) {
+      if (requestedDifficulty === 'easy' && player.easyCooldownEndsAt > Date.now()) {
          socket.emit('task_cooldown', { remaining: Math.ceil((player.easyCooldownEndsAt - Date.now()) / 1000), msg: 'Solving too fast! Easy tasks on cooldown.' });
          return;
       }
 
-      const nextTaskId = getRandomTaskId(socket.id, difficulty);
+      const difficulty = getPreferredDifficulty(player, requestedDifficulty);
+      player.preferredDifficulty = difficulty;
+
+      const nextTaskId = difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive'
+        ? getHackTaskId(socket.id)
+        : getRandomTaskId(socket.id, difficulty);
       player.currentTaskId = nextTaskId;
       if (difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive') {
         socket.emit('task_assigned', { hackTaskId: nextTaskId, taskId: null });
@@ -659,35 +902,68 @@ app.prepare().then(async () => {
       const taskDef = realPuzzlesDB.find(p => p.id === data.taskId);
       if (!taskDef) return;
       const protectedTarget = player.status === 'firewall' ? gameState.players[data.protectedTargetId] : null;
+      syncTransientPlayerState();
       if (player.status === 'firewall' && (!protectedTarget || protectedTarget.status !== 'alive' || protectedTarget.status === 'firewall')) {
-        socket.emit('error_msg', 'Protection target is no longer valid.');
+        socket.emit('error_msg', 'Selected target is no longer valid.');
+        return;
+      }
+      if (player.status === 'firewall' && player.role !== 'hacker' && protectedTarget.protectionBlockedUntil > Date.now()) {
+        socket.emit('error_msg', 'That player cannot be protected yet.');
+        player.currentTaskId = null;
+        socket.emit('task_assigned', { taskId: null, hackTaskId: null });
         return;
       }
 
-      gameState.scores[socket.id] = (gameState.scores[socket.id] || 0) + getPointsForDifficulty(taskDef.difficulty);
+      addScore(socket.id, getPointsForDifficulty(taskDef.difficulty));
       
       if (player.solvedTasks) {
          player.solvedTasks.push(data.taskId);
       }
 
       gameState.totalTasksSolved += 1;
-      if (player.role === 'developer' || player.status === 'firewall') {
+      if (player.role === 'developer' && player.status === 'alive') {
         const increment = (1 / TASKS_FOR_WIN) * 100;
         gameState.globalProgress = Math.min(100, gameState.globalProgress + increment);
       }
 
       if (taskDef.difficulty === 'hard' && player.role === 'hacker' && player.activeHackTargetId) {
         player.hackCooldownUntil = 0;
-        socket.emit('hack_cooldown_reset', { message: 'Hard task solved! Hack cooldown eliminated.' });
+        socket.emit('hack_cooldown_reset', { message: 'System optimization complete. Special action re-enabled.' });
       }
 
       if (player.status === 'firewall') {
-        protectedTarget.isProtected = true;
         player.firewallNextTaskAt = Date.now() + gameState.adminConfig.firewallBufferMs;
-        socket.emit('task_result', { success: true, message: `${protectedTarget.name} is now protected.` });
-        io.to(protectedTarget.room).emit('room_update', { players: getRoomPlayers(protectedTarget.room) });
+
+        if (player.role === 'hacker') {
+          if (protectedTarget.isProtected) {
+            protectedTarget.isProtected = false;
+            protectedTarget.protectionExpiresAt = 0;
+          } else {
+            protectedTarget.protectionBlockedUntil = Math.max(
+              protectedTarget.protectionBlockedUntil || 0,
+              Date.now() + getHackerFirewallBlockDurationMs()
+            );
+          }
+        } else {
+          protectedTarget.isProtected = true;
+          protectedTarget.protectionExpiresAt = Date.now() + getFirewallProtectionDurationMs();
+          protectedTarget.protectionBlockedUntil = 0;
+        }
+
+        socket.emit('task_result', {
+          success: true,
+          message: 'Task completed.',
+          firewallNextTaskAt: player.firewallNextTaskAt,
+        });
       } else {
         socket.emit('task_result', { success: true, message: 'Task completed.', isHackTask: false });
+      }
+
+      if (TASK_ROOMS.includes(player.room)) {
+        player.lastTaskRoom = player.room;
+        if (!player.visitedTaskRooms.includes(player.room)) {
+          player.visitedTaskRooms.push(player.room);
+        }
       }
 
       if (taskDef.difficulty === 'easy') {
@@ -725,17 +1001,19 @@ app.prepare().then(async () => {
       const hacker = gameState.players[socket.id];
       const target = gameState.players[targetId];
       if (!hacker || !target) return;
+      syncTransientPlayerState();
       if (hacker.role !== 'hacker' || hacker.status !== 'alive') return;
       if (target.id === socket.id) {
-        socket.emit('error_msg', 'You cannot hack yourself.');
+        socket.emit('error_msg', 'You cannot target yourself.');
         return;
       }
       if (target.status !== 'alive') return;
+      if (target.pendingHack) return;
       if (target.role === 'hacker') return;
       if (hacker.room !== target.room) return;
       if (Date.now() < hacker.hackCooldownUntil) {
         const remaining = Math.ceil((hacker.hackCooldownUntil - Date.now()) / 1000);
-        socket.emit('error_msg', `Hack on cooldown. ${remaining}s remaining.`);
+        socket.emit('error_msg', `System optimization required. ${remaining}s remaining.`);
         return;
       }
       if (gameState.phase !== 'playing') return;
@@ -750,22 +1028,24 @@ app.prepare().then(async () => {
       const hacker = gameState.players[socket.id];
       const target = gameState.players[data.targetId];
       if (!hacker || hacker.role !== 'hacker' || hacker.status !== 'alive') return;
+      syncTransientPlayerState();
       if (target && target.id === socket.id) {
-        socket.emit('error_msg', 'You cannot hack yourself.');
+        socket.emit('error_msg', 'You cannot target yourself.');
         return;
       }
+      if (target?.pendingHack) return;
 
       // Give points for solving the hack puzzle
       const taskDef = hackPuzzlesDB.find(p => p.id === data.taskId);
       const pts = taskDef ? getPointsForDifficulty(taskDef.difficulty) : gameState.adminConfig.pointsSabotage;
-      gameState.scores[socket.id] = (gameState.scores[socket.id] || 0) + pts;
+      addScore(socket.id, pts);
       socket.emit('your_score', { score: gameState.scores[socket.id] });
 
       if (hacker.solvedTasks && taskDef) hacker.solvedTasks.push(data.taskId);
 
       // Check if target is still in the room
       if (!target || target.room !== hacker.room || target.status !== 'alive') {
-        socket.emit('hack_success', { target: target ? target.name : 'Unknown', cooldownUntil: Date.now() + 15000, message: 'Target escaped. Puzzle solved, points awarded.' });
+        socket.emit('hack_success', { target: target ? target.name : 'Unknown', cooldownUntil: Date.now() + 15000, message: 'Target escaped. Challenge solved, points awarded.' });
         hacker.hackCooldownUntil = Date.now() + 15000;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;
@@ -773,41 +1053,33 @@ app.prepare().then(async () => {
       }
 
       if (target.role === 'hacker') {
-        socket.emit('error_msg', 'Hackers cannot hack hackers.');
+        socket.emit('error_msg', 'Invalid target selection.');
         return;
       }
 
       if (target.isProtected) {
-        target.isProtected = false;
-        io.emit('global_alert', { type: 'warning', message: `🛡️ FIREWALL EVENT: Unauthorized access completely blocked in ${hacker.room}!` });
         hacker.hackCooldownUntil = Date.now() + 15000;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;
-        io.to(target.room).emit('room_update', { players: getRoomPlayers(target.room) });
-        socket.emit('error_msg', `${target.name} was protected. The hack bounced.`);
-        socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Hack attempt blocked by firewall protection.' });
+        socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Task completed.' });
         return;
       }
 
-      target.status = 'firewall';
+      if (target.pendingHack) return;
+
+      target.pendingHack = {
+        hackerId: socket.id,
+        revealAt: Date.now() + HACK_NOTICE_DELAY_MS,
+      };
       target.anomalyAlertUsed = false;
       target.isProtected = false;
+      target.protectionExpiresAt = 0;
       hacker.hackCooldownUntil = Date.now() + HACK_COOLDOWN_MS;
       hacker.currentTaskId = null;
       hacker.activeHackTargetId = null;
+      schedulePendingHackReveal(io, target.id);
 
-      const victimSocket = io.sockets.sockets.get(data.targetId);
-      if (victimSocket) {
-        victimSocket.emit('you_were_hacked', { message: 'You have been eliminated. Transitioning to Firewall mode...' });
-      }
-
-      socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: `Successfully compromised ${target.name}.` });
-
-      io.emit('global_alert', { type: 'danger', message: `⚠️ BREACH WARNING: ${target.name} has been eliminated in ${target.room}!` });
-
-      io.to(target.room).emit('room_update', { players: getRoomPlayers(target.room) });
-
-      checkWinConditions(io);
+      socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Task completed.' });
     });
 
 
@@ -819,6 +1091,10 @@ app.prepare().then(async () => {
     socket.on('call_standup', () => {
       const player = gameState.players[socket.id];
       if (!player || player.status !== 'alive') return;
+      if (gameState.phase !== 'playing') return;
+      if (player.pendingHack) return;
+
+      resolveAllPendingHacks(io, { announce: false });
       if (gameState.phase !== 'playing') return;
 
       gameState.phase = 'standup';
@@ -860,7 +1136,8 @@ app.prepare().then(async () => {
       if (gameState.phase !== 'standup' || !gameState.standupData) return;
       if (gameState.standupTimerId) clearTimeout(gameState.standupTimerId);
       
-      const extraMs = Math.max(0, Number(data?.amount) || 0);
+      const extraSeconds = Math.max(0, Number(data?.amountSeconds) || 0);
+      const extraMs = extraSeconds * 1000;
       const elapsed = Date.now() - gameState.standupData.startTime;
       const currentRemaining = Math.max(0, gameState.standupData.durationMs - elapsed);
       const newRemaining = currentRemaining + extraMs;
@@ -875,11 +1152,18 @@ app.prepare().then(async () => {
       }, newRemaining);
     });
 
+    socket.on('admin_end_standup', () => {
+      if (gameState.phase !== 'standup' || !gameState.standupData) return;
+      resolveVoting(io);
+    });
+
     socket.on('admin_kick_player', (targetId) => {
       const target = gameState.players[targetId];
       if (!target) return;
 
       const targetRoom = target.room;
+      clearPendingHackTimer(targetId);
+      target.pendingHack = null;
       target._preDisconnectStatus = 'ejected';
       target.status = 'ejected';
       target.currentTaskId = null;
@@ -950,7 +1234,9 @@ app.prepare().then(async () => {
       if (gameState.gameTimer) clearTimeout(gameState.gameTimer);
       if (gameState.logsCorruptedTimer) clearTimeout(gameState.logsCorruptedTimer);
       if (gameState.standupTimerId) clearTimeout(gameState.standupTimerId);
+      clearAllPendingHackTimers();
       await resetCumulativeScores();
+      await clearLiveScores();
       gameState = createFreshState();
       globalThis.__gameState = gameState;
       io.emit('force_disconnect');
@@ -1002,6 +1288,16 @@ app.prepare().then(async () => {
       standupData: gameState.standupData,
     };
   };
+
+  server.on('error', (error) => {
+    if (error && error.code === 'EADDRINUSE') {
+      console.error(`> Port ${port} is already in use on ${host}.`);
+      console.error('> Stop the existing dev/server process or start with a different PORT value.');
+      process.exit(1);
+    }
+    console.error('> Server failed to start:', error);
+    process.exit(1);
+  });
 
   server.listen(port, host, () => {
     console.log(`> Breach & Defend Server Ready`);

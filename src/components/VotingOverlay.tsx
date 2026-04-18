@@ -33,6 +33,9 @@ export default function VotingOverlay({ reportedBy, durationMs, alivePlayers, on
     if (selected) onVote(selected);
   };
 
+  const timerColor = timeLeft < 30 ? 'var(--text-danger)' : timeLeft < 60 ? 'var(--text-warning)' : 'var(--text-info)';
+  const timerAnimation = timeLeft < 10 ? 'pulseGlow 0.25s linear infinite' : timeLeft < 30 ? 'pulseGlow 0.8s ease-in-out infinite' : 'none';
+
   return (
     <div className="overlay">
       <div className="overlay-content">
@@ -52,11 +55,11 @@ export default function VotingOverlay({ reportedBy, durationMs, alivePlayers, on
         {/* Timer */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px',
-          padding: '8px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)',
+          padding: '8px 12px', background: 'var(--bg-tertiary)', border: `1px solid ${timerColor}`,
           borderRadius: '4px',
         }}>
-          <Clock size={14} color="var(--text-warning)" />
-          <span style={{ color: 'var(--text-warning)', fontSize: '12px' }}>
+          <Clock size={14} color={timerColor} />
+          <span style={{ color: timerColor, fontSize: '12px', animation: timerAnimation, fontWeight: timeLeft < 60 ? 700 : 400 }}>
             Debate time remaining: {timeLeft}s
           </span>
         </div>

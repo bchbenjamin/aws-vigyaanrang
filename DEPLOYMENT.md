@@ -4,6 +4,9 @@
 
 This project is built around a long-lived custom `server.js` process that owns both Next.js and Socket.io state. The supported target is a persistent Node.js host on a local network or LAN-accessible machine.
 
+The browser clients never talk to the database directly.
+All persistence stays server-side through `server.js` and the dynamic admin route handlers under `src/app/api/admin/*`.
+
 Unsupported assumption:
 - Vercel-style serverless deployment for the live game loop
 
@@ -44,6 +47,14 @@ npm run build
 ```
 
 ### 3. Start the server
+
+Cross-platform npm command:
+
+```bash
+npm start
+```
+
+Direct shell equivalents if needed:
 
 Windows PowerShell:
 
@@ -101,6 +112,9 @@ http://192.168.1.50:3000/admin
 - Duplicate live joins for the same access code are blocked.
 - Invalid access codes are rejected with immediate client feedback.
 - The match timer is server-synchronized across tabs.
+- Successful hacks use a hidden `15s` buffer before the victim converts to a firewall.
+- If a stand-up begins during that hidden buffer, the pending victim converts immediately before voting.
+- Firewall cooldown is visualized on the player device and configured from the admin panel in `seconds`.
 - Admins can extend stand-up time and kick players from the active round.
 - End-of-round admin handling uses the three stop modes already exposed in the UI.
 
@@ -123,3 +137,11 @@ The lobby now reads saved access codes after mount, so server and client markup 
 ### Dev server does not stop on its own
 
 `npm run dev` keeps the custom server running until you terminate it. Stop it manually with `Ctrl+C` or by ending the spawned `node` process.
+
+### `npm start` says `EADDRINUSE`
+
+That means port `3000` is already occupied, usually by a still-running `npm run dev` session.
+
+Fix either by:
+- stopping the old Node process, or
+- setting a different port in `.env`, for example `PORT=3001`

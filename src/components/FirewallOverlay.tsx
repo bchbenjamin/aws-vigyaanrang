@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Eye, ShieldOff } from 'lucide-react';
 
 interface FirewallOverlayProps {
@@ -8,6 +8,8 @@ interface FirewallOverlayProps {
   currentRoom: string;
   aliveDevelopers: { id: string; name: string }[];
   selectedProtectTargetId: string | null;
+  firewallMode: 'developer' | 'hacker';
+  cooldownSeconds: number;
   onSelectProtectTarget: (targetId: string) => void;
   onNavigate: (room: string) => void;
 }
@@ -17,15 +19,11 @@ export default function FirewallOverlay({
   currentRoom,
   aliveDevelopers,
   selectedProtectTargetId,
+  firewallMode,
+  cooldownSeconds,
   onSelectProtectTarget,
   onNavigate,
 }: FirewallOverlayProps) {
-  const [selectedRoom, setSelectedRoom] = useState(currentRoom);
-
-  React.useEffect(() => {
-    setSelectedRoom(currentRoom);
-  }, [currentRoom]);
-
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
@@ -39,12 +37,23 @@ export default function FirewallOverlay({
           <ShieldOff size={20} color="var(--text-warning)" />
           <div>
             <p style={{ color: 'var(--text-warning)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Firewall Mode
+              {firewallMode === 'hacker' ? 'Hacker Firewall' : 'Developer Firewall'}
             </p>
             <p style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-              Protect players, solve tasks, no voting, instant movement
+              {firewallMode === 'hacker'
+                ? 'Strip protection or block it briefly, solve tasks, no voting, instant movement'
+                : 'Protect live players, solve tasks, no voting, instant movement'}
             </p>
           </div>
+        </div>
+
+        <div style={{ minWidth: '120px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
+            Cooldown
+          </p>
+          <p style={{ color: cooldownSeconds > 0 ? 'var(--text-warning)' : 'var(--text-accent)', fontSize: '14px', fontWeight: 700 }}>
+            {cooldownSeconds > 0 ? `${cooldownSeconds}s` : 'Ready'}
+          </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -53,7 +62,6 @@ export default function FirewallOverlay({
             <button
               key={room}
               onClick={() => {
-                setSelectedRoom(room);
                 onNavigate(room);
               }}
               style={{

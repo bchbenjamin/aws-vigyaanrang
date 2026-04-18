@@ -25,13 +25,17 @@ This file documents the current state of the application rather than the origina
 - Developers solve global-difficulty tasks to advance progress.
 - Hackers select a target in the same room to enter the hack flow.
 - Hard tasks are gated behind an active selected target for hackers.
-- Firewalls select a living developer to protect, then solve any difficulty task to apply one protection charge.
+- Successful hacks stay hidden for `15s` before the victim converts.
+- Firewalls select a living player, then solve any difficulty task to apply their role-specific firewall effect.
+- Developer firewalls grant timed protection.
+- Hacker firewalls remove protection or temporarily block new protection.
 - The log room shows motion history and still allows active hack flow when a hacker and target are both there.
 
 ### Stand-up
 - Any alive player can trigger an emergency stand-up.
 - The admin can extend discussion time in `+30s` increments.
 - Voting resolves to an ejection or no-ejection result.
+- Any pending hidden hacks are forced to resolve before a stand-up vote begins.
 
 ### Round end
 - Players see the end screen.
@@ -51,6 +55,9 @@ This file documents the current state of the application rather than the origina
 - Added admin kick control
 - Added synchronized match timer across tabs
 - Added shared completion visuals for tasks and hack resolution
+- Added neutral delayed hack reveal flow and removed immediate victim conversion
+- Added firewall cooldown countdown and role-specific firewall effects
+- Changed admin-facing timing inputs to seconds
 - Fixed FAB behavior so it closes on outside click and no longer duplicates task difficulty controls
 - Fixed the lobby hydration mismatch by loading saved code after mount instead of during SSR markup generation
 
