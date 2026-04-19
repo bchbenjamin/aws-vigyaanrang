@@ -2,6 +2,12 @@
 
 `Breach & Defend` is a LAN-hosted, real-time social deduction coding game built on a custom Next.js + Socket.io server. The game is designed for a persistent Node runtime and should be treated as a local/LAN deployment project, not a serverless app.
 
+## Documentation
+
+- Deployment: `docs/deployment.md`
+- Puzzle schema: `docs/puzzle-schema.md`
+- Architecture walkthrough: `docs/architecture-walkthrough.md`
+
 ## Current gameplay model
 
 ### Roles
@@ -27,10 +33,10 @@
 - Tasks are loaded directly from `src/data/puzzles.json`.
 - Tasks are no longer tied to individual rooms. They come from a global difficulty pool: `easy`, `medium`, `hard`.
 - The in-editor difficulty selector is the source of truth for requesting new tasks.
-- Task answers and in-progress work are cached in browser storage so a refresh does not wipe a player�s current task state.
+- Task answers and in-progress work are cached in browser storage so a refresh does not wipe a player's current task state.
 
 ### Parser and grading resilience
-- Server and client now use a shared puzzle parser, so format handling is consistent between assignment, rendering, and grading.
+- The server normalizes and sanitizes puzzle payloads at assignment time before sending over WebSocket, so evaluation blocks never reach the client.
 - Common format aliases are normalized automatically, including `Logic Error Detection`, `Syntax Error Detection`, `Parenthesis Matching`, `Code Completion`, and `Drag and Fill`.
 - Difficulty aliases are normalized (`leetcode_easy` and similar labels map into `hard`).
 - Rearrangement tasks are graded using the submitted ordered lines, so shuffled client order no longer breaks validation.
@@ -109,6 +115,15 @@ Database-backed data:
 ```bash
 npm install
 npm run dev
+```
+
+Puzzle dataset workflow:
+
+```bash
+npm run generate:puzzles
+npm run validate:puzzles
+# optional full compile/execute checks across evaluation snippets
+npm run validate:puzzles:runtime
 ```
 
 Production-style run:

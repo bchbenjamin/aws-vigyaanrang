@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "node scripts/strip-answers.js",
-    "predev":   "node scripts/strip-answers.js",
+    "generate:puzzles": "node scripts/generate-puzzles.js",
+    "validate:puzzles": "node scripts/validate-puzzles.js",
+    "validate:puzzles:runtime": "node scripts/validate-puzzles.js --runtime",
     "dev":   "node server.js",
     "build": "next build",
     "start": "node -e \"process.env.NODE_ENV='production'; require('./server.js')\"",

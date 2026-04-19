@@ -40,8 +40,8 @@ export default function GamePage() {
   const [mobileTab, setMobileTab] = useState<'map' | 'task'>('map');
 
   // ── Task State ──────────────────────────────────────────
-  const [taskId, setTaskId] = useState<string | null>(null);
-  const [hackTaskId, setHackTaskId] = useState<string | null>(null);
+  const [taskPayload, setTaskPayload] = useState<any | null>(null);
+  const [isHackTask, setIsHackTask] = useState(false);
   const [hackTargetId, setHackTargetId] = useState<string | null>(null);
   const [protectTargetId, setProtectTargetId] = useState<string | null>(null);
 
@@ -125,6 +125,8 @@ export default function GamePage() {
       setRole(data.you?.role || 'developer');
       setStatus(data.you?.status || 'alive');
       setRoom(data.you?.room || 'Breakroom');
+      setTaskPayload(data.taskPayload || null);
+      setIsHackTask(!!data.isHackTask);
       setHackCooldownUntil(data.you?.hackCooldownUntil || 0);
       setFirewallNextTaskAt(data.you?.firewallNextTaskAt || 0);
       setGameEndTime(data.gameEndTime || null);
@@ -137,6 +139,10 @@ export default function GamePage() {
       setLogsCorrupted(data.logsCorrupted);
       if (data.standupData !== undefined) setStandupData(data.standupData);
       if (data.hasVoted !== undefined) setHasVoted(data.hasVoted);
+
+      if ((data.taskId || data.hackTaskId) && !data.taskPayload) {
+        socket?.emit('request_current_task');
+      }
     });
 
     // ── GAME STARTED ──────────────────────────────────
@@ -161,12 +167,11 @@ export default function GamePage() {
       setIsMoving(false);
       setMovingTo(null);
       setRoom(data.room);
-      setTaskId(data.taskId || null);
-      setHackTaskId(data.hackTaskId || null);
+      setTaskPayload(data.taskPayload ?? null);
+      setIsHackTask(Boolean(data.isHackTask));
       if (data.taskError) showAlert('warning', data.taskError);
       if (data.motionLog !== undefined) setMotionLog(data.motionLog || []);
       if (data.logsCorrupted !== undefined) setLogsCorrupted(data.logsCorrupted);
-      // Auto switch to task tab on entering task room natively
       if (TASK_ROOMS.includes(data.room)) setMobileTab('task');
     });
 
@@ -181,8 +186,8 @@ export default function GamePage() {
 
     // ── TASK ASSIGNMENTS ──────────────────────────────
     socket.on('task_assigned', (data) => {
-      if (data.taskId !== undefined)     setTaskId(data.taskId     || null);
-      if (data.hackTaskId !== undefined) setHackTaskId(data.hackTaskId || null);
+      setTaskPayload(data.taskPayload ?? null);
+      setIsHackTask(Boolean(data.isHackTask));
     });
 
     socket.on('task_result', (data) => {
@@ -214,8 +219,8 @@ export default function GamePage() {
     socket.on('you_were_hacked', () => {
       setStatus('firewall');
       setProtectTargetId(null);
-      setTaskId(null);
-      setHackTaskId(null);
+      setTaskPayload(null);
+      setIsHackTask(false);
       setHackTargetId(null);
       setFirewallNextTaskAt(0);
       showAlert('warning', 'Firewall mode enabled.');
@@ -261,8 +266,8 @@ export default function GamePage() {
       setPhase('standup');
       setRoom('Breakroom');
       setHasVoted(false);
-      setTaskId(null);
-      setHackTaskId(null);
+      setTaskPayload(null);
+      setIsHackTask(false);
       setStandupData({
         reportedBy: data.reportedBy,
         durationMs: data.duration,
@@ -301,6 +306,8 @@ export default function GamePage() {
       setPhase('ended');
       setHackTargetId(null);
       setProtectTargetId(null);
+      setTaskPayload(null);
+      setIsHackTask(false);
       setFirewallNextTaskAt(0);
       setGameEndTime(null);
       setHackerRevealEndsAt(data.winSide === 'developers' ? Date.now() + 3000 : null);
@@ -318,8 +325,8 @@ export default function GamePage() {
       setStatus('alive');
       setRoom('Breakroom');
       setGlobalProgress(0);
-      setTaskId(null);
-      setHackTaskId(null);
+      setTaskPayload(null);
+      setIsHackTask(false);
       setHackTargetId(null);
       setProtectTargetId(null);
       setHackCooldownUntil(0);
@@ -374,15 +381,17 @@ export default function GamePage() {
     socket.emit('move_room', targetRoom);
   }, [isMoving, room, phase]);
 
-    const handleTaskSubmit = useCallback((result: { isHackTask: boolean; taskId: string; protectedTargetId?: string; userAnswer: string; activeLang: Language; fillState: Record<number, string>; dragOrder: number[]; rearrangedLines?: string[]; }) => {
+      const handleTaskSubmit = useCallback((result: { isHackTask: boolean; taskId: string; protectedTargetId?: string; answer: string; lang: Language; fillState: Record<number, string>; dragOrder: number[]; rearrangedLines?: string[]; }) => {
     if (!socket || !connected) return;
     if (result.isHackTask) {
-       socket.emit('submit_hack', { taskId: result.taskId, targetId: hackTargetId, userAnswer: result.userAnswer, activeLang: result.activeLang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
+       socket.emit('submit_hack', { taskId: result.taskId, targetId: hackTargetId, answer: result.answer, lang: result.lang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
        setHackTargetId(null);
-       setHackTaskId(null);
+       setTaskPayload(null);
+       setIsHackTask(false);
     } else {
-       socket.emit('task_complete', { taskId: result.taskId, protectedTargetId: result.protectedTargetId || protectTargetId, userAnswer: result.userAnswer, activeLang: result.activeLang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
-       setTaskId(null);
+       socket.emit('task_complete', { taskId: result.taskId, protectedTargetId: result.protectedTargetId || protectTargetId, answer: result.answer, lang: result.lang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
+       setTaskPayload(null);
+       setIsHackTask(false);
     }
   }, [hackTargetId, connected, protectTargetId]);
 
@@ -509,7 +518,7 @@ export default function GamePage() {
   const isInTaskRoom = TASK_ROOMS.includes(room) && !isMoving;
   const isInLogRoom = room === 'The Log Room' && !isMoving;
   const selectedProtectTarget = aliveDevelopers.find(player => player.id === protectTargetId) || null;
-  const canUseCodeEditor = status === 'firewall' || isInTaskRoom || !!hackTaskId;
+  const canUseCodeEditor = status === 'firewall' || isInTaskRoom || isHackTask;
   const firewallCooldownSeconds = Math.max(0, Math.ceil((firewallNextTaskAt - nowMs) / 1000));
   const timerColor = remainingGameSeconds < 30 ? 'var(--text-danger)' : remainingGameSeconds < 60 ? 'var(--text-warning)' : 'var(--text-secondary)';
   const timerAnimation = remainingGameSeconds < 10 ? 'pulseGlow 0.25s linear infinite' : remainingGameSeconds < 30 ? 'pulseGlow 0.8s ease-in-out infinite' : 'none';
@@ -699,17 +708,16 @@ export default function GamePage() {
         <div className={styles.taskSection}>
           {canUseCodeEditor ? (
             <CodeEditor
-              taskId={hackTaskId || taskId}
-              isHackTask={!!hackTaskId}
+              taskPayload={taskPayload}
+              isHackTask={isHackTask}
               difficultiesAllowed={((role === 'hacker' && status === 'alive') || status === 'firewall') ? ['easy', 'medium', 'hard'] : ['easy', 'medium']}
               systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
                 ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
                 : null}
               disabledMsg={status === 'firewall' && !selectedProtectTarget ? 'Select an active player in the firewall panel before requesting a task.' : null}
               onRequestTask={(diff) => {
-                if (diff !== 'hard') {
-                  setHackTaskId(null);
-                }
+                setIsHackTask(false);
+                setTaskPayload(null);
                 if (socket) {
                   socket.emit('request_task', { difficulty: diff, protectTargetId: selectedProtectTarget?.id || null });
                 }
@@ -719,10 +727,11 @@ export default function GamePage() {
                   isHackTask: res.isHackTask,
                   taskId: res.taskId,
                   protectedTargetId: selectedProtectTarget?.id || undefined,
-                  userAnswer: res.userAnswer,
-                  activeLang: res.activeLang,
+                  answer: res.answer,
+                  lang: res.lang,
                   fillState: res.fillState,
                   dragOrder: res.dragOrder,
+                  rearrangedLines: res.rearrangedLines,
                 });
               }}
             />

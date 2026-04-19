@@ -1,12 +1,8 @@
 // ============================================================
-//  Breach & Defend — Task Types & Client-Side Task Bank
-//  answers are NEVER present here — stripped at build time
-//  by scripts/strip-answers.js → puzzles-safe.json
+//  Breach & Defend — Shared Task Types
+//  Task data is delivered over WebSockets from server-sanitized
+//  payloads, never from a bundled answer file.
 // ============================================================
-
-import rawPuzzles from '@/data/puzzles-safe.json';
-
-// ── Types ────────────────────────────────────────────────────
 
 export type TaskFormat =
   | 'fill_blank'
@@ -19,16 +15,20 @@ export type TaskFormat =
 export type Language   = 'c' | 'java' | 'python';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+export interface TaskPrompt {
+  code?: string;
+  codeTemplate?: string;
+  buggyCode?: string;
+  question?: string;
+  options?: string[];
+  tokens?: string[];
+  lines?: string[];
+  blankCount?: number;
+  shuffleOnServe?: boolean;
+}
+
 export interface TaskVersion {
-  // fill_blank / output_prediction
-  blankCode?:    string;
-  // multiple_choice
-  question?:     string;
-  options?:      string[];
-  // rearrange
-  shuffledLines?: string[];
-  // debug
-  buggyCode?:    string;
+  prompt?: TaskPrompt;
 }
 
 export interface TaskDefinition {
@@ -39,21 +39,3 @@ export interface TaskDefinition {
   difficulty:  Difficulty;
   versions:    Partial<Record<Language, TaskVersion>>;
 }
-
-// ── Build the lookup map ─────────────────────────────────────
-
-export const ALL_TASKS: TaskDefinition[] = rawPuzzles as TaskDefinition[];
-
-export const TASK_MAP: Map<string, TaskDefinition> = new Map(
-  ALL_TASKS.map(t => [t.id, t])
-);
-
-export function getTask(id: string | null | undefined): TaskDefinition | null {
-  if (!id) return null;
-  return TASK_MAP.get(id) ?? null;
-}
-
-// ── Room constants ───────────────────────────────────────────
-
-export const ALL_ROOMS       = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab', 'The Log Room', 'Breakroom'];
-export const ROOMS_WITH_TASKS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab'];

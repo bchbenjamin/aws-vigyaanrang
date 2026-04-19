@@ -1,4 +1,12 @@
 const SUPPORTED_LANGUAGES = ['python', 'java', 'c'];
+const CANONICAL_FORMATS = new Set([
+  'multiple_choice',
+  'fill_blank',
+  'drag_and_fill',
+  'rearrange',
+  'debug',
+  'output_prediction',
+]);
 
 function normalizeText(value) {
   return String(value ?? '').replace(/\r/g, '').trim();
@@ -19,8 +27,10 @@ function normalizeDifficulty(rawDifficulty) {
 }
 
 function mapFormat(rawFormat) {
-  if (!rawFormat) return 'fill_blank';
-  const c = String(rawFormat).toLowerCase();
+  const c = normalizeText(rawFormat).toLowerCase();
+  if (!c) return 'fill_blank';
+
+  if (CANONICAL_FORMATS.has(c)) return c;
 
   if (c.includes('multiple') || c.includes('choice') || c.includes('mcq') || c.includes('parenthesis')) {
     return 'multiple_choice';
@@ -42,6 +52,28 @@ function mapFormat(rawFormat) {
   }
 
   return 'fill_blank';
+}
+
+function isCanonicalVersion(rawVersion) {
+  if (!rawVersion || typeof rawVersion !== 'object') return false;
+  return Object.prototype.hasOwnProperty.call(rawVersion, 'prompt')
+    || Object.prototype.hasOwnProperty.call(rawVersion, 'evaluation');
+}
+
+function getPromptBlock(rawVersion) {
+  if (!rawVersion || typeof rawVersion !== 'object') return {};
+  if (isCanonicalVersion(rawVersion)) {
+    return rawVersion.prompt && typeof rawVersion.prompt === 'object' ? rawVersion.prompt : {};
+  }
+  return rawVersion;
+}
+
+function getEvaluationBlock(rawVersion) {
+  if (!rawVersion || typeof rawVersion !== 'object') return {};
+  if (isCanonicalVersion(rawVersion)) {
+    return rawVersion.evaluation && typeof rawVersion.evaluation === 'object' ? rawVersion.evaluation : {};
+  }
+  return rawVersion;
 }
 
 function normalizeBlanks(code) {
@@ -82,17 +114,32 @@ function parseChoiceOptionsFromCode(code) {
 function getChoiceOptions(rawVersion) {
   if (!rawVersion) return [];
 
+  const prompt = getPromptBlock(rawVersion);
+
+  if (Array.isArray(prompt.options) && prompt.options.length > 0) {
+    return prompt.options.map(opt => normalizeText(opt)).filter(Boolean);
+  }
+
+  if (Array.isArray(prompt.tokens) && prompt.tokens.length > 0) {
+    return prompt.tokens.map(opt => normalizeText(opt)).filter(Boolean);
+  }
+
   if (Array.isArray(rawVersion.options) && rawVersion.options.length > 0) {
     return rawVersion.options.map(opt => normalizeText(opt)).filter(Boolean);
   }
 
-  const tokenOptions = parseTokenOptionsFromCode(rawVersion.code);
+  const sourceCode = prompt.code || rawVersion.code || '';
+  const tokenOptions = parseTokenOptionsFromCode(sourceCode);
   if (tokenOptions.length > 0) return tokenOptions;
 
-  return parseChoiceOptionsFromCode(rawVersion.code);
+  return parseChoiceOptionsFromCode(sourceCode);
 }
 
 function parseRearrangeLines(rawCode) {
+  if (Array.isArray(rawCode)) {
+    return rawCode.map(item => normalizeText(item)).filter(Boolean);
+  }
+
   const code = normalizeText(rawCode);
   if (!code) return [];
 
@@ -108,7 +155,7 @@ function parseRearrangeLines(rawCode) {
           return parsed.map(item => normalizeText(item)).filter(Boolean);
         }
       } catch {
-        // Fall back to plain line splitting below.
+        // Fall through to plain line split.
       }
     }
 
@@ -125,6 +172,17 @@ function parseRearrangeLines(rawCode) {
     .split(/\n/)
     .map(line => line.trim())
     .filter(Boolean);
+}
+
+function getRearrangeLines(rawVersion) {
+  const prompt = getPromptBlock(rawVersion);
+  if (Array.isArray(prompt.lines)) return parseRearrangeLines(prompt.lines);
+  if (typeof prompt.lines === 'string') return parseRearrangeLines(prompt.lines);
+
+  if (typeof prompt.codeTemplate === 'string') return parseRearrangeLines(prompt.codeTemplate);
+  if (typeof prompt.code === 'string') return parseRearrangeLines(prompt.code);
+
+  return parseRearrangeLines(rawVersion?.code || '');
 }
 
 function shuffleInPlace(values) {
@@ -156,7 +214,8 @@ function chooseEffectiveFormat(taskDef) {
 
   if (baseFormat === 'fill_blank') {
     const hasPromptCode = SUPPORTED_LANGUAGES.some(lang => {
-      const code = normalizeText(taskDef?.versions?.[lang]?.code);
+      const prompt = getPromptBlock(taskDef?.versions?.[lang]);
+      const code = normalizeText(prompt.codeTemplate || prompt.code || taskDef?.versions?.[lang]?.code || '');
       return code.length > 0;
     });
     const hasAnswerKey = SUPPORTED_LANGUAGES.some(lang => {
@@ -164,8 +223,7 @@ function chooseEffectiveFormat(taskDef) {
       return extractExpectedCandidates(version).length > 0;
     });
 
-    // Some completion-style tasks provide only an answer snippet and no starter code.
-    // Treat these as open-response debug tasks rather than unparseable fill-blank tasks.
+    // Tasks with answer keys but no starter code are converted to debug prompts.
     if (!hasPromptCode && hasAnswerKey) {
       baseFormat = 'debug';
     }
@@ -182,34 +240,48 @@ function getEmptyPromptPlaceholder(lang) {
 function buildSafeVersion(rawVersion, format, options = {}, lang = 'python') {
   if (!rawVersion) return undefined;
 
-  if (format === 'fill_blank' || format === 'output_prediction') {
+  const prompt = getPromptBlock(rawVersion);
+
+  if (format === 'fill_blank') {
+    const source = prompt.codeTemplate || prompt.code || rawVersion.code || '';
     return {
-      blankCode: normalizeBlanks(stripTokenHintLines(rawVersion.code || '')),
+      blankCode: normalizeBlanks(stripTokenHintLines(source)),
+    };
+  }
+
+  if (format === 'output_prediction') {
+    const source = prompt.code || prompt.codeTemplate || rawVersion.code || '';
+    return {
+      blankCode: normalizeText(source),
     };
   }
 
   if (format === 'drag_and_fill') {
+    const source = prompt.codeTemplate || prompt.code || rawVersion.code || '';
     return {
-      blankCode: normalizeBlanks(stripTokenHintLines(rawVersion.code || '')),
+      blankCode: normalizeBlanks(stripTokenHintLines(source)),
       options: getChoiceOptions(rawVersion),
     };
   }
 
   if (format === 'multiple_choice') {
+    const question = normalizeText(prompt.question || rawVersion.question || '');
+    const code = normalizeText(prompt.code || rawVersion.code || '');
     return {
-      question: normalizeText(rawVersion.question || rawVersion.code || ''),
+      question: [question, code].filter(Boolean).join('\n\n'),
       options: getChoiceOptions(rawVersion),
     };
   }
 
   if (format === 'rearrange') {
-    const lines = parseRearrangeLines(rawVersion.code || '');
+    const lines = getRearrangeLines(rawVersion);
     const shuffled = options.shuffleRearrange ? shuffleInPlace([...lines]) : lines;
     return { shuffledLines: shuffled };
   }
 
+  const buggyCode = prompt.buggyCode || prompt.code || rawVersion.code || '';
   return {
-    buggyCode: normalizeText(rawVersion.code || '') || getEmptyPromptPlaceholder(lang),
+    buggyCode: normalizeText(buggyCode) || getEmptyPromptPlaceholder(lang),
   };
 }
 
@@ -246,6 +318,16 @@ function extractExpectedCandidates(rawVersion) {
 
   if (!rawVersion) return values;
 
+  const evaluation = getEvaluationBlock(rawVersion);
+
+  const correct = evaluation.correctAnswer;
+  if (typeof correct === 'string') push(correct);
+  if (Array.isArray(correct)) correct.forEach(push);
+
+  if (Array.isArray(evaluation.acceptedAnswers)) evaluation.acceptedAnswers.forEach(push);
+  push(evaluation.expectedStdout);
+  push(evaluation.solutionCode);
+
   push(rawVersion.fixed);
   push(rawVersion.expected_output);
   push(rawVersion.correctAnswer);
@@ -281,6 +363,15 @@ function extractExpectedCandidates(rawVersion) {
   return deduped;
 }
 
+function extractExpectedRearrangeLines(rawVersion) {
+  if (!rawVersion) return [];
+  const evaluation = getEvaluationBlock(rawVersion);
+  if (Array.isArray(evaluation.correctOrder)) {
+    return evaluation.correctOrder.map(line => normalizeText(line)).filter(Boolean);
+  }
+  return getRearrangeLines(rawVersion);
+}
+
 function isRenderableVersion(version, format) {
   if (!version) return false;
 
@@ -289,7 +380,9 @@ function isRenderableVersion(version, format) {
   }
 
   if (format === 'drag_and_fill') {
-    return normalizeText(version.blankCode).includes('_____') && Array.isArray(version.options) && version.options.length > 0;
+    return normalizeText(version.blankCode).includes('_____')
+      && Array.isArray(version.options)
+      && version.options.length > 0;
   }
 
   if (format === 'multiple_choice') {
@@ -307,7 +400,7 @@ function hasGradableAnswer(rawVersion, format) {
   if (!rawVersion) return false;
 
   if (format === 'rearrange') {
-    return parseRearrangeLines(rawVersion.code || '').length >= 2;
+    return extractExpectedRearrangeLines(rawVersion).length >= 2;
   }
 
   return extractExpectedCandidates(rawVersion).length > 0;
@@ -349,7 +442,7 @@ function matchesByCandidates(actual, candidates) {
 
     if (actualNorm === expectedNorm) return true;
 
-    // Allow short corrected snippets to match explanatory answers.
+    // Allow short snippets to match explanatory answers.
     if (actualNorm.length >= 3 && expectedNorm.includes(actualNorm)) return true;
     if (expectedNorm.length >= 3 && actualNorm.includes(expectedNorm)) return true;
 
@@ -417,6 +510,24 @@ function compareLineArrays(expectedLines, actualLines) {
   return true;
 }
 
+function compareTokenOrder(expectedTokens, fillState) {
+  if (!Array.isArray(expectedTokens) || expectedTokens.length === 0) return false;
+
+  const submitted = [];
+  for (let i = 0; i < expectedTokens.length; i += 1) {
+    if (!Object.prototype.hasOwnProperty.call(fillState || {}, i)) return false;
+    submitted.push(normalizeText(fillState[i]));
+  }
+
+  if (submitted.length !== expectedTokens.length) return false;
+
+  for (let i = 0; i < expectedTokens.length; i += 1) {
+    if (normalizeForCompare(submitted[i]) !== normalizeForCompare(expectedTokens[i])) return false;
+  }
+
+  return true;
+}
+
 function verifyAnswer(taskDef, payload = {}) {
   if (!taskDef) return { status: 'unparseable', reason: 'task_missing' };
 
@@ -430,10 +541,8 @@ function verifyAnswer(taskDef, payload = {}) {
     return { status: 'unparseable', reason: 'unsupported_shape' };
   }
 
-  const expectedCandidates = extractExpectedCandidates(rawVersion);
-
   if (format === 'rearrange') {
-    const expectedLines = parseRearrangeLines(rawVersion.code || '');
+    const expectedLines = extractExpectedRearrangeLines(rawVersion);
     if (expectedLines.length < 2) return { status: 'unparseable', reason: 'missing_rearrange_source' };
 
     if (Array.isArray(payload.rearrangedLines) && payload.rearrangedLines.length > 0) {
@@ -442,15 +551,17 @@ function verifyAnswer(taskDef, payload = {}) {
         : { status: 'incorrect' };
     }
 
-    // Backward compatibility with legacy client payloads.
-    if (Array.isArray(payload.dragOrder) && payload.dragOrder.length > 0) {
-      const isIdentity = payload.dragOrder.every((value, idx) => value === idx);
-      return isIdentity ? { status: 'correct' } : { status: 'incorrect' };
+    if (Array.isArray(payload.dragOrder) && payload.dragOrder.length > 0 && Array.isArray(safeVersion.shuffledLines)) {
+      const actual = payload.dragOrder.map(idx => safeVersion.shuffledLines[idx]).filter(Boolean);
+      return compareLineArrays(expectedLines, actual)
+        ? { status: 'correct' }
+        : { status: 'incorrect' };
     }
 
     return { status: 'incorrect' };
   }
 
+  const expectedCandidates = extractExpectedCandidates(rawVersion);
   if (expectedCandidates.length === 0) {
     return { status: 'unparseable', reason: 'missing_answer_key' };
   }
@@ -462,6 +573,11 @@ function verifyAnswer(taskDef, payload = {}) {
   }
 
   if (format === 'drag_and_fill') {
+    const evaluation = getEvaluationBlock(rawVersion);
+    if (Array.isArray(evaluation.correctOrder) && compareTokenOrder(evaluation.correctOrder, payload.fillState || {})) {
+      return { status: 'correct' };
+    }
+
     const combined = fillCodeBlanks(safeVersion.blankCode, payload.fillState || {});
     if (combined && matchesByCandidates(combined, expectedCandidates)) {
       return { status: 'correct' };
@@ -477,6 +593,10 @@ function verifyAnswer(taskDef, payload = {}) {
     : { status: 'incorrect' };
 }
 
+function sanitizeTaskForClient(taskDef, options = {}) {
+  return buildSafeTask(taskDef, options);
+}
+
 module.exports = {
   SUPPORTED_LANGUAGES,
   mapFormat,
@@ -487,4 +607,5 @@ module.exports = {
   verifyAnswer,
   parseRearrangeLines,
   getChoiceOptions,
+  sanitizeTaskForClient,
 };
