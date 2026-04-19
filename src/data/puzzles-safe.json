@@ -1,0 +1,3400 @@
+[
+  {
+    "id": "easy-1",
+    "title": "Integer Division Trap",
+    "description": "What is the output of the following code?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 7\ny = 2\nprint(x // y + x / y)"
+      },
+      "java": {
+        "blankCode": "public class Main {\n  public static void main(String[] args) {\n    int x = 7, y = 2;\n    System.out.println(x / y + (double)x / y);\n  }\n}"
+      },
+      "c": {
+        "blankCode": "#include <stdio.h>\nint main() {\n  int x = 7, y = 2;\n  printf(\"%g\\n\", x / y + (double)x / y);\n  return 0;\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-2",
+    "title": "Operator Precedence: Arithmetic vs Comparison",
+    "description": "What does the expression evaluate to?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "result = 3 + 4 * 2 > 10\nprint(result)",
+        "options": [
+          "True",
+          "False",
+          "11",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "boolean result = 3 + 4 * 2 > 10;\nSystem.out.println(result);",
+        "options": [
+          "true",
+          "false",
+          "11",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "#include <stdio.h>\nint main() {\n  int result = 3 + 4 * 2 > 10;\n  printf(\"%d\\n\", result);\n  return 0;\n}",
+        "options": [
+          "1",
+          "0",
+          "11",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-3",
+    "title": "Off-by-One in Loop",
+    "description": "Identify the error in the code that should print numbers 1 to 5.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "for i in range(0, 5):\n    print(i)"
+      },
+      "java": {
+        "buggyCode": "for (int i = 0; i < 5; i++) {\n    System.out.println(i);\n}"
+      },
+      "c": {
+        "buggyCode": "for (int i = 0; i < 5; i++) {\n    printf(\"%d\\n\", i);\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-4",
+    "title": "Modulo for Even Check",
+    "description": "Fill in the blank to make the condition check if n is even.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "n = 14\nif n _____ 2 == 0:\n    print('even')"
+      },
+      "java": {
+        "blankCode": "int n = 14;\nif (n _____ 2 == 0) {\n    System.out.println(\"even\");\n}"
+      },
+      "c": {
+        "blankCode": "int n = 14;\nif (n _____ 2 == 0) {\n    printf(\"even\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-5",
+    "title": "Boolean Short-Circuit",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 5\nif x > 3 and x < 10:\n    print('A')\nelif x > 4 or x == 5:\n    print('B')\nelse:\n    print('C')"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nif (x > 3 && x < 10) System.out.println(\"A\");\nelse if (x > 4 || x == 5) System.out.println(\"B\");\nelse System.out.println(\"C\");"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nif (x > 3 && x < 10) printf(\"A\\n\");\nelse if (x > 4 || x == 5) printf(\"B\\n\");\nelse printf(\"C\\n\");"
+      }
+    }
+  },
+  {
+    "id": "easy-6",
+    "title": "Missing Colon in Python",
+    "description": "Find the syntax error in this Python code.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "def greet(name)\n    print('Hello', name)\ngreet('World')"
+      },
+      "java": {
+        "buggyCode": "public static void greet(String name)\n    System.out.println(\"Hello \" + name);\n}\ngreet(\"World\");"
+      },
+      "c": {
+        "buggyCode": "void greet(char *name)\n    printf(\"Hello %s\\n\", name);\n}\ngreet(\"World\");"
+      }
+    }
+  },
+  {
+    "id": "easy-7",
+    "title": "String Indexing",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'Python'\nprint(s[1], s[-1])"
+      },
+      "java": {
+        "blankCode": "String s = \"Python\";\nSystem.out.println(s.charAt(1) + \" \" + s.charAt(s.length()-1));"
+      },
+      "c": {
+        "blankCode": "#include <stdio.h>\n#include <string.h>\nint main() {\n  char s[] = \"Python\";\n  printf(\"%c %c\\n\", s[1], s[strlen(s)-1]);\n  return 0;\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-8",
+    "title": "Wrong Comparison Operator",
+    "description": "The code should check if a equals b, but it always prints 'equal'. Fix it.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "a = 5\nb = 10\nif a = b:\n    print('equal')\nelse:\n    print('not equal')"
+      },
+      "java": {
+        "buggyCode": "int a = 5, b = 10;\nif (a = b) {\n    System.out.println(\"equal\");\n} else {\n    System.out.println(\"not equal\");\n}"
+      },
+      "c": {
+        "buggyCode": "int a = 5, b = 10;\nif (a = b) {\n    printf(\"equal\\n\");\n} else {\n    printf(\"not equal\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-9",
+    "title": "Ternary / Conditional Expression",
+    "description": "What is printed?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "x = 0\nprint('yes' if x else 'no')",
+        "options": [
+          "yes",
+          "no",
+          "0",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int x = 0;\nSystem.out.println(x != 0 ? \"yes\" : \"no\");",
+        "options": [
+          "yes",
+          "no",
+          "0",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "int x = 0;\nprintf(\"%s\\n\", x ? \"yes\" : \"no\");",
+        "options": [
+          "yes",
+          "no",
+          "0",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-10",
+    "title": "Unbalanced Parentheses",
+    "description": "Identify which expression has unbalanced parentheses.",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "A: result = (3 + (4 * 2)\nB: result = ((3 + 4) * 2)\nC: result = (3 + 4 * 2)",
+        "options": [
+          "A: result = (3 + (4 * 2)",
+          "B: result = ((3 + 4) * 2)",
+          "C: result = (3 + 4 * 2)"
+        ]
+      },
+      "java": {
+        "question": "A: int r = (3 + (4 * 2);\nB: int r = ((3 + 4) * 2);\nC: int r = (3 + 4 * 2);",
+        "options": [
+          "A: int r = (3 + (4 * 2);",
+          "B: int r = ((3 + 4) * 2);",
+          "C: int r = (3 + 4 * 2);"
+        ]
+      },
+      "c": {
+        "question": "A: int r = (3 + (4 * 2);\nB: int r = ((3 + 4) * 2);\nC: int r = (3 + 4 * 2);",
+        "options": [
+          "A: int r = (3 + (4 * 2);",
+          "B: int r = ((3 + 4) * 2);",
+          "C: int r = (3 + 4 * 2);"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-11",
+    "title": "Nested Increment",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "a = 3\nb = a * a + a\nprint(b)"
+      },
+      "java": {
+        "blankCode": "int a = 3;\nint b = a * a + a;\nSystem.out.println(b);"
+      },
+      "c": {
+        "blankCode": "int a = 3;\nint b = a * a + a;\nprintf(\"%d\\n\", b);"
+      }
+    }
+  },
+  {
+    "id": "easy-12",
+    "title": "Swap Two Variables",
+    "description": "Arrange the lines to correctly swap a and b without a temp variable (Python) or with temp (Java/C).",
+    "format": "rearrange",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "shuffledLines": [
+          "a = 5",
+          "a, b = b, a",
+          "print(a, b)",
+          "b = 10"
+        ]
+      },
+      "java": {
+        "shuffledLines": [
+          "b = temp;",
+          "int a = 5;",
+          "int b = 10;",
+          "int temp = a;",
+          "System.out.println(a + \" \" + b);",
+          "a = b;"
+        ]
+      },
+      "c": {
+        "shuffledLines": [
+          "printf(\"%d %d\\n\", a, b);",
+          "b = temp;",
+          "int a = 5;",
+          "int temp = a;",
+          "int b = 10;",
+          "a = b;"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-13",
+    "title": "Counting Evens",
+    "description": "This code should count even numbers in the list but gives wrong output. Find the logic error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "nums = [1, 2, 3, 4, 5, 6]\ncount = 0\nfor n in nums:\n    if n % 2 == 1:\n        count += 1\nprint(count)"
+      },
+      "java": {
+        "buggyCode": "int[] nums = {1,2,3,4,5,6};\nint count = 0;\nfor (int n : nums) {\n    if (n % 2 == 1) count++;\n}\nSystem.out.println(count);"
+      },
+      "c": {
+        "buggyCode": "int nums[] = {1,2,3,4,5,6};\nint count = 0;\nfor (int i = 0; i < 6; i++) {\n    if (nums[i] % 2 == 1) count++;\n}\nprintf(\"%d\\n\", count);"
+      }
+    }
+  },
+  {
+    "id": "easy-14",
+    "title": "String Length Condition",
+    "description": "Fill in the blank to print 'long' if the string has more than 5 characters.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'programming'\nif _____(s) > 5:\n    print('long')"
+      },
+      "java": {
+        "blankCode": "String s = \"programming\";\nif (s._____() > 5) {\n    System.out.println(\"long\");\n}"
+      },
+      "c": {
+        "blankCode": "#include <string.h>\nchar s[] = \"programming\";\nif (_____(s) > 5) {\n    printf(\"long\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-15",
+    "title": "Post-Increment in Expression",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 5\nx += 3\nprint(x * 2)"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nx += 3;\nSystem.out.println(x * 2);"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nx += 3;\nprintf(\"%d\\n\", x * 2);"
+      }
+    }
+  },
+  {
+    "id": "easy-16",
+    "title": "Missing Semicolon in C/Java",
+    "description": "Find the syntax error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "# Python: find the indentation error\ndef check(x):\nif x > 0:\n    print('positive')\ncheck(5)"
+      },
+      "java": {
+        "buggyCode": "int x = 10\nint y = 20;\nSystem.out.println(x + y);"
+      },
+      "c": {
+        "buggyCode": "int x = 10\nint y = 20;\nprintf(\"%d\\n\", x + y);"
+      }
+    }
+  },
+  {
+    "id": "easy-17",
+    "title": "Chained Comparisons",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 5\nprint(1 < x < 10)"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nSystem.out.println(1 < x && x < 10);"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nprintf(\"%d\\n\", 1 < x && x < 10);"
+      }
+    }
+  },
+  {
+    "id": "easy-18",
+    "title": "List/Array Last Element",
+    "description": "Which correctly accesses the last element?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "arr = [10, 20, 30, 40]",
+        "options": [
+          "arr[4]",
+          "arr[3]",
+          "arr[-1]",
+          "Both B and C"
+        ]
+      },
+      "java": {
+        "question": "int[] arr = {10, 20, 30, 40};",
+        "options": [
+          "arr[4]",
+          "arr[3]",
+          "arr[-1]",
+          "arr[arr.length]"
+        ]
+      },
+      "c": {
+        "question": "int arr[] = {10, 20, 30, 40};",
+        "options": [
+          "arr[4]",
+          "arr[3]",
+          "arr[-1]",
+          "arr[0]"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-19",
+    "title": "Complete the FizzBuzz Step",
+    "description": "Complete the condition to print 'FizzBuzz' when n is divisible by both 3 and 5.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "n = 15\nif _____:\n    print('FizzBuzz')"
+      },
+      "java": {
+        "blankCode": "int n = 15;\nif (_____) {\n    System.out.println(\"FizzBuzz\");\n}"
+      },
+      "c": {
+        "blankCode": "int n = 15;\nif (_____) {\n    printf(\"FizzBuzz\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-20",
+    "title": "Infinite Loop Fix",
+    "description": "This loop never terminates. Fix it.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "i = 0\nwhile i < 5:\n    print(i)"
+      },
+      "java": {
+        "buggyCode": "int i = 0;\nwhile (i < 5) {\n    System.out.println(i);\n}"
+      },
+      "c": {
+        "buggyCode": "int i = 0;\nwhile (i < 5) {\n    printf(\"%d\\n\", i);\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-21",
+    "title": "Nested List Indexing",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "matrix = [[1,2,3],[4,5,6],[7,8,9]]\nprint(matrix[1][2])"
+      },
+      "java": {
+        "blankCode": "int[][] matrix = {{1,2,3},{4,5,6},{7,8,9}};\nSystem.out.println(matrix[1][2]);"
+      },
+      "c": {
+        "blankCode": "int matrix[3][3] = {{1,2,3},{4,5,6},{7,8,9}};\nprintf(\"%d\\n\", matrix[1][2]);"
+      }
+    }
+  },
+  {
+    "id": "easy-22",
+    "title": "Complete the Return Statement",
+    "description": "Drag the correct token into the blank to return the maximum of two numbers.",
+    "format": "drag_and_fill",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "def max_val(a, b):\n    return a _____ b else b",
+        "options": [
+          "if",
+          ">",
+          "<",
+          "and",
+          "else"
+        ]
+      },
+      "java": {
+        "blankCode": "int maxVal(int a, int b) {\n    return (a _____ b) ? a : b;\n}",
+        "options": [
+          ">",
+          "<",
+          "==",
+          ">=",
+          "<="
+        ]
+      },
+      "c": {
+        "blankCode": "int max_val(int a, int b) {\n    return (a _____ b) ? a : b;\n}",
+        "options": [
+          ">",
+          "<",
+          "==",
+          ">=",
+          "<="
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-23",
+    "title": "Sum Accumulation Outside Loop",
+    "description": "The code should print the sum of numbers 1 to 5, but gives wrong output. Find the error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "total = 0\nfor i in range(1, 6):\n    total = i\nprint(total)"
+      },
+      "java": {
+        "buggyCode": "int total = 0;\nfor (int i = 1; i <= 5; i++) {\n    total = i;\n}\nSystem.out.println(total);"
+      },
+      "c": {
+        "buggyCode": "int total = 0;\nfor (int i = 1; i <= 5; i++) {\n    total = i;\n}\nprintf(\"%d\\n\", total);"
+      }
+    }
+  },
+  {
+    "id": "easy-24",
+    "title": "Not Operator Precedence",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = True\ny = False\nprint(not x or y)"
+      },
+      "java": {
+        "blankCode": "boolean x = true, y = false;\nSystem.out.println(!x || y);"
+      },
+      "c": {
+        "blankCode": "int x = 1, y = 0;\nprintf(\"%d\\n\", !x || y);"
+      }
+    }
+  },
+  {
+    "id": "easy-25",
+    "title": "Type of Division Result",
+    "description": "What is the type of result?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "result = 10 / 2\nprint(type(result))",
+        "options": [
+          "int",
+          "float",
+          "double",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int a = 10, b = 2;\ndouble result = a / b;\nSystem.out.println(result);",
+        "options": [
+          "5",
+          "5.0",
+          "Error",
+          "0"
+        ]
+      },
+      "c": {
+        "question": "int a = 10, b = 2;\ndouble result = a / b;\nprintf(\"%.1f\\n\", result);",
+        "options": [
+          "5.0",
+          "5.5",
+          "Error",
+          "0.0"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-26",
+    "title": "Compute Factorial",
+    "description": "Arrange lines to compute factorial of n=4.",
+    "format": "rearrange",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "shuffledLines": [
+          "print(result)",
+          "for i in range(1, n+1):",
+          "result *= i",
+          "result = 1",
+          "n = 4"
+        ]
+      },
+      "java": {
+        "shuffledLines": [
+          "System.out.println(result);",
+          "result *= i;",
+          "for (int i = 1; i <= n; i++) {",
+          "int result = 1;",
+          "}",
+          "int n = 4;"
+        ]
+      },
+      "c": {
+        "shuffledLines": [
+          "int result = 1;",
+          "result *= i;",
+          "for (int i = 1; i <= n; i++) {",
+          "int n = 4;",
+          "}",
+          "printf(\"%d\\n\", result);"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-27",
+    "title": "IndexError Identification",
+    "description": "Identify which line causes an error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "arr = [1, 2, 3]\nprint(arr[0])\nprint(arr[2])\nprint(arr[3])"
+      },
+      "java": {
+        "buggyCode": "int[] arr = {1, 2, 3};\nSystem.out.println(arr[0]);\nSystem.out.println(arr[2]);\nSystem.out.println(arr[3]);"
+      },
+      "c": {
+        "buggyCode": "int arr[] = {1, 2, 3};\nprintf(\"%d\\n\", arr[0]);\nprintf(\"%d\\n\", arr[2]);\nprintf(\"%d\\n\", arr[3]);"
+      }
+    }
+  },
+  {
+    "id": "easy-28",
+    "title": "String Repetition vs Multiplication",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'ab'\nprint(s * 3)"
+      },
+      "java": {
+        "blankCode": "String s = \"ab\";\nSystem.out.println(s.repeat(3));"
+      },
+      "c": {
+        "blankCode": "#include <string.h>\nchar result[7] = \"\";\nfor (int i = 0; i < 3; i++) strcat(result, \"ab\");\nprintf(\"%s\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "easy-29",
+    "title": "Access Dictionary/Map Value",
+    "description": "Fill in the blank to print the value for key 'age'.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "d = {'name': 'Alice', 'age': 25}\nprint(d[_____])"
+      },
+      "java": {
+        "blankCode": "Map<String,Integer> d = new HashMap<>();\nd.put(\"name_len\", 5);\nd.put(\"age\", 25);\nSystem.out.println(d._____(\"age\"));"
+      },
+      "c": {
+        "blankCode": "// C has no built-in map; access struct field\ntypedef struct { int age; } Person;\nPerson p = {25};\nprintf(\"%d\\n\", p._____);"
+      }
+    }
+  },
+  {
+    "id": "easy-30",
+    "title": "Print vs Return",
+    "description": "What does the function return?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "def add(a, b):\n    print(a + b)\n\nresult = add(3, 4)\nprint(result)",
+        "options": [
+          "7",
+          "None",
+          "7 None",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "// Java: method has return type void\nstatic void add(int a, int b) {\n    System.out.println(a + b);\n}\npublic static void main(String[] a) {\n    add(3, 4);\n}",
+        "options": [
+          "7",
+          "null",
+          "void",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "void add(int a, int b) {\n    printf(\"%d\\n\", a + b);\n}\nint main() {\n    add(3, 4);\n    return 0;\n}",
+        "options": [
+          "7",
+          "null",
+          "0",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-1",
+    "title": "Pre vs Post Increment in Expression",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "# Python has no ++ operator\nx = 5\ny = x\nx += 1\nprint(x, y)"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nint y = x++;\nSystem.out.println(x + \" \" + y);"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nint y = x++;\nprintf(\"%d %d\\n\", x, y);"
+      }
+    }
+  },
+  {
+    "id": "med-2",
+    "title": "Tricky Pre-increment in Arithmetic",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "x = 3\nresult = x + (x := x + 1)\nprint(result)"
+      },
+      "java": {
+        "blankCode": "int x = 3;\nint result = x + (++x);\nSystem.out.println(result);"
+      },
+      "c": {
+        "blankCode": "int x = 3;\nint result = x + (++x);\nprintf(\"%d\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "med-3",
+    "title": "Nested Loop Counter",
+    "description": "The code should count pairs (i,j) where i < j from 0 to 3. Find the logic error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "count = 0\nfor i in range(4):\n    for j in range(4):\n        if i < j:\n            count += 1\nprint(count)"
+      },
+      "java": {
+        "buggyCode": "int count = 0;\nfor (int i = 0; i < 4; i++)\n    for (int j = 0; j < 4; j++)\n        if (i < j) count++;\nSystem.out.println(count);"
+      },
+      "c": {
+        "buggyCode": "int count = 0;\nfor (int i = 0; i < 4; i++)\n    for (int j = 0; j < 4; j++)\n        if (i <= j) count++;\nprintf(\"%d\\n\", count);"
+      }
+    }
+  },
+  {
+    "id": "med-4",
+    "title": "Mutable Default Argument Trap",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def append_val(val, lst=[]):\n    lst.append(val)\n    return lst\n\nprint(append_val(1))\nprint(append_val(2))"
+      },
+      "java": {
+        "blankCode": "// Java equivalent using static list\nimport java.util.*;\nstatic List<Integer> lst = new ArrayList<>();\nstatic List<Integer> appendVal(int val) {\n    lst.add(val);\n    return new ArrayList<>(lst);\n}\npublic static void main(String[] a) {\n    System.out.println(appendVal(1));\n    System.out.println(appendVal(2));\n}"
+      },
+      "c": {
+        "blankCode": "// C doesn't have this trap natively\n// Static local variable equivalent:\nint arr[10];\nint size = 0;\nvoid append_val(int val) { arr[size++] = val; }\n// Each call accumulates"
+      }
+    }
+  },
+  {
+    "id": "med-5",
+    "title": "Off-by-One in Binary Search",
+    "description": "This binary search has a bug. Find and fix it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def binary_search(arr, target):\n    lo, hi = 0, len(arr)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return -1\n\nprint(binary_search([1,3,5,7,9], 9))"
+      },
+      "java": {
+        "buggyCode": "int binarySearch(int[] arr, int target) {\n    int lo = 0, hi = arr.length;\n    while (lo < hi) {\n        int mid = (lo + hi) / 2;\n        if (arr[mid] == target) return mid;\n        else if (arr[mid] < target) lo = mid + 1;\n        else hi = mid;\n    }\n    return -1;\n}"
+      },
+      "c": {
+        "buggyCode": "int binarySearch(int arr[], int n, int target) {\n    int lo = 0, hi = n;\n    while (lo < hi) {\n        int mid = (lo + hi) / 2;\n        if (arr[mid] == target) return mid;\n        else if (arr[mid] < target) lo = mid + 1;\n        else hi = mid;\n    }\n    return -1;\n}"
+      }
+    }
+  },
+  {
+    "id": "med-6",
+    "title": "Short-Circuit Evaluation Side Effects",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def f():\n    print('f called')\n    return False\n\ndef g():\n    print('g called')\n    return True\n\nresult = f() and g()\nprint(result)"
+      },
+      "java": {
+        "blankCode": "static boolean f() { System.out.println(\"f called\"); return false; }\nstatic boolean g() { System.out.println(\"g called\"); return true; }\nboolean result = f() && g();\nSystem.out.println(result);"
+      },
+      "c": {
+        "blankCode": "int f() { printf(\"f called\\n\"); return 0; }\nint g() { printf(\"g called\\n\"); return 1; }\nint result = f() && g();\nprintf(\"%d\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "med-7",
+    "title": "Bitwise vs Logical OR",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "x = 4\ny = 3\nprint(x | y)\nprint(x or y)",
+        "options": [
+          "7 and 4",
+          "4 and 4",
+          "7 and 7",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int x = 4, y = 3;\nSystem.out.println(x | y);\nSystem.out.println(x > 0 || y > 0);",
+        "options": [
+          "7 and true",
+          "4 and true",
+          "7 and 4",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "int x = 4, y = 3;\nprintf(\"%d\\n\", x | y);\nprintf(\"%d\\n\", x || y);",
+        "options": [
+          "7 and 1",
+          "4 and 1",
+          "7 and 4",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-8",
+    "title": "Bubble Sort Pass",
+    "description": "Arrange lines to complete one pass of bubble sort.",
+    "format": "rearrange",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "shuffledLines": [
+          "arr[i], arr[i+1] = arr[i+1], arr[i]",
+          "for i in range(len(arr)-1):",
+          "print(arr)",
+          "if arr[i] > arr[i+1]:",
+          "arr = [5, 3, 8, 1]"
+        ]
+      },
+      "java": {
+        "shuffledLines": [
+          "for (int i=0; i<arr.length-1; i++) {",
+          "int tmp = arr[i]; arr[i]=arr[i+1]; arr[i+1]=tmp;",
+          "if (arr[i] > arr[i+1]) {",
+          "System.out.println(Arrays.toString(arr));",
+          "} }",
+          "int[] arr = {5,3,8,1};"
+        ]
+      },
+      "c": {
+        "shuffledLines": [
+          "if (arr[i] > arr[i+1]) {",
+          "for (int i=0;i<4;i++) printf(\"%d \",arr[i]);",
+          "int arr[] = {5,3,8,1};",
+          "} }",
+          "for (int i=0; i<3; i++) {",
+          "int tmp = arr[i]; arr[i]=arr[i+1]; arr[i+1]=tmp;"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-9",
+    "title": "Recursive Call Stack",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def f(n):\n    if n == 0:\n        return 0\n    return n + f(n - 1)\nprint(f(4))"
+      },
+      "java": {
+        "blankCode": "static int f(int n) {\n    if (n == 0) return 0;\n    return n + f(n - 1);\n}\nSystem.out.println(f(4));"
+      },
+      "c": {
+        "blankCode": "int f(int n) {\n    if (n == 0) return 0;\n    return n + f(n - 1);\n}\nprintf(\"%d\\n\", f(4));"
+      }
+    }
+  },
+  {
+    "id": "med-10",
+    "title": "Scope Error Inside Nested Function",
+    "description": "Identify the error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def outer():\n    x = 10\n    def inner():\n        x += 1\n        print(x)\n    inner()\n\nouter()"
+      },
+      "java": {
+        "buggyCode": "// Java: local inner class cannot modify enclosing local variable\nint x = 10;\nRunnable r = new Runnable() {\n    public void run() {\n        x++; // Error!\n    }\n};"
+      },
+      "c": {
+        "buggyCode": "void outer() {\n    int x = 10;\n    void inner() {\n        x += 1; // GCC extension\n        printf(\"%d\\n\", x);\n    }\n    inner();\n}"
+      }
+    }
+  },
+  {
+    "id": "med-11",
+    "title": "String Immutability",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'hello'\nt = s\ns = s.upper()\nprint(s, t)"
+      },
+      "java": {
+        "blankCode": "String s = \"hello\";\nString t = s;\ns = s.toUpperCase();\nSystem.out.println(s + \" \" + t);"
+      },
+      "c": {
+        "blankCode": "#include <string.h>\n#include <ctype.h>\nchar s[] = \"hello\";\nchar t[6];\nstrcpy(t, s);\nfor (int i=0; s[i]; i++) s[i] = toupper(s[i]);\nprintf(\"%s %s\\n\", s, t);"
+      }
+    }
+  },
+  {
+    "id": "med-12",
+    "title": "Integer Overflow",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "print(2 ** 64)",
+        "options": [
+          "18446744073709551616",
+          "0",
+          "OverflowError",
+          "-1"
+        ]
+      },
+      "java": {
+        "question": "int x = Integer.MAX_VALUE;\nSystem.out.println(x + 1);",
+        "options": [
+          "2147483648",
+          "-2147483648",
+          "Overflow Exception",
+          "0"
+        ]
+      },
+      "c": {
+        "question": "#include <limits.h>\nint x = INT_MAX;\nprintf(\"%d\\n\", x + 1);",
+        "options": [
+          "2147483648",
+          "-2147483648",
+          "Undefined",
+          "-1"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-13",
+    "title": "Wrong Base Case in Recursion",
+    "description": "This recursive power function has a bug. Fix it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def power(base, exp):\n    if exp == 1:\n        return base\n    return base * power(base, exp - 1)\n\nprint(power(2, 0))"
+      },
+      "java": {
+        "buggyCode": "static int power(int base, int exp) {\n    if (exp == 1) return base;\n    return base * power(base, exp - 1);\n}\nSystem.out.println(power(2, 0));"
+      },
+      "c": {
+        "buggyCode": "int power(int base, int exp) {\n    if (exp == 1) return base;\n    return base * power(base, exp - 1);\n}\nprintf(\"%d\\n\", power(2, 0));"
+      }
+    }
+  },
+  {
+    "id": "med-14",
+    "title": "List Aliasing vs Copy",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "a = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)"
+      },
+      "java": {
+        "blankCode": "List<Integer> a = new ArrayList<>(Arrays.asList(1,2,3));\nList<Integer> b = a;\nb.add(4);\nSystem.out.println(a);"
+      },
+      "c": {
+        "blankCode": "int a[] = {1,2,3,0};\nint *b = a;\nb[3] = 4;\nfor(int i=0;i<4;i++) printf(\"%d \",a[i]);"
+      }
+    }
+  },
+  {
+    "id": "med-15",
+    "title": "Missing Break in Switch",
+    "description": "Find the error in this switch/if-elif construct.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Python 3.10+ match statement\nx = 2\nmatch x:\n    case 1:\n        print('one')\n    case 2\n        print('two')\n    case 3:\n        print('three')"
+      },
+      "java": {
+        "buggyCode": "int x = 2;\nswitch (x) {\n    case 1:\n        System.out.println(\"one\");\n    case 2:\n        System.out.println(\"two\");\n    case 3:\n        System.out.println(\"three\");\n}"
+      },
+      "c": {
+        "buggyCode": "int x = 2;\nswitch (x) {\n    case 1:\n        printf(\"one\\n\");\n    case 2:\n        printf(\"two\\n\");\n    case 3:\n        printf(\"three\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "med-16",
+    "title": "Dictionary Key Overwrite",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "d = {}\nfor i in range(3):\n    d[i % 2] = i\nprint(d)"
+      },
+      "java": {
+        "blankCode": "Map<Integer,Integer> d = new HashMap<>();\nfor (int i = 0; i < 3; i++) d.put(i%2, i);\nSystem.out.println(d);"
+      },
+      "c": {
+        "blankCode": "// Simulated with arrays\nint d[2] = {-1, -1};\nfor (int i = 0; i < 3; i++) d[i%2] = i;\nprintf(\"{0:%d, 1:%d}\\n\", d[0], d[1]);"
+      }
+    }
+  },
+  {
+    "id": "med-17",
+    "title": "Complete Palindrome Check",
+    "description": "Complete the function to check if a string is a palindrome.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def is_palindrome(s):\n    return s == _____"
+      },
+      "java": {
+        "blankCode": "boolean isPalindrome(String s) {\n    String rev = new StringBuilder(s)._____().toString();\n    return s.equals(rev);\n}"
+      },
+      "c": {
+        "blankCode": "int isPalindrome(char *s) {\n    int l = 0, r = strlen(s) - 1;\n    while (l < r) {\n        if (s[l] != s[r]) return 0;\n        _____;\n    }\n    return 1;\n}"
+      }
+    }
+  },
+  {
+    "id": "med-18",
+    "title": "Floating Point Comparison Trap",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "x = 0.1 + 0.2\nprint(x == 0.3)\nprint(round(x, 1) == 0.3)"
+      },
+      "java": {
+        "blankCode": "double x = 0.1 + 0.2;\nSystem.out.println(x == 0.3);\nSystem.out.println(Math.round(x * 10) == Math.round(0.3 * 10));"
+      },
+      "c": {
+        "blankCode": "double x = 0.1 + 0.2;\nprintf(\"%d\\n\", x == 0.3);\nprintf(\"%d\\n\", (int)(x*10+0.5) == (int)(0.3*10+0.5));"
+      }
+    }
+  },
+  {
+    "id": "med-19",
+    "title": "Nested Ternary Evaluation",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "x = 5\nresult = 'high' if x > 7 else 'mid' if x > 3 else 'low'\nprint(result)",
+        "options": [
+          "high",
+          "mid",
+          "low",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int x = 5;\nString result = x > 7 ? \"high\" : x > 3 ? \"mid\" : \"low\";\nSystem.out.println(result);",
+        "options": [
+          "high",
+          "mid",
+          "low",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "int x = 5;\nchar *result = x > 7 ? \"high\" : x > 3 ? \"mid\" : \"low\";\nprintf(\"%s\\n\", result);",
+        "options": [
+          "high",
+          "mid",
+          "low",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-20",
+    "title": "Complete Linked List Node",
+    "description": "Drag the correct tokens to complete the node insertion.",
+    "format": "drag_and_fill",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "class Node:\n    def _____init_____(self, val):\n        self.val = val\n        self._____ = None",
+        "options": [
+          "next",
+          "prev",
+          "data",
+          "head"
+        ]
+      },
+      "java": {
+        "blankCode": "class Node {\n    int val;\n    Node _____;\n    Node(int v) { val = v; _____ = null; }\n}",
+        "options": [
+          "next",
+          "prev",
+          "data",
+          "head"
+        ]
+      },
+      "c": {
+        "blankCode": "struct Node {\n    int val;\n    struct Node *_____;\n};",
+        "options": [
+          "next",
+          "prev",
+          "data",
+          "head"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-21",
+    "title": "Max Value Initialization Error",
+    "description": "This code finds the max value but has a logic error. Identify it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "nums = [-5, -3, -8, -1]\nmax_val = 0\nfor n in nums:\n    if n > max_val:\n        max_val = n\nprint(max_val)"
+      },
+      "java": {
+        "buggyCode": "int[] nums = {-5,-3,-8,-1};\nint maxVal = 0;\nfor (int n : nums) if (n > maxVal) maxVal = n;\nSystem.out.println(maxVal);"
+      },
+      "c": {
+        "buggyCode": "int nums[] = {-5,-3,-8,-1};\nint maxVal = 0;\nfor (int i=0; i<4; i++) if (nums[i] > maxVal) maxVal = nums[i];\nprintf(\"%d\\n\", maxVal);"
+      }
+    }
+  },
+  {
+    "id": "med-22",
+    "title": "Closure Variable Capture",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "fns = []\nfor i in range(3):\n    fns.append(lambda: i)\nprint([f() for f in fns])"
+      },
+      "java": {
+        "blankCode": "List<Supplier<Integer>> fns = new ArrayList<>();\nfor (int i = 0; i < 3; i++) {\n    final int j = i;\n    fns.add(() -> j);\n}\nfns.forEach(f -> System.out.print(f.get() + \" \"));"
+      },
+      "c": {
+        "blankCode": "// C doesn't have closures. Closest with function pointers and index:\nfor (int i = 0; i < 3; i++) printf(\"%d \", i);"
+      }
+    }
+  },
+  {
+    "id": "med-23",
+    "title": "Wrong String Concatenation",
+    "description": "Find the syntax error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "age = 25\nprint('Age: ' + age)"
+      },
+      "java": {
+        "buggyCode": "int age = 25;\nSystem.out.println(\"Age: \" + age);"
+      },
+      "c": {
+        "buggyCode": "int age = 25;\nprintf(\"Age: \" + age);"
+      }
+    }
+  },
+  {
+    "id": "med-24",
+    "title": "Chained Assignment",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "a = b = c = 5\nb += 2\nprint(a, b, c)"
+      },
+      "java": {
+        "blankCode": "int a, b, c;\na = b = c = 5;\nb += 2;\nSystem.out.println(a + \" \" + b + \" \" + c);"
+      },
+      "c": {
+        "blankCode": "int a, b, c;\na = b = c = 5;\nb += 2;\nprintf(\"%d %d %d\\n\", a, b, c);"
+      }
+    }
+  },
+  {
+    "id": "med-25",
+    "title": "Null Pointer / None Access",
+    "description": "Identify the error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "s = None\nprint(s.upper())"
+      },
+      "java": {
+        "buggyCode": "String s = null;\nSystem.out.println(s.toUpperCase());"
+      },
+      "c": {
+        "buggyCode": "char *s = NULL;\nprintf(\"%s\\n\", s);"
+      }
+    }
+  },
+  {
+    "id": "med-26",
+    "title": "Reverse a String In-Place",
+    "description": "Complete the code to reverse string without using built-in reverse.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def reverse(s):\n    chars = list(s)\n    l, r = 0, len(chars) - 1\n    while l < r:\n        chars[l], chars[r] = chars[r], chars[l]\n        _____\n    return ''.join(chars)"
+      },
+      "java": {
+        "blankCode": "String reverse(String s) {\n    char[] chars = s.toCharArray();\n    int l = 0, r = chars.length - 1;\n    while (l < r) {\n        char tmp = chars[l];\n        chars[l] = chars[r];\n        chars[r] = tmp;\n        _____\n    }\n    return new String(chars);\n}"
+      },
+      "c": {
+        "blankCode": "void reverse(char *s) {\n    int l = 0, r = strlen(s) - 1;\n    while (l < r) {\n        char tmp = s[l];\n        s[l] = s[r];\n        s[r] = tmp;\n        _____\n    }\n}"
+      }
+    }
+  },
+  {
+    "id": "med-27",
+    "title": "Bitwise XOR Trick",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "a = 5\nb = 9\na ^= b\nb ^= a\na ^= b\nprint(a, b)"
+      },
+      "java": {
+        "blankCode": "int a = 5, b = 9;\na ^= b; b ^= a; a ^= b;\nSystem.out.println(a + \" \" + b);"
+      },
+      "c": {
+        "blankCode": "int a = 5, b = 9;\na ^= b; b ^= a; a ^= b;\nprintf(\"%d %d\\n\", a, b);"
+      }
+    }
+  },
+  {
+    "id": "med-28",
+    "title": "Negative Modulo Behavior",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "print(-7 % 3)",
+        "options": [
+          "-1",
+          "2",
+          "-2",
+          "1"
+        ]
+      },
+      "java": {
+        "question": "System.out.println(-7 % 3);",
+        "options": [
+          "-1",
+          "2",
+          "-2",
+          "1"
+        ]
+      },
+      "c": {
+        "question": "printf(\"%d\\n\", -7 % 3);",
+        "options": [
+          "-1",
+          "2",
+          "-2",
+          "1"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-29",
+    "title": "Stack Implementation Bug",
+    "description": "The pop function has a bug. Fix it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "class Stack:\n    def __init__(self):\n        self.items = []\n    def push(self, x):\n        self.items.append(x)\n    def pop(self):\n        return self.items[0]\n\ns = Stack()\ns.push(1); s.push(2); s.push(3)\nprint(s.pop())"
+      },
+      "java": {
+        "buggyCode": "class Stack {\n    ArrayList<Integer> items = new ArrayList<>();\n    void push(int x) { items.add(x); }\n    int pop() { return items.get(0); }\n}\nStack s = new Stack();\ns.push(1); s.push(2); s.push(3);\nSystem.out.println(s.pop());"
+      },
+      "c": {
+        "buggyCode": "int stack[100]; int top = -1;\nvoid push(int x) { stack[++top] = x; }\nint pop() { return stack[0]; }\n// ...\npush(1); push(2); push(3);\nprintf(\"%d\\n\", pop());"
+      }
+    }
+  },
+  {
+    "id": "med-30",
+    "title": "String Split and Join",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'a,b,c,d'\nparts = s.split(',')\nprint('-'.join(parts[::-1]))"
+      },
+      "java": {
+        "blankCode": "String s = \"a,b,c,d\";\nString[] parts = s.split(\",\");\nStringBuilder sb = new StringBuilder();\nfor (int i = parts.length-1; i >= 0; i--) {\n    if (i < parts.length-1) sb.append(\"-\");\n    sb.append(parts[i]);\n}\nSystem.out.println(sb);"
+      },
+      "c": {
+        "blankCode": "// Manual split simulation\nchar s[] = \"a,b,c,d\";\nchar *tok = strtok(s, \",\");\nchar parts[4][2]; int n=0;\nwhile (tok) { strcpy(parts[n++], tok); tok = strtok(NULL, \",\"); }\nfor (int i=n-1; i>=0; i--) { printf(\"%s\", parts[i]); if(i>0) printf(\"-\"); }"
+      }
+    }
+  },
+  {
+    "id": "hard-1",
+    "title": "Two Sum",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume exactly one solution exists.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-2",
+    "title": "Reverse String",
+    "description": "Write a function that reverses a string. The input is given as an array of characters. Modify it in-place with O(1) extra memory.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-3",
+    "title": "Palindrome Number",
+    "description": "Given an integer x, return true if x is a palindrome, false otherwise. A palindrome reads the same forward and backward.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-4",
+    "title": "Count Character Frequency",
+    "description": "Given a string, return a dictionary/map of each character and how many times it appears.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-5",
+    "title": "Find Maximum in Array",
+    "description": "Given an unsorted array of integers, return the maximum value.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-6",
+    "title": "Check Anagram",
+    "description": "Given two strings s and t, return true if t is an anagram of s.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-7",
+    "title": "Missing Number",
+    "description": "Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-8",
+    "title": "Valid Parentheses",
+    "description": "Given a string s containing only '(', ')', '{', '}', '[', ']', determine if the input string is valid. A string is valid if brackets are closed in the correct order.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-9",
+    "title": "Rotate Array",
+    "description": "Given an integer array nums, rotate the array to the right by k steps. Modify in-place.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-10",
+    "title": "Find Duplicate in Array",
+    "description": "Given an array of n+1 integers in range [1, n], find the duplicate number. There is exactly one duplicate.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-11",
+    "title": "Second Largest Element",
+    "description": "Given an array of integers, find the second largest unique element. Return -1 if it does not exist.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-12",
+    "title": "Count Vowels in String",
+    "description": "Given a string, count the number of vowels (a, e, i, o, u — both uppercase and lowercase).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-13",
+    "title": "Fibonacci Sequence",
+    "description": "Given n, return the nth Fibonacci number (0-indexed: fib(0)=0, fib(1)=1).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-14",
+    "title": "Remove Duplicates from Sorted Array",
+    "description": "Given a sorted integer array nums, remove duplicates in-place. Return the count of unique elements.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-15",
+    "title": "Longest Common Prefix",
+    "description": "Write a function to find the longest common prefix string among an array of strings. Return empty string if there is none.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-16",
+    "title": "Count Pairs with Given Sum",
+    "description": "Given an array of integers and a target sum, count all unique pairs (i, j) with i < j such that nums[i] + nums[j] == target.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-17",
+    "title": "Check Sorted Array",
+    "description": "Given an array, return true if it is sorted in non-decreasing order, false otherwise.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-18",
+    "title": "Intersection of Two Arrays",
+    "description": "Given two integer arrays, return an array of their intersection (common unique elements).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-19",
+    "title": "Sum of Digits",
+    "description": "Given a non-negative integer n, repeatedly sum its digits until the result is a single digit. Return that single digit.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-20",
+    "title": "Left Rotate Array by K",
+    "description": "Given an array and integer k, left-rotate the array by k positions. Modify in-place.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "easy-61",
+    "title": "Floor vs Ceiling Division",
+    "description": "What is the output?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "import math\nprint(math.floor(7 / 2))\nprint(math.ceil(7 / 2))\nprint(7 // 2)"
+      },
+      "java": {
+        "blankCode": "System.out.println((int)Math.floor(7.0/2));\nSystem.out.println((int)Math.ceil(7.0/2));\nSystem.out.println(7/2);"
+      },
+      "c": {
+        "blankCode": "#include <math.h>\nprintf(\"%d\\n\", (int)floor(7.0/2));\nprintf(\"%d\\n\", (int)ceil(7.0/2));\nprintf(\"%d\\n\", 7/2);"
+      }
+    }
+  },
+  {
+    "id": "easy-62",
+    "title": "Assignment Inside Condition Trap",
+    "description": "What does this code print?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "x = 5\nif x > 3:\n    y = 10\nprint(y)",
+        "options": [
+          "10",
+          "None",
+          "NameError",
+          "0"
+        ]
+      },
+      "java": {
+        "question": "int x = 5;\nint y;\nif (x > 3) y = 10;\nSystem.out.println(y);",
+        "options": [
+          "10",
+          "0",
+          "Compile Error",
+          "null"
+        ]
+      },
+      "c": {
+        "question": "int x = 5, y;\nif (x > 3) y = 10;\nprintf(\"%d\\n\", y);",
+        "options": [
+          "10",
+          "0",
+          "Undefined Behavior",
+          "Compile Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-63",
+    "title": "Convert String to Integer",
+    "description": "Fill in the blank to convert string '42' to an integer.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "s = '42'\nn = _____(s)\nprint(n + 8)"
+      },
+      "java": {
+        "blankCode": "String s = \"42\";\nint n = Integer._____(s);\nSystem.out.println(n + 8);"
+      },
+      "c": {
+        "blankCode": "#include <stdlib.h>\nchar s[] = \"42\";\nint n = _____(s);\nprintf(\"%d\\n\", n + 8);"
+      }
+    }
+  },
+  {
+    "id": "easy-64",
+    "title": "Conditional in List/Array Init",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "nums = [i * 2 for i in range(5)]\nprint(nums[3])"
+      },
+      "java": {
+        "blankCode": "int[] nums = new int[5];\nfor (int i = 0; i < 5; i++) nums[i] = i * 2;\nSystem.out.println(nums[3]);"
+      },
+      "c": {
+        "blankCode": "int nums[5];\nfor (int i=0; i<5; i++) nums[i] = i*2;\nprintf(\"%d\\n\", nums[3]);"
+      }
+    }
+  },
+  {
+    "id": "easy-65",
+    "title": "Mismatched Bracket Types",
+    "description": "Find the syntax error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "nums = [1, 2, 3)\nprint(nums)"
+      },
+      "java": {
+        "buggyCode": "int[] nums = {1, 2, 3];\nSystem.out.println(nums[0]);"
+      },
+      "c": {
+        "buggyCode": "int nums[] = {1, 2, 3);\nprintf(\"%d\\n\", nums[0]);"
+      }
+    }
+  },
+  {
+    "id": "easy-66",
+    "title": "Multiple Assignment Unpack",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "a, b, c = 1, 2, 3\na, b = b, a\nprint(a, b, c)"
+      },
+      "java": {
+        "blankCode": "int a=1, b=2, c=3;\nint tmp=a; a=b; b=tmp;\nSystem.out.println(a + \" \" + b + \" \" + c);"
+      },
+      "c": {
+        "blankCode": "int a=1, b=2, c=3;\nint tmp=a; a=b; b=tmp;\nprintf(\"%d %d %d\\n\", a, b, c);"
+      }
+    }
+  },
+  {
+    "id": "easy-67",
+    "title": "Function Called Before Definition",
+    "description": "Fix the code so it runs correctly.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "print(square(4))\n\ndef square(n):\n    return n * n"
+      },
+      "java": {
+        "buggyCode": "public static void main(String[] args) {\n    System.out.println(square(4));\n}\n\npublic static int square(int n) {\n    return n * n;\n}"
+      },
+      "c": {
+        "buggyCode": "int main() {\n    printf(\"%d\\n\", square(4));\n    return 0;\n}\n\nint square(int n) {\n    return n * n;\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-68",
+    "title": "Truthiness of Numeric Zero",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "for val in [0, 0.0, '', None, False, 1, 'x']:\n    if val:\n        print(val, end=' ')"
+      },
+      "java": {
+        "blankCode": "int[] vals = {0, 1, 2};\nfor (int v : vals) {\n    if (v != 0) System.out.print(v + \" \");\n}"
+      },
+      "c": {
+        "blankCode": "int vals[] = {0, 1, 2, 0, 3};\nfor (int i=0; i<5; i++) {\n    if (vals[i]) printf(\"%d \", vals[i]);\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-69",
+    "title": "GCD Using Euclidean Algorithm",
+    "description": "Arrange the lines to compute GCD of a=48 and b=18.",
+    "format": "rearrange",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "shuffledLines": [
+          "while b != 0:",
+          "print(a)",
+          "a, b = 48, 18",
+          "a, b = b, a % b"
+        ]
+      },
+      "java": {
+        "shuffledLines": [
+          "b = a % b;",
+          "int tmp = b;",
+          "int a=48, b=18;",
+          "}",
+          "while (b != 0) {",
+          "a = tmp;",
+          "System.out.println(a);"
+        ]
+      },
+      "c": {
+        "shuffledLines": [
+          "}",
+          "printf(\"%d\\n\", a);",
+          "int a=48, b=18;",
+          "b = a % b;",
+          "int tmp = b;",
+          "while (b != 0) {",
+          "a = tmp;"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-70",
+    "title": "Reverse Loop Direction Error",
+    "description": "The code should print numbers from 5 down to 1 but doesn't. Find the error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "for i in range(5, 0):\n    print(i)"
+      },
+      "java": {
+        "buggyCode": "for (int i = 5; i > 0; i++) {\n    System.out.println(i);\n}"
+      },
+      "c": {
+        "buggyCode": "for (int i = 5; i > 0; i++) {\n    printf(\"%d\\n\", i);\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-71",
+    "title": "Comma in Print Statement",
+    "description": "What is printed?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "x = 10\nprint('x =', x, 'units')",
+        "options": [
+          "x = 10 units",
+          "x =10units",
+          "('x =', 10, 'units')",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int x = 10;\nSystem.out.println(\"x = \" + x + \" units\");",
+        "options": [
+          "x = 10 units",
+          "x =10units",
+          "Error",
+          "x = 10units"
+        ]
+      },
+      "c": {
+        "question": "int x = 10;\nprintf(\"x = %d units\\n\", x);",
+        "options": [
+          "x = 10 units",
+          "x =10units",
+          "Error",
+          "x = 10units"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-72",
+    "title": "Chained Comparison with AND",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 15\nprint(10 < x < 20 and x % 5 == 0)"
+      },
+      "java": {
+        "blankCode": "int x = 15;\nSystem.out.println(x > 10 && x < 20 && x % 5 == 0);"
+      },
+      "c": {
+        "blankCode": "int x = 15;\nprintf(\"%d\\n\", x > 10 && x < 20 && x % 5 == 0);"
+      }
+    }
+  },
+  {
+    "id": "easy-73",
+    "title": "Incorrect Function Argument Count",
+    "description": "Identify the error.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "def add(a, b):\n    return a + b\n\nprint(add(1, 2, 3))"
+      },
+      "java": {
+        "buggyCode": "static int add(int a, int b) { return a + b; }\nSystem.out.println(add(1, 2, 3));"
+      },
+      "c": {
+        "buggyCode": "int add(int a, int b) { return a + b; }\nprintf(\"%d\\n\", add(1, 2, 3));"
+      }
+    }
+  },
+  {
+    "id": "easy-74",
+    "title": "Complete String Uppercase Check",
+    "description": "Drag the correct token to check if all characters are uppercase.",
+    "format": "drag_and_fill",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "s = 'HELLO'\nif s._____():\n    print('all upper')",
+        "options": [
+          "isupper",
+          "islower",
+          "isalpha",
+          "upper",
+          "lower"
+        ]
+      },
+      "java": {
+        "blankCode": "String s = \"HELLO\";\nif (s.equals(s._____())) {\n    System.out.println(\"all upper\");\n}",
+        "options": [
+          "toUpperCase",
+          "toLowerCase",
+          "isupper",
+          "upper",
+          "trim"
+        ]
+      },
+      "c": {
+        "blankCode": "#include <ctype.h>\nchar s[] = \"HELLO\";\nint allUpper = 1;\nfor(int i=0; s[i]; i++) if(!_____(s[i])) allUpper=0;",
+        "options": [
+          "isupper",
+          "islower",
+          "isalpha",
+          "isdigit",
+          "toupper"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-75",
+    "title": "Nested Loop Print Pattern",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "for i in range(1, 4):\n    for j in range(1, i+1):\n        print('*', end='')\n    print()"
+      },
+      "java": {
+        "blankCode": "for (int i=1; i<=3; i++) {\n    for (int j=1; j<=i; j++) System.out.print('*');\n    System.out.println();\n}"
+      },
+      "c": {
+        "blankCode": "for (int i=1; i<=3; i++) {\n    for (int j=1; j<=i; j++) printf(\"*\");\n    printf(\"\\n\");\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-76",
+    "title": "List Slicing to Copy",
+    "description": "Fill in the blank to create a full copy of a list.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "original = [1, 2, 3, 4]\ncopy = original[_____]\nprint(copy is original)"
+      },
+      "java": {
+        "blankCode": "int[] original = {1,2,3,4};\nint[] copy = Arrays._____(original);\nSystem.out.println(copy == original);"
+      },
+      "c": {
+        "blankCode": "int original[] = {1,2,3,4};\nint copy[4];\n_____(copy, original, sizeof(original));"
+      }
+    }
+  },
+  {
+    "id": "easy-77",
+    "title": "Short-Circuit in OR Expression",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "def side():\n    print('side effect')\n    return True\n\nresult = True or side()\nprint(result)"
+      },
+      "java": {
+        "blankCode": "static boolean side() { System.out.println(\"side effect\"); return true; }\nboolean result = true || side();\nSystem.out.println(result);"
+      },
+      "c": {
+        "blankCode": "int side() { printf(\"side effect\\n\"); return 1; }\nint result = 1 || side();\nprintf(\"%d\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "easy-78",
+    "title": "Type After Arithmetic Mixed",
+    "description": "What type is result?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "result = 3 + 1.0\nprint(type(result).__name__)",
+        "options": [
+          "int",
+          "float",
+          "double",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int a = 3; double b = 1.0;\nvar result = a + b;\nSystem.out.println(((Object)result).getClass().getSimpleName());",
+        "options": [
+          "int",
+          "float",
+          "Double",
+          "Error"
+        ]
+      },
+      "c": {
+        "question": "int a = 3; double b = 1.0;\ndouble result = a + b;\nprintf(\"%.1f\\n\", result);",
+        "options": [
+          "3",
+          "4",
+          "4.0",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-79",
+    "title": "Celsius to Fahrenheit",
+    "description": "Complete the function to convert Celsius to Fahrenheit using F = C * 9/5 + 32.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "def to_fahrenheit(c):\n    return _____\n\nprint(to_fahrenheit(100))"
+      },
+      "java": {
+        "blankCode": "double toFahrenheit(double c) {\n    return _____;\n}\nSystem.out.println(toFahrenheit(100));"
+      },
+      "c": {
+        "blankCode": "double toFahrenheit(double c) {\n    return _____;\n}\nprintf(\"%.1f\\n\", toFahrenheit(100));"
+      }
+    }
+  },
+  {
+    "id": "easy-80",
+    "title": "Nested Ternary Chain vs If-Else",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "score = 72\ngrade = 'A' if score >= 90 else 'B' if score >= 80 else 'C' if score >= 70 else 'F'\nprint(grade)"
+      },
+      "java": {
+        "blankCode": "int score = 72;\nString grade = score>=90?\"A\":score>=80?\"B\":score>=70?\"C\":\"F\";\nSystem.out.println(grade);"
+      },
+      "c": {
+        "blankCode": "int score = 72;\nchar *grade = score>=90?\"A\":score>=80?\"B\":score>=70?\"C\":\"F\";\nprintf(\"%s\\n\", grade);"
+      }
+    }
+  },
+  {
+    "id": "easy-81",
+    "title": "Concatenating Int to String Without Cast",
+    "description": "Identify the error and the correct fix.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "n = 7\nresult = 'Number: ' + n\nprint(result)"
+      },
+      "java": {
+        "buggyCode": "int n = 7;\nString result = \"Number: \" + n;\nSystem.out.println(result);"
+      },
+      "c": {
+        "buggyCode": "int n = 7;\nchar result[20] = \"Number: \" + n;\nprintf(\"%s\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "easy-82",
+    "title": "While with Break and Else",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "i = 0\nwhile i < 5:\n    if i == 3:\n        break\n    i += 1\nelse:\n    print('completed')\nprint('i =', i)"
+      },
+      "java": {
+        "blankCode": "int i = 0;\nboolean broke = false;\nwhile (i < 5) {\n    if (i == 3) { broke = true; break; }\n    i++;\n}\nif (!broke) System.out.println(\"completed\");\nSystem.out.println(\"i = \" + i);"
+      },
+      "c": {
+        "blankCode": "int i=0, broke=0;\nwhile(i<5){\n    if(i==3){broke=1;break;}\n    i++;\n}\nif(!broke) printf(\"completed\\n\");\nprintf(\"i = %d\\n\", i);"
+      }
+    }
+  },
+  {
+    "id": "easy-83",
+    "title": "Nested Function Call Balance",
+    "description": "Which call has correctly balanced parentheses?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "A: print(len('hello')\nB: print(max(1, min(2, 3))\nC: print(abs(-5))\nD: print(int(str(3.5))",
+        "options": [
+          "A: print(len('hello')",
+          "B: print(max(1, min(2, 3))",
+          "C: print(abs(-5))",
+          "D: print(int(str(3.5))"
+        ]
+      },
+      "java": {
+        "question": "A: System.out.println(Math.abs(-5));\nB: System.out.println(Math.max(1, Math.min(2,3));\nC: System.out.println(String.valueOf(42));\nD: System.out.println(Integer.parseInt(\"3\");",
+        "options": [
+          "A: System.out.println(Math.abs(-5));",
+          "B: System.out.println(Math.max(1, Math.min(2,3));",
+          "C: System.out.println(String.valueOf(42));",
+          "D: System.out.println(Integer.parseInt(\"3\");"
+        ]
+      },
+      "c": {
+        "question": "A: printf(\"%d\\n\", abs(-5));\nB: printf(\"%d\\n\", (int)floor(3.5);\nC: printf(\"%d\\n\", (3 + 4) * 2);\nD: printf(\"%d\\n\", abs(-(3+4));",
+        "options": [
+          "A: printf(\"%d\\n\", abs(-5));",
+          "B: printf(\"%d\\n\", (int)floor(3.5);",
+          "C: printf(\"%d\\n\", (3 + 4) * 2);",
+          "D: printf(\"%d\\n\", abs(-(3+4));"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-84",
+    "title": "Find Index of Element",
+    "description": "Complete to print the index of value 7 in the list.",
+    "format": "fill_blank",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "nums = [3, 7, 1, 9, 7]\nprint(nums._____(7))"
+      },
+      "java": {
+        "blankCode": "List<Integer> nums = Arrays.asList(3,7,1,9,7);\nSystem.out.println(nums._____(7));"
+      },
+      "c": {
+        "blankCode": "int nums[] = {3,7,1,9,7};\nint idx = -1;\nfor(int i=0; i<5; i++) { if(nums[i] == _____) { idx=i; break; } }\nprintf(\"%d\\n\", idx);"
+      }
+    }
+  },
+  {
+    "id": "easy-85",
+    "title": "Increment Inside Print",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "x = 5\nprint(x)\nx += 1\nprint(x)\nx += 1\nprint(x)"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nSystem.out.println(x++);\nSystem.out.println(x++);\nSystem.out.println(x);"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nprintf(\"%d\\n\", x++);\nprintf(\"%d\\n\", x++);\nprintf(\"%d\\n\", x);"
+      }
+    }
+  },
+  {
+    "id": "easy-86",
+    "title": "Print All Elements But Last",
+    "description": "The code should print all elements except the last one, but it prints nothing. Fix it.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "nums = [10, 20, 30, 40]\nfor i in range(len(nums), 0):\n    print(nums[i])"
+      },
+      "java": {
+        "buggyCode": "int[] nums = {10,20,30,40};\nfor (int i = nums.length; i > 0; i--) {\n    System.out.println(nums[i]);\n}"
+      },
+      "c": {
+        "buggyCode": "int nums[] = {10,20,30,40};\nfor (int i = sizeof(nums)/sizeof(nums[0]); i > 0; i--) {\n    printf(\"%d\\n\", nums[i]);\n}"
+      }
+    }
+  },
+  {
+    "id": "easy-87",
+    "title": "Default Parameter Value",
+    "description": "What is printed?",
+    "format": "multiple_choice",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "question": "def greet(name, msg='Hello'):\n    print(msg, name)\n\ngreet('Alice')\ngreet('Bob', 'Hi')",
+        "options": [
+          "Hello Alice\\nHi Bob",
+          "Alice Hello\\nBob Hi",
+          "Error",
+          "Hello Alice\\nHello Bob"
+        ]
+      },
+      "java": {
+        "question": "// Java has no default params; use overloading:\nstatic void greet(String name) { greet(name, \"Hello\"); }\nstatic void greet(String name, String msg) { System.out.println(msg + \" \" + name); }\ngreet(\"Alice\");\ngreet(\"Bob\", \"Hi\");",
+        "options": [
+          "Hello Alice\\nHi Bob",
+          "Alice Hello\\nBob Hi",
+          "Error",
+          "Hello Hello"
+        ]
+      },
+      "c": {
+        "question": "void greet(char *name, char *msg) {\n    printf(\"%s %s\\n\", msg, name);\n}\ngreet(\"Alice\", \"Hello\");\ngreet(\"Bob\", \"Hi\");",
+        "options": [
+          "Hello Alice\\nHi Bob",
+          "Alice Hello\\nBob Hi",
+          "Error",
+          "Hello Hello"
+        ]
+      }
+    }
+  },
+  {
+    "id": "easy-88",
+    "title": "Integer to Binary String",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "n = 12\nprint(bin(n))\nprint(bin(n)[2:])"
+      },
+      "java": {
+        "blankCode": "int n = 12;\nSystem.out.println(Integer.toBinaryString(n));"
+      },
+      "c": {
+        "blankCode": "int n = 12;\nfor(int i=3; i>=0; i--) printf(\"%d\", (n>>i)&1);\nprintf(\"\\n\");"
+      }
+    }
+  },
+  {
+    "id": "easy-89",
+    "title": "Off-by-One in String Reverse",
+    "description": "Find the logic error in this string reverse.",
+    "format": "debug",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "buggyCode": "s = 'hello'\nresult = ''\nfor i in range(len(s) - 1, 0, -1):\n    result += s[i]\nprint(result)"
+      },
+      "java": {
+        "buggyCode": "String s = \"hello\";\nStringBuilder result = new StringBuilder();\nfor (int i = s.length()-1; i > 0; i--)\n    result.append(s.charAt(i));\nSystem.out.println(result);"
+      },
+      "c": {
+        "buggyCode": "char s[] = \"hello\", result[6]=\"\";\nint j=0;\nfor(int i=strlen(s)-1; i>0; i--)\n    result[j++]=s[i];\nresult[j]='\\0';\nprintf(\"%s\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "easy-90",
+    "title": "Dictionary Get with Default",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "medium",
+    "versions": {
+      "python": {
+        "blankCode": "d = {'a': 1, 'b': 2}\nprint(d.get('c', 99))\nprint(d.get('a', 99))"
+      },
+      "java": {
+        "blankCode": "Map<String,Integer> d = new HashMap<>();\nd.put(\"a\",1); d.put(\"b\",2);\nSystem.out.println(d.getOrDefault(\"c\", 99));\nSystem.out.println(d.getOrDefault(\"a\", 99));"
+      },
+      "c": {
+        "blankCode": "// Simulate with linear search:\nchar keys[2][2]={\"a\",\"b\"};\nint vals[]={1,2};\nchar *find=\"c\"; int def=99, found=-1;\nfor(int i=0;i<2;i++) if(strcmp(keys[i],find)==0){found=vals[i];break;}\nprintf(\"%d\\n\", found==-1?def:found);\nfind=\"a\"; found=-1;\nfor(int i=0;i<2;i++) if(strcmp(keys[i],find)==0){found=vals[i];break;}\nprintf(\"%d\\n\", found==-1?def:found);"
+      }
+    }
+  },
+  {
+    "id": "med-61",
+    "title": "Decorator Execution Order",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def deco(func):\n    print('decorating')\n    def wrapper():\n        print('before')\n        func()\n        print('after')\n    return wrapper\n\n@deco\ndef say_hi():\n    print('hi')\n\nsay_hi()"
+      },
+      "java": {
+        "blankCode": "// Java uses proxy/wrapper pattern:\nRunnable sayHi = () -> System.out.println(\"hi\");\nRunnable wrapped = () -> {\n    System.out.println(\"before\");\n    sayHi.run();\n    System.out.println(\"after\");\n};\nwrapped.run();"
+      },
+      "c": {
+        "blankCode": "void sayHi() { printf(\"hi\\n\"); }\nvoid wrapper(void (*f)()) {\n    printf(\"before\\n\");\n    f();\n    printf(\"after\\n\");\n}\nwrapper(sayHi);"
+      }
+    }
+  },
+  {
+    "id": "med-62",
+    "title": "Conditional Expression Precedence Trap",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "x = 5\nresult = x + 1 if x > 3 else x - 1\nprint(result)"
+      },
+      "java": {
+        "blankCode": "int x = 5;\nint result = x + (x > 3 ? 1 : -1);\nSystem.out.println(result);"
+      },
+      "c": {
+        "blankCode": "int x = 5;\nint result = x + (x > 3 ? 1 : -1);\nprintf(\"%d\\n\", result);"
+      }
+    }
+  },
+  {
+    "id": "med-63",
+    "title": "Slice Assignment Replacement",
+    "description": "What is printed?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "a = [1, 2, 3, 4, 5]\na[1:3] = [20, 30, 40]\nprint(a)",
+        "options": [
+          "[1,20,30,40,4,5]",
+          "[1,20,30,40,5]",
+          "[20,30,40,4,5]",
+          "[1,20,30,4,5]"
+        ]
+      },
+      "java": {
+        "question": "List<Integer> a = new ArrayList<>(Arrays.asList(1,2,3,4,5));\na.subList(1,3).clear();\na.addAll(1, Arrays.asList(20,30,40));\nSystem.out.println(a);",
+        "options": [
+          "[1,20,30,40,4,5]",
+          "[1,20,30,40,5]",
+          "[20,30,40,4,5]",
+          "[1,20,30,4,5]"
+        ]
+      },
+      "c": {
+        "question": "// No direct slice assignment in C",
+        "options": [
+          "N/A",
+          "N/A",
+          "N/A",
+          "N/A"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-64",
+    "title": "Wrong Recursion for Sum of Digits",
+    "description": "This function should return sum of digits of n but crashes. Fix it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def digit_sum(n):\n    if n == 0:\n        return 0\n    return n % 10 + digit_sum(n / 10)\n\nprint(digit_sum(123))"
+      },
+      "java": {
+        "buggyCode": "static int digitSum(int n) {\n    if (n == 0) return 0;\n    return n % 10 + digitSum(n / 10);\n}\nSystem.out.println(digitSum(123));"
+      },
+      "c": {
+        "buggyCode": "int digitSum(int n) {\n    if (n == 0) return 0;\n    return n % 10 + digitSum(n / 10);\n}\nprintf(\"%d\\n\", digitSum(123));"
+      }
+    }
+  },
+  {
+    "id": "med-65",
+    "title": "Unpacking with Star Operator",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "first, *rest = [10, 20, 30, 40]\nprint(first)\nprint(rest)"
+      },
+      "java": {
+        "blankCode": "// No direct star unpacking; simulate:\nint[] arr = {10,20,30,40};\nint first = arr[0];\nint[] rest = Arrays.copyOfRange(arr, 1, arr.length);\nSystem.out.println(first);\nSystem.out.println(Arrays.toString(rest));"
+      },
+      "c": {
+        "blankCode": "int arr[] = {10,20,30,40};\nint first = arr[0];\nprintf(\"%d\\n\", first);\nprintf(\"[\");\nfor(int i=1;i<4;i++) printf(\"%d%s\",arr[i],i<3?\", \":\"\");\nprintf(\"]\\n\");"
+      }
+    }
+  },
+  {
+    "id": "med-66",
+    "title": "Incorrect Fibonacci with Global",
+    "description": "Find the logic error causing wrong Fibonacci output.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "memo = {}\ndef fib(n):\n    if n in memo:\n        return memo[n]\n    if n <= 1:\n        return n\n    memo[n] = fib(n-1) + fib(n-2)\n    return memo[n]\n\nmemo[3] = 100\nprint(fib(5))"
+      },
+      "java": {
+        "buggyCode": "static Map<Integer,Integer> memo = new HashMap<>();\nstatic int fib(int n) {\n    if (memo.containsKey(n)) return memo.get(n);\n    if (n<=1) return n;\n    int res = fib(n-1)+fib(n-2);\n    memo.put(n,res); return res;\n}\nmemo.put(3, 100);\nSystem.out.println(fib(5));"
+      },
+      "c": {
+        "buggyCode": "int memo[10]; int has[10]={0};\nint fib(int n){\n    if(has[n]) return memo[n];\n    if(n<=1) return n;\n    memo[n]=fib(n-1)+fib(n-2);\n    has[n]=1; return memo[n];\n}\nmemo[3]=100; has[3]=1;\nprintf(\"%d\\n\", fib(5));"
+      }
+    }
+  },
+  {
+    "id": "med-67",
+    "title": "Trie of Assignments: Which Wins",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "x = 1\nx = x + 2\nx = x * 3\nx = x - 4\nprint(x)"
+      },
+      "java": {
+        "blankCode": "int x = 1;\nx = x + 2;\nx = x * 3;\nx = x - 4;\nSystem.out.println(x);"
+      },
+      "c": {
+        "blankCode": "int x = 1;\nx = x + 2;\nx = x * 3;\nx = x - 4;\nprintf(\"%d\\n\", x);"
+      }
+    }
+  },
+  {
+    "id": "med-68",
+    "title": "Check Balanced Brackets Only for Square Brackets",
+    "description": "Complete the function to return True only if all '[' have a matching ']'.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def balanced_sq(s):\n    count = 0\n    for c in s:\n        if c == '[': count += 1\n        elif c == ']':\n            if count == 0: return False\n            _____\n    return count == 0"
+      },
+      "java": {
+        "blankCode": "boolean balancedSq(String s) {\n    int count = 0;\n    for (char c : s.toCharArray()) {\n        if (c=='[') count++;\n        else if (c==']') {\n            if (count==0) return false;\n            _____;\n        }\n    }\n    return count == 0;\n}"
+      },
+      "c": {
+        "blankCode": "int balancedSq(char *s) {\n    int count = 0;\n    for(int i=0;s[i];i++) {\n        if(s[i]=='[') count++;\n        else if(s[i]==']') {\n            if(count==0) return 0;\n            _____;\n        }\n    }\n    return count == 0;\n}"
+      }
+    }
+  },
+  {
+    "id": "med-69",
+    "title": "Modifying String Via Index",
+    "description": "Identify the error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "s = 'hello'\ns[0] = 'H'\nprint(s)"
+      },
+      "java": {
+        "buggyCode": "String s = \"hello\";\ns.charAt(0) = 'H';\nSystem.out.println(s);"
+      },
+      "c": {
+        "buggyCode": "char *s = \"hello\";\ns[0] = 'H';\nprintf(\"%s\\n\", s);"
+      }
+    }
+  },
+  {
+    "id": "med-70",
+    "title": "Lambda Capture and Default Arg",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "fns = []\nfor i in range(3):\n    fns.append(lambda x, i=i: x + i)\nprint([f(10) for f in fns])"
+      },
+      "java": {
+        "blankCode": "List<Function<Integer,Integer>> fns = new ArrayList<>();\nfor (int i=0; i<3; i++) {\n    final int j = i;\n    fns.add(x -> x + j);\n}\nfns.forEach(f -> System.out.print(f.apply(10) + \" \"));"
+      },
+      "c": {
+        "blankCode": "// Simulate with offset array:\nint offsets[] = {0,1,2};\nfor(int i=0;i<3;i++) printf(\"%d \", 10+offsets[i]);\nprintf(\"\\n\");"
+      }
+    }
+  },
+  {
+    "id": "med-71",
+    "title": "Chained Method Returns None",
+    "description": "What is printed?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "nums = [3, 1, 4, 1, 5]\nresult = nums.sort()\nprint(result)",
+        "options": [
+          "[1, 1, 3, 4, 5]",
+          "None",
+          "Error",
+          "[3, 1, 4, 1, 5]"
+        ]
+      },
+      "java": {
+        "question": "int[] nums = {3,1,4,1,5};\nArrays.sort(nums);\nSystem.out.println(Arrays.toString(nums));",
+        "options": [
+          "[1, 1, 3, 4, 5]",
+          "null",
+          "Error",
+          "[3, 1, 4, 1, 5]"
+        ]
+      },
+      "c": {
+        "question": "#include <stdlib.h>\nint cmp(const void*a,const void*b){return *(int*)a-*(int*)b;}\nint nums[]={3,1,4,1,5};\nqsort(nums,5,sizeof(int),cmp);\nfor(int i=0;i<5;i++) printf(\"%d \",nums[i]);",
+        "options": [
+          "1 1 3 4 5",
+          "3 1 4 1 5",
+          "NULL",
+          "Error"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-72",
+    "title": "Class Inheritance Method Override",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "class Animal:\n    def speak(self):\n        return 'generic'\n\nclass Dog(Animal):\n    def speak(self):\n        return 'woof'\n\na = Animal()\nd = Dog()\nprint(a.speak())\nprint(d.speak())\nprint(isinstance(d, Animal))"
+      },
+      "java": {
+        "blankCode": "class Animal { String speak() { return \"generic\"; } }\nclass Dog extends Animal { String speak() { return \"woof\"; } }\nAnimal a = new Animal();\nDog d = new Dog();\nSystem.out.println(a.speak());\nSystem.out.println(d.speak());\nSystem.out.println(d instanceof Animal);"
+      },
+      "c": {
+        "blankCode": "// Function pointer polymorphism:\ntypedef struct { char*(*speak)(); } Animal;\nchar* generic() { return \"generic\"; }\nchar* woof() { return \"woof\"; }\nAnimal a={generic}, d={woof};\nprintf(\"%s\\n%s\\n\", a.speak(), d.speak());"
+      }
+    }
+  },
+  {
+    "id": "med-73",
+    "title": "Remove All Whitespace From String",
+    "description": "Complete the function to remove all spaces from a string.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def remove_spaces(s):\n    return s._____(\" \", \"\")"
+      },
+      "java": {
+        "blankCode": "String removeSpaces(String s) {\n    return s._____(\"\\\\s+\", \"\");\n}"
+      },
+      "c": {
+        "blankCode": "void removeSpaces(char *s) {\n    int i=0, j=0;\n    while(s[i]) {\n        if(s[i] != ' ') s[j++] = s[i];\n        _____;\n    }\n    s[j] = '\\0';\n}"
+      }
+    }
+  },
+  {
+    "id": "med-74",
+    "title": "Zip and Unzip",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "a = [1, 2, 3]\nb = ['x', 'y', 'z']\npairs = list(zip(a, b))\nprint(pairs)\na2, b2 = zip(*pairs)\nprint(list(a2))"
+      },
+      "java": {
+        "blankCode": "int[] a = {1,2,3}; String[] b = {\"x\",\"y\",\"z\"};\nfor(int i=0;i<3;i++) System.out.print(\"(\"+a[i]+\", \"+b[i]+\") \");\nSystem.out.println();"
+      },
+      "c": {
+        "blankCode": "int a[]={1,2,3}; char *b[]={\"x\",\"y\",\"z\"};\nfor(int i=0;i<3;i++) printf(\"(%d, %s) \",a[i],b[i]);\nprintf(\"\\n\");"
+      }
+    }
+  },
+  {
+    "id": "med-75",
+    "title": "Incorrect Class Instantiation",
+    "description": "Find the error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "class Point:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\np = Point(3, 4\nprint(p.x)"
+      },
+      "java": {
+        "buggyCode": "class Point {\n    int x, y;\n    Point(int x, int y) { this.x=x; this.y=y; }\n}\nPoint p = new Point(3, 4);\nSystem.out.println(p.x);"
+      },
+      "c": {
+        "buggyCode": "typedef struct { int x; int y; } Point;\nPoint p = {3, 4;\nprintf(\"%d\\n\", p.x);"
+      }
+    }
+  },
+  {
+    "id": "med-76",
+    "title": "Nested Dictionary Access",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "data = {'user': {'name': 'Alice', 'scores': [10, 20, 30]}}\nprint(data['user']['scores'][-1])\nprint(data.get('admin', {}).get('name', 'unknown'))"
+      },
+      "java": {
+        "blankCode": "Map<String,Object> user=new HashMap<>();\nuser.put(\"name\",\"Alice\");\nint[]scores={10,20,30};\nuser.put(\"scores\",scores);\nSystem.out.println(((int[])user.get(\"scores\"))[2]);\nMap<String,Object> admin=new HashMap<>();\nSystem.out.println(admin.getOrDefault(\"name\",\"unknown\"));"
+      },
+      "c": {
+        "blankCode": "int scores[]={10,20,30};\nprintf(\"%d\\n\", scores[2]);\nprintf(\"unknown\\n\"); // admin not present"
+      }
+    }
+  },
+  {
+    "id": "med-77",
+    "title": "Float Precision in Comparison",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "a = 0.1 + 0.1 + 0.1\nb = 0.3\nprint(a == b)\nprint(abs(a - b) < 1e-9)",
+        "options": [
+          "True and True",
+          "False and True",
+          "False and False",
+          "True and False"
+        ]
+      },
+      "java": {
+        "question": "double a = 0.1+0.1+0.1, b = 0.3;\nSystem.out.println(a==b);\nSystem.out.println(Math.abs(a-b) < 1e-9);",
+        "options": [
+          "true true",
+          "false true",
+          "false false",
+          "true false"
+        ]
+      },
+      "c": {
+        "question": "double a=0.1+0.1+0.1, b=0.3;\nprintf(\"%d\\n\", a==b);\nprintf(\"%d\\n\", fabs(a-b)<1e-9);",
+        "options": [
+          "1 1",
+          "0 1",
+          "0 0",
+          "1 0"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-78",
+    "title": "Incorrect Two-Pointer Approach",
+    "description": "This function should check if an array can form a pair summing to target. Fix the logic error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def has_pair(arr, target):\n    arr.sort()\n    left, right = 0, len(arr)\n    while left < right:\n        s = arr[left] + arr[right]\n        if s == target: return True\n        elif s < target: left += 1\n        else: right -= 1\n    return False\n\nprint(has_pair([1,4,6,8], 10))"
+      },
+      "java": {
+        "buggyCode": "boolean hasPair(int[] arr, int target) {\n    Arrays.sort(arr);\n    int left=0, right=arr.length;\n    while(left<right){\n        int s=arr[left]+arr[right];\n        if(s==target) return true;\n        else if(s<target) left++;\n        else right--;\n    }\n    return false;\n}"
+      },
+      "c": {
+        "buggyCode": "int hasPair(int *arr, int n, int target) {\n    // assume sorted\n    int left=0, right=n;\n    while(left<right){\n        int s=arr[left]+arr[right];\n        if(s==target) return 1;\n        else if(s<target) left++;\n        else right--;\n    }\n    return 0;\n}"
+      }
+    }
+  },
+  {
+    "id": "med-79",
+    "title": "String format vs f-string Difference",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "val = 3.14159\nprint('{:.2f}'.format(val))\nprint(f'{val:.3f}')\nprint(round(val, 1))"
+      },
+      "java": {
+        "blankCode": "double val = 3.14159;\nSystem.out.printf(\"%.2f%n\", val);\nSystem.out.printf(\"%.3f%n\", val);\nSystem.out.println(Math.round(val*10)/10.0);"
+      },
+      "c": {
+        "blankCode": "double val = 3.14159;\nprintf(\"%.2f\\n\", val);\nprintf(\"%.3f\\n\", val);\nprintf(\"%.1f\\n\", val);"
+      }
+    }
+  },
+  {
+    "id": "med-80",
+    "title": "Find All Indices of Value",
+    "description": "Complete the function to return all indices where value appears.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def find_all(arr, val):\n    return [i for i, x in enumerate(arr) if _____]\n\nprint(find_all([1,3,2,3,4,3], 3))"
+      },
+      "java": {
+        "blankCode": "List<Integer> findAll(int[] arr, int val) {\n    List<Integer> result = new ArrayList<>();\n    for (int i=0; i<arr.length; i++)\n        if (_____) result.add(i);\n    return result;\n}"
+      },
+      "c": {
+        "blankCode": "int findAll(int *arr, int n, int val, int *out) {\n    int k=0;\n    for(int i=0;i<n;i++)\n        if(_____) out[k++]=i;\n    return k;\n}"
+      }
+    }
+  },
+  {
+    "id": "med-81",
+    "title": "Tuple Immutability vs Mutable Contents",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "t = ([1, 2], [3, 4])\nt[0].append(99)\nprint(t)"
+      },
+      "java": {
+        "blankCode": "// Java: final array reference\nfinal int[][] t = {{1,2},{3,4}};\nt[0] = new int[]{5}; // allowed? No!\n// Actually allowed — final prevents reassigning t, not contents\nt[0][0] = 99;\nSystem.out.println(Arrays.toString(t[0]));"
+      },
+      "c": {
+        "blankCode": "int a[]={1,2}, b[]={3,4};\nint *t[]={a,b};\nt[0][0]=99; // modify through pointer\nprintf(\"%d %d\\n\", t[0][0], t[1][0]);"
+      }
+    }
+  },
+  {
+    "id": "med-82",
+    "title": "Complete Insertion Sort",
+    "description": "Drag the correct token to complete insertion sort.",
+    "format": "drag_and_fill",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def insertion_sort(arr):\n    for i in range(1, len(arr)):\n        key = arr[i]\n        j = i - 1\n        while j >= 0 and arr[j] > key:\n            arr[j+1] = arr[j]\n            _____\n    arr[j+1] = key",
+        "options": [
+          "j -= 1",
+          "j += 1",
+          "j = 0",
+          "j = i",
+          "i -= 1"
+        ]
+      },
+      "java": {
+        "blankCode": "for (int i=1; i<arr.length; i++) {\n    int key = arr[i];\n    int j = i-1;\n    while (j>=0 && arr[j]>key) {\n        arr[j+1]=arr[j];\n        _____;\n    }\n    arr[j+1]=key;\n}",
+        "options": [
+          "j--",
+          "j++",
+          "j=0",
+          "j=i",
+          "i--"
+        ]
+      },
+      "c": {
+        "blankCode": "for(int i=1;i<n;i++){\n    int key=arr[i];\n    int j=i-1;\n    while(j>=0 && arr[j]>key){\n        arr[j+1]=arr[j];\n        _____;\n    }\n    arr[j+1]=key;\n}",
+        "options": [
+          "j--",
+          "j++",
+          "j=0",
+          "j=i",
+          "i--"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-83",
+    "title": "Accessing Freed / Out-of-Scope Memory",
+    "description": "Identify the error.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def get_list():\n    return [1, 2, 3]\n\nref = get_list()\nprint(ref[0])"
+      },
+      "java": {
+        "buggyCode": "static int[] getArr() { return new int[]{1,2,3}; }\nint[] ref = getArr();\nSystem.out.println(ref[0]);"
+      },
+      "c": {
+        "buggyCode": "int* getArr() {\n    int arr[] = {1, 2, 3};\n    return arr;\n}\nint *ref = getArr();\nprintf(\"%d\\n\", ref[0]);"
+      }
+    }
+  },
+  {
+    "id": "med-84",
+    "title": "Recursive Tree Depth",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def depth(n):\n    if n <= 0:\n        return 0\n    return 1 + max(depth(n-1), depth(n-2))\n\nprint(depth(4))"
+      },
+      "java": {
+        "blankCode": "static int depth(int n) {\n    if (n<=0) return 0;\n    return 1 + Math.max(depth(n-1), depth(n-2));\n}\nSystem.out.println(depth(4));"
+      },
+      "c": {
+        "blankCode": "int depth(int n) {\n    if(n<=0) return 0;\n    int a=depth(n-1), b=depth(n-2);\n    return 1+(a>b?a:b);\n}\nprintf(\"%d\\n\", depth(4));"
+      }
+    }
+  },
+  {
+    "id": "med-85",
+    "title": "Map Returns Iterator vs List",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "nums = [1, 2, 3]\ndoubled = map(lambda x: x*2, nums)\nprint(type(doubled).__name__)\nprint(list(doubled))\nprint(list(doubled))",
+        "options": [
+          "map [2,4,6] [2,4,6]",
+          "map [2,4,6] []",
+          "list [2,4,6] [2,4,6]",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "int[] nums = {1,2,3};\nIntStream doubled = Arrays.stream(nums).map(x->x*2);\nSystem.out.println(Arrays.toString(doubled.toArray()));\n// doubled is consumed; calling again would throw\nSystem.out.println(\"stream used\");",
+        "options": [
+          "[2,4,6] stream used",
+          "Error Error",
+          "[2,4,6] [2,4,6]",
+          "null stream used"
+        ]
+      },
+      "c": {
+        "question": "// C arrays don't have this issue\nint nums[]={1,2,3}, doubled[3];\nfor(int i=0;i<3;i++) doubled[i]=nums[i]*2;\nfor(int i=0;i<3;i++) printf(\"%d \",doubled[i]);\nprintf(\"\\n\");\nfor(int i=0;i<3;i++) printf(\"%d \",doubled[i]);",
+        "options": [
+          "2 4 6 / 2 4 6",
+          "2 4 6 / empty",
+          "Error",
+          "0 0 0"
+        ]
+      }
+    }
+  },
+  {
+    "id": "med-86",
+    "title": "Rotate Matrix 90 Degrees",
+    "description": "Complete the in-place 90-degree clockwise rotation of a 3x3 matrix.",
+    "format": "fill_blank",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "def rotate90(matrix):\n    n = len(matrix)\n    # Step 1: transpose\n    for i in range(n):\n        for j in range(i+1, n):\n            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]\n    # Step 2: reverse each row\n    for row in matrix:\n        _____\n\nm = [[1,2,3],[4,5,6],[7,8,9]]\nrotate90(m)\nprint(m)"
+      },
+      "java": {
+        "blankCode": "void rotate90(int[][] m) {\n    int n = m.length;\n    for(int i=0;i<n;i++) for(int j=i+1;j<n;j++){int t=m[i][j];m[i][j]=m[j][i];m[j][i]=t;}\n    for(int[] row : m) {\n        int l=0,r=row.length-1;\n        while(l<r){int t=row[l];row[l]=row[r];row[r]=t;_____}\n    }\n}"
+      },
+      "c": {
+        "blankCode": "void rotate90(int m[3][3]) {\n    // transpose\n    for(int i=0;i<3;i++) for(int j=i+1;j<3;j++){int t=m[i][j];m[i][j]=m[j][i];m[j][i]=t;}\n    // reverse rows\n    for(int i=0;i<3;i++){int t=m[i][0];m[i][0]=m[i][2];_____}\n}"
+      }
+    }
+  },
+  {
+    "id": "med-87",
+    "title": "Global vs Local Same Name",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "x = 'global'\n\ndef foo():\n    x = 'local'\n    print(x)\n\nfoo()\nprint(x)"
+      },
+      "java": {
+        "blankCode": "static String x = \"global\";\nstatic void foo() {\n    String x = \"local\";\n    System.out.println(x);\n}\nfoo();\nSystem.out.println(x);"
+      },
+      "c": {
+        "blankCode": "char *x = \"global\";\nvoid foo() {\n    char *x = \"local\";\n    printf(\"%s\\n\", x);\n}\nfoo();\nprintf(\"%s\\n\", x);"
+      }
+    }
+  },
+  {
+    "id": "med-88",
+    "title": "Wrong Carry in Addition",
+    "description": "This manual digit addition has a logic error. Find it.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "def add_strings(a, b):\n    i, j, carry = len(a)-1, len(b)-1, 0\n    result = []\n    while i >= 0 or j >= 0:\n        x = int(a[i]) if i >= 0 else 0\n        y = int(b[j]) if j >= 0 else 0\n        total = x + y + carry\n        result.append(str(total % 10))\n        carry = total // 10\n        i -= 1; j -= 1\n    return ''.join(reversed(result))\n\nprint(add_strings('99', '1'))"
+      },
+      "java": {
+        "buggyCode": "String addStrings(String a, String b) {\n    int i=a.length()-1, j=b.length()-1, carry=0;\n    StringBuilder res=new StringBuilder();\n    while(i>=0||j>=0) {\n        int x=i>=0?a.charAt(i--)-'0':0;\n        int y=j>=0?b.charAt(j--)-'0':0;\n        int sum=x+y+carry;\n        res.append(sum%10);\n        carry=sum/10;\n    }\n    return res.reverse().toString();\n}"
+      },
+      "c": {
+        "buggyCode": "// Same logic — missing carry append after loop"
+      }
+    }
+  },
+  {
+    "id": "med-89",
+    "title": "Context Manager Execution Order",
+    "description": "What is printed?",
+    "format": "output_prediction",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "blankCode": "class CM:\n    def _____enter_____(self):\n        print('enter')\n        return self\n    def _____exit_____(self, *args):\n        print('exit')\n\nwith CM() as c:\n    print('inside')"
+      },
+      "java": {
+        "blankCode": "// try-with-resources equivalent:\nclass CM implements AutoCloseable {\n    CM() { System.out.println(\"enter\"); }\n    public void close() { System.out.println(\"exit\"); }\n}\ntry (CM c = new CM()) {\n    System.out.println(\"inside\");\n}"
+      },
+      "c": {
+        "blankCode": "// No context manager; manual:\nprintf(\"enter\\n\");\nprintf(\"inside\\n\");\nprintf(\"exit\\n\");"
+      }
+    }
+  },
+  {
+    "id": "med-90",
+    "title": "Comparison of Different Types",
+    "description": "What is the output?",
+    "format": "multiple_choice",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "question": "print(1 == True)\nprint(1 == '1')\nprint(0 == False)",
+        "options": [
+          "True False True",
+          "True True True",
+          "False False False",
+          "Error"
+        ]
+      },
+      "java": {
+        "question": "System.out.println(1 == true);\nSystem.out.println(0 == false);",
+        "options": [
+          "Compile Error",
+          "true false",
+          "true true",
+          "false false"
+        ]
+      },
+      "c": {
+        "question": "printf(\"%d\\n\", 1 == 1);\nprintf(\"%d\\n\", 1 == (int)1.0);\nprintf(\"%d\\n\", 0 == 0);",
+        "options": [
+          "1 1 1",
+          "1 0 1",
+          "0 0 0",
+          "1 1 0"
+        ]
+      }
+    }
+  },
+  {
+    "id": "hard-41",
+    "title": "Count Digits in Number",
+    "description": "Given a positive integer n, return the number of digits it contains.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-42",
+    "title": "Transpose Matrix",
+    "description": "Given an n x n matrix, return its transpose (swap rows and columns).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-43",
+    "title": "Group Anagrams Together",
+    "description": "Given an array of strings, group the anagrams together and return them.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-44",
+    "title": "Sum of Two Arrays Element-Wise",
+    "description": "Given two arrays of equal length, return a new array where each element is the sum of the corresponding elements.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-45",
+    "title": "Maximum Product of Two Elements",
+    "description": "Given an array of integers, return the maximum product of any two distinct elements (nums[i]-1)*(nums[j]-1).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-46",
+    "title": "Number of Good Pairs",
+    "description": "Given array nums, return the number of good pairs (i, j) where nums[i] == nums[j] and i < j.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-47",
+    "title": "Compress String (Run-Length Encoding)",
+    "description": "Implement basic string compression: replace consecutive repeated characters with character + count. If compressed is not shorter, return original.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-48",
+    "title": "Product of Array Except Self (Brute Force)",
+    "description": "Given an array, return an array where each element is the product of all other elements. Do not use division.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-49",
+    "title": "Subarray Sum Equals K (Count)",
+    "description": "Given an array and integer k, return the total number of continuous subarrays whose sum equals k.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-50",
+    "title": "Linked List Cycle Detection",
+    "description": "Given the head of a linked list, return true if it has a cycle (Floyd's algorithm).",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-51",
+    "title": "Find Numbers With Even Number of Digits",
+    "description": "Given an array of integers, return how many of them contain an even number of digits.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-52",
+    "title": "Maximum Consecutive Ones",
+    "description": "Given a binary array nums, return the maximum number of consecutive 1's.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-53",
+    "title": "Find Pivot Index",
+    "description": "Return the leftmost pivot index where the sum of elements to the left equals the sum to the right. Return -1 if none exists.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-54",
+    "title": "Check If Array Is Sorted and Rotated",
+    "description": "Given an array, return true if it was originally sorted in non-decreasing order and then possibly rotated.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-55",
+    "title": "Richest Customer Wealth",
+    "description": "Given an m x n grid accounts where accounts[i][j] is the amount of money the i-th customer has in the j-th bank, return the wealth of the richest customer.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-56",
+    "title": "Replace Elements With Greatest on Right",
+    "description": "Replace every element with the greatest element among all elements to its right. Replace the last element with -1.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-57",
+    "title": "Squares of Sorted Array",
+    "description": "Given an integer array sorted in non-decreasing order, return an array of the squares of each number, also in non-decreasing order.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-58",
+    "title": "Third Maximum Number",
+    "description": "Given an array, return the third distinct maximum. If it does not exist, return the maximum.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-59",
+    "title": "String to Integer (atoi)",
+    "description": "Implement atoi: parse leading whitespace, optional +/- sign, then digits. Stop at first non-digit. Clamp to 32-bit int range.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  },
+  {
+    "id": "hard-60",
+    "title": "Longest Palindromic Substring (Brute Force)",
+    "description": "Given a string, return the longest palindromic substring. If tie, return first.",
+    "format": "debug",
+    "difficulty": "hard",
+    "versions": {
+      "python": {
+        "buggyCode": "# Write your answer below"
+      },
+      "java": {
+        "buggyCode": "// Write your answer below"
+      },
+      "c": {
+        "buggyCode": "// Write your answer below"
+      }
+    }
+  }
+]

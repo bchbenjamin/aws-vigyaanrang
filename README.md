@@ -27,7 +27,14 @@
 - Tasks are loaded directly from `src/data/puzzles.json`.
 - Tasks are no longer tied to individual rooms. They come from a global difficulty pool: `easy`, `medium`, `hard`.
 - The in-editor difficulty selector is the source of truth for requesting new tasks.
-- Task answers and in-progress work are cached in browser storage so a refresh does not wipe a player’s current task state.
+- Task answers and in-progress work are cached in browser storage so a refresh does not wipe a playerï¿½s current task state.
+
+### Parser and grading resilience
+- Server and client now use a shared puzzle parser, so format handling is consistent between assignment, rendering, and grading.
+- Common format aliases are normalized automatically, including `Logic Error Detection`, `Syntax Error Detection`, `Parenthesis Matching`, `Code Completion`, and `Drag and Fill`.
+- Difficulty aliases are normalized (`leetcode_easy` and similar labels map into `hard`).
+- Rearrangement tasks are graded using the submitted ordered lines, so shuffled client order no longer breaks validation.
+- If a task shape cannot be parsed or graded safely, the task is skipped/replaced without penalizing the player.
 
 ### Difficulty rules
 - Developers can request `easy` and `medium`.

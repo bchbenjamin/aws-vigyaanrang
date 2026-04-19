@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import CircuitMap from '@/components/CircuitMap';
 import CodeEditor from '@/components/CodeEditor';
+import { type Language } from '@/lib/tasks';
 import VotingOverlay from '@/components/VotingOverlay';
 import FirewallOverlay from '@/components/FirewallOverlay';
 import styles from './page.module.css';
@@ -180,17 +181,22 @@ export default function GamePage() {
 
     // ── TASK ASSIGNMENTS ──────────────────────────────
     socket.on('task_assigned', (data) => {
-      if (data.taskId !== undefined) setTaskId(data.taskId);
-      if (data.hackTaskId !== undefined) setHackTaskId(data.hackTaskId);
+      if (data.taskId !== undefined)     setTaskId(data.taskId     || null);
+      if (data.hackTaskId !== undefined) setHackTaskId(data.hackTaskId || null);
     });
 
     socket.on('task_result', (data) => {
-      if (data?.success) {
-        if (data.firewallNextTaskAt !== undefined) {
-          setFirewallNextTaskAt(data.firewallNextTaskAt);
+      if (!data?.success) {
+        if (data?.message) {
+          showAlert('danger', data.message);
         }
-        triggerCompletionFx(data.message || 'Task completed.', 'task');
+        return;
       }
+
+      if (data.firewallNextTaskAt !== undefined) {
+        setFirewallNextTaskAt(data.firewallNextTaskAt);
+      }
+      triggerCompletionFx(data.message || 'Task completed.', 'task');
     });
 
     socket.on('task_cooldown', (data) => {
@@ -368,17 +374,17 @@ export default function GamePage() {
     socket.emit('move_room', targetRoom);
   }, [isMoving, room, phase]);
 
-  const handleTaskSubmit = useCallback((result: { correct: boolean; isHackTask: boolean; taskId?: string; protectedTargetId?: string }) => {
-    if (!socket || !result.correct) return;
+    const handleTaskSubmit = useCallback((result: { isHackTask: boolean; taskId: string; protectedTargetId?: string; userAnswer: string; activeLang: Language; fillState: Record<number, string>; dragOrder: number[]; rearrangedLines?: string[]; }) => {
+    if (!socket || !connected) return;
     if (result.isHackTask) {
-       socket.emit('submit_hack', { taskId: result.taskId, targetId: hackTargetId });
+       socket.emit('submit_hack', { taskId: result.taskId, targetId: hackTargetId, userAnswer: result.userAnswer, activeLang: result.activeLang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
        setHackTargetId(null);
        setHackTaskId(null);
     } else {
-       socket.emit('task_complete', { taskId: result.taskId, protectedTargetId: result.protectedTargetId });
+       socket.emit('task_complete', { taskId: result.taskId, protectedTargetId: result.protectedTargetId || protectTargetId, userAnswer: result.userAnswer, activeLang: result.activeLang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
        setTaskId(null);
     }
-  }, [hackTargetId]);
+  }, [hackTargetId, connected, protectTargetId]);
 
   const handleHack = useCallback((targetId: string) => {
     if (!socket) return;
@@ -694,6 +700,7 @@ export default function GamePage() {
           {canUseCodeEditor ? (
             <CodeEditor
               taskId={hackTaskId || taskId}
+              isHackTask={!!hackTaskId}
               difficultiesAllowed={((role === 'hacker' && status === 'alive') || status === 'firewall') ? ['easy', 'medium', 'hard'] : ['easy', 'medium']}
               systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
                 ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
@@ -708,12 +715,14 @@ export default function GamePage() {
                 }
               }}
               onSubmit={(res) => {
-                const isHackTask = Boolean(hackTaskId && res.taskId === hackTaskId);
                 handleTaskSubmit({
-                  correct: res.correct,
-                  isHackTask,
+                  isHackTask: res.isHackTask,
                   taskId: res.taskId,
-                  protectedTargetId: selectedProtectTarget?.id || undefined
+                  protectedTargetId: selectedProtectTarget?.id || undefined,
+                  userAnswer: res.userAnswer,
+                  activeLang: res.activeLang,
+                  fillState: res.fillState,
+                  dragOrder: res.dragOrder,
                 });
               }}
             />

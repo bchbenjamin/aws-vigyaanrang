@@ -16,6 +16,7 @@ const TIMING_CONFIG_KEYS = new Set([
   'firewallBufferMs',
   'easySpeedLimitMs',
   'easyCooldownMs',
+  'incorrectDelayMs',
 ]);
 
 export default function AdminPage() {
@@ -52,7 +53,8 @@ export default function AdminPage() {
     standupDurationMs: 'Voting Discussion (s)',
     firewallBufferMs: 'Firewall Task Shield Cooldown (s)',
     easySpeedLimitMs: 'Speedrun Threshold (s)',
-    easyCooldownMs: 'Speedrun Penalty Cooldown (s)'
+    easyCooldownMs: 'Speedrun Penalty Cooldown (s)',
+    incorrectDelayMs: 'Incorrect Answer Penalty (s)',
   };
   const [showStopMenu, setShowStopMenu] = useState(false);
 

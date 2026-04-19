@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "prebuild": "node scripts/strip-answers.js",
+    "predev":   "node scripts/strip-answers.js",
+    "dev":   "node server.js",
     "build": "next build",
     "start": "node -e \"process.env.NODE_ENV='production'; require('./server.js')\"",
-    "lint": "eslint"
+    "lint":  "eslint",
+    "test": "node --test \"tests/*.test.js\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
