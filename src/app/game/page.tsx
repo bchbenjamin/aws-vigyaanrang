@@ -188,6 +188,9 @@ export default function GamePage() {
     socket.on('task_assigned', (data) => {
       setTaskPayload(data.taskPayload ?? null);
       setIsHackTask(Boolean(data.isHackTask));
+      if (!data.isHackTask) {
+        setHackTargetId(null);
+      }
     });
 
     socket.on('task_result', (data) => {
@@ -232,6 +235,9 @@ export default function GamePage() {
 
     socket.on('hack_success', (data) => {
       setHackCooldownUntil(data.cooldownUntil);
+      setHackTargetId(null);
+      setTaskPayload(null);
+      setIsHackTask(false);
       triggerCompletionFx(data.message || 'Task completed.', 'task');
     });
 
@@ -385,13 +391,8 @@ export default function GamePage() {
     if (!socket || !connected) return;
     if (result.isHackTask) {
        socket.emit('submit_hack', { taskId: result.taskId, targetId: hackTargetId, answer: result.answer, lang: result.lang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
-       setHackTargetId(null);
-       setTaskPayload(null);
-       setIsHackTask(false);
     } else {
        socket.emit('task_complete', { taskId: result.taskId, protectedTargetId: result.protectedTargetId || protectTargetId, answer: result.answer, lang: result.lang, fillState: result.fillState, dragOrder: result.dragOrder, rearrangedLines: result.rearrangedLines });
-       setTaskPayload(null);
-       setIsHackTask(false);
     }
   }, [hackTargetId, connected, protectTargetId]);
 
@@ -400,8 +401,7 @@ export default function GamePage() {
     if (targetId === myId) return;
     if (Date.now() < hackCooldownUntil) {
       const secs = Math.ceil((hackCooldownUntil - Date.now()) / 1000);
-      showAlert('danger', `System optimization required: ${secs}s remaining`);
-      return;
+      showAlert('warning', `System optimization required: ${secs}s remaining. Solve a Hard task to clear it.`);
     }
     setHackTargetId(targetId);
     socket.emit('start_hack', targetId);

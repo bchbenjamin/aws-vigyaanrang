@@ -30,7 +30,7 @@
 
 ## Tasks and difficulty
 
-- Tasks are loaded directly from `src/data/puzzles.json`.
+- Tasks are loaded from server-only `data/puzzles.json`.
 - Tasks are no longer tied to individual rooms. They come from a global difficulty pool: `easy`, `medium`, `hard`.
 - The in-editor difficulty selector is the source of truth for requesting new tasks.
 - Task answers and in-progress work are cached in browser storage so a refresh does not wipe a player's current task state.
@@ -122,7 +122,7 @@ Puzzle dataset workflow:
 ```bash
 npm run generate:puzzles
 npm run validate:puzzles
-# optional full compile/execute checks across evaluation snippets
+# optional strict parseability/playability checks across task variants
 npm run validate:puzzles:runtime
 ```
 

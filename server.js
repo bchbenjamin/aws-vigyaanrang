@@ -13,7 +13,7 @@ const {
   loadRegisteredUsers, saveRegisteredUser, removeRegisteredUser,
   saveLiveScore, clearLiveScores
 } = require('./src/lib/dbConfig');
-const { isTaskPlayable, normalizeDifficulty } = require('./src/lib/puzzleEngine');
+const { isTaskPlayable, normalizeDifficulty, verifyAnswer, sanitizeTaskForClient } = require('./src/lib/puzzleEngine');
 
 const dev = process.env.NODE_ENV !== 'production';
 const port = parseInt(process.env.PORT || '3000', 10);
@@ -74,20 +74,22 @@ function createFreshState() {
 // ─── DATA DRIVEN PUZZLES ────────────────────────────────────
 const fs = require('fs');
 const path = require('path');
+const PUZZLES_PATH = path.join(__dirname, 'data', 'puzzles.json');
 let ALL_PUZZLES = [];
 try {
-  ALL_PUZZLES = JSON.parse(fs.readFileSync(path.join(__dirname, 'src', 'data', 'puzzles.json'), 'utf8'));
+  ALL_PUZZLES = JSON.parse(fs.readFileSync(PUZZLES_PATH, 'utf8'));
 } catch (e) {
-  console.error("Failed to load puzzles.json:", e);
+  console.error('Failed to load puzzles.json:', e);
 }
 
 const incompatiblePuzzles = ALL_PUZZLES.filter(p => !isTaskPlayable(p));
 if (incompatiblePuzzles.length > 0) {
-  console.warn(`[PuzzleEngine] Found ${incompatiblePuzzles.length} puzzle(s) with partial compatibility. Runtime fallback will handle them without player penalties.`);
+  console.warn(`[PuzzleEngine] Removed ${incompatiblePuzzles.length} illogical/unplayable puzzle(s) from runtime pool.`);
 }
 
+ALL_PUZZLES = ALL_PUZZLES.filter(isTaskPlayable);
+
 let realPuzzlesDB = ALL_PUZZLES;
-let hackPuzzlesDB = ALL_PUZZLES.filter(p => normalizeDifficulty(p.difficulty) === 'hard');
 let fakePuzzlesDB = [];
 const PUZZLE_MAP = new Map(ALL_PUZZLES.map(p => [p.id, p]));
 
@@ -96,93 +98,19 @@ function getTaskDef(taskId) {
 }
 
 function sanitizeTask(taskId) {
-  const taskDef = realPuzzlesDB.find(task => task.id === taskId);
+  const taskDef = getTaskDef(taskId);
   if (!taskDef) return null;
-  const safe = JSON.parse(JSON.stringify(taskDef));
-  if (safe.versions && typeof safe.versions === 'object') {
-    Object.keys(safe.versions).forEach(lang => {
-      if (safe.versions[lang] && typeof safe.versions[lang] === 'object') {
-        delete safe.versions[lang].evaluation;
-      }
-    });
-  }
-  return safe;
+  return sanitizeTaskForClient(taskDef, { shuffleRearrange: false });
 }
 
-function normalizeAnswer(value) {
-  return String(value ?? '').replace(/\r/g, '').trim();
-}
-
-function collectCandidates(evaluation) {
-  const candidates = [];
-  const push = (value) => {
-    const text = normalizeAnswer(value);
-    if (text) candidates.push(text);
-  };
-
-  if (Array.isArray(evaluation.correctAnswer)) {
-    evaluation.correctAnswer.forEach(push);
-  } else {
-    push(evaluation.correctAnswer);
-  }
-
-  if (Array.isArray(evaluation.acceptedAnswers)) {
-    evaluation.acceptedAnswers.forEach(push);
-  }
-
-  push(evaluation.expectedStdout);
-  push(evaluation.solutionCode);
-
-  return [...new Set(candidates)];
-}
-
-function arraysMatch(expected, actual) {
-  if (!Array.isArray(expected) || !Array.isArray(actual)) return false;
-  if (expected.length !== actual.length) return false;
-  for (let i = 0; i < expected.length; i += 1) {
-    if (normalizeAnswer(expected[i]) !== normalizeAnswer(actual[i])) return false;
-  }
-  return true;
-}
-
-function fillStateMatches(order, fillState) {
-  if (!Array.isArray(order) || order.length === 0) return false;
-  if (!fillState || typeof fillState !== 'object') return false;
-  for (let i = 0; i < order.length; i += 1) {
-    if (normalizeAnswer(fillState[i]) !== normalizeAnswer(order[i])) return false;
-  }
-  return true;
-}
-
-function gradeTaskAnswer(taskDef, lang, payload) {
-  const version = taskDef?.versions?.[lang];
-  if (!version || !version.evaluation) {
-    return { status: 'unparseable', reason: 'missing_evaluation' };
-  }
-
-  const evaluation = version.evaluation || {};
-  const format = normalizeAnswer(taskDef?.format).toLowerCase();
-  const candidates = collectCandidates(evaluation);
-
-  if (format === 'rearrange') {
-    const expected = evaluation.correctOrder;
-    const actual = Array.isArray(payload.rearrangedLines) ? payload.rearrangedLines : [];
-    if (!Array.isArray(expected) || expected.length === 0) {
-      return { status: 'unparseable', reason: 'missing_order' };
-    }
-    return arraysMatch(expected, actual) ? { status: 'correct' } : { status: 'incorrect' };
-  }
-
-  if (format === 'drag_and_fill') {
-    if (Array.isArray(evaluation.correctOrder) && fillStateMatches(evaluation.correctOrder, payload.fillState)) {
-      return { status: 'correct' };
-    }
-    if (candidates.length === 0) return { status: 'unparseable', reason: 'missing_answer' };
-    return candidates.includes(normalizeAnswer(payload.answer)) ? { status: 'correct' } : { status: 'incorrect' };
-  }
-
-  if (candidates.length === 0) return { status: 'unparseable', reason: 'missing_answer' };
-  return candidates.includes(normalizeAnswer(payload.answer)) ? { status: 'correct' } : { status: 'incorrect' };
+function gradeTaskAnswer(taskDef, lang, payload = {}) {
+  return verifyAnswer(taskDef, {
+    activeLang: lang,
+    userAnswer: payload.answer ?? '',
+    fillState: payload.fillState || {},
+    dragOrder: Array.isArray(payload.dragOrder) ? payload.dragOrder : [],
+    rearrangedLines: Array.isArray(payload.rearrangedLines) ? payload.rearrangedLines : undefined,
+  });
 }
 
 function emitTaskAssigned(socket, payload = {}) {
@@ -297,26 +225,6 @@ function resolveDifficultyForPlayer(player, requestedDifficulty) {
     if (hasTasksForDifficulty(difficulty)) return difficulty;
   }
   return null;
-}
-
-function getHackTaskId(playerId) {
-  let pool = hackPuzzlesDB;
-  const assignedHistory = playerId && gameState.players[playerId]
-    ? gameState.players[playerId].assignedTasksByDifficulty?.hard || []
-    : [];
-  let available = pool.filter(p => !assignedHistory.includes(p.id));
-  if (available.length === 0) {
-    if (playerId && gameState.players[playerId]) {
-      gameState.players[playerId].assignedTasksByDifficulty.hard = [];
-    }
-    available = pool;
-  }
-  if (available.length === 0) return null;
-  const nextTaskId = available[Math.floor(Math.random() * available.length)].id;
-  if (playerId && gameState.players[playerId]) {
-    gameState.players[playerId].assignedTasksByDifficulty.hard.push(nextTaskId);
-  }
-  return nextTaskId;
 }
 
 function getFakeTaskId(playerId) {
@@ -1077,23 +985,18 @@ app.prepare().then(async () => {
 
       player.preferredDifficulty = difficulty;
 
-      const nextTaskId = (difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive')
-        ? getHackTaskId(socket.id)
-        : getRandomTaskId(socket.id, difficulty);
+      const nextTaskId = getRandomTaskId(socket.id, difficulty);
 
       if (!nextTaskId) {
         player.currentTaskId = null;
-        socket.emit('task_assigned', { taskPayload: null, isHackTask: false });
+        emitTaskAssigned(socket, {});
         socket.emit('error_msg', 'No compatible tasks are available for this request. Try a different difficulty.');
         return;
       }
 
       player.currentTaskId = nextTaskId;
-      const isHackTask = difficulty === 'hard' && player.role === 'hacker' && player.status === 'alive';
-      socket.emit('task_assigned', {
-        taskPayload: sanitizeTask(nextTaskId),
-        isHackTask,
-      });
+      const isHackTask = player.role === 'hacker' && player.status === 'alive' && !!player.activeHackTargetId;
+      emitTaskAssigned(socket, isHackTask ? { hackTaskId: nextTaskId } : { taskId: nextTaskId });
     });
 
     // ── SUBMIT TASK ───────────────────────────────────────
@@ -1121,6 +1024,7 @@ app.prepare().then(async () => {
       const grade = gradeTaskAnswer(taskDef, lang, {
         answer: data.answer ?? '',
         fillState: data.fillState,
+        dragOrder: data.dragOrder,
         rearrangedLines: data.rearrangedLines,
       });
 
@@ -1128,10 +1032,7 @@ app.prepare().then(async () => {
         const replacementDifficulty = getPreferredDifficulty(player, taskDef.difficulty);
         const replacementTaskId = getRandomTaskId(socket.id, replacementDifficulty);
         player.currentTaskId = replacementTaskId;
-        socket.emit('task_assigned', {
-          taskPayload: replacementTaskId ? sanitizeTask(replacementTaskId) : null,
-          isHackTask: false,
-        });
+        emitTaskAssigned(socket, replacementTaskId ? { taskId: replacementTaskId } : {});
         return;
       }
 
@@ -1225,7 +1126,7 @@ app.prepare().then(async () => {
       });
 
       socket.emit('your_score', { score: gameState.scores[socket.id] || 0 });
-      socket.emit('task_assigned', { taskPayload: null, isHackTask: false });
+      emitTaskAssigned(socket, {});
 
       checkWinConditions(io);
     });
@@ -1236,108 +1137,108 @@ app.prepare().then(async () => {
       const target = gameState.players[targetId];
       if (!hacker || !target) return;
       syncTransientPlayerState();
+      if (gameState.phase !== 'playing') return;
       if (hacker.role !== 'hacker' || hacker.status !== 'alive') return;
       if (target.id === socket.id) {
         socket.emit('error_msg', 'You cannot target yourself.');
         return;
       }
       if (target.status !== 'alive') return;
+      if (target.role === 'hacker') {
+        socket.emit('error_msg', 'Invalid target selection.');
+        return;
+      }
       if (target.pendingHack) return;
-      socket.on('submit_hack', (data) => {
-        const hacker = gameState.players[socket.id];
-        const target = gameState.players[data.targetId];
-        if (!hacker || hacker.role !== 'hacker' || hacker.status !== 'alive') return;
-        syncTransientPlayerState();
-        if (target && target.id === socket.id) {
-          socket.emit('error_msg', 'You cannot target yourself.');
-          return;
-        }
-        if (target?.pendingHack) return;
+      if (target.room !== hacker.room) {
+        socket.emit('error_msg', 'Target is no longer in your room.');
+        return;
+      }
 
-        const taskDef = hackPuzzlesDB.find(p => p.id === data.taskId);
-        if (!taskDef) return;
+      hacker.activeHackTargetId = target.id;
+      if (hacker.currentTaskId) {
+        emitTaskAssigned(socket, { hackTaskId: hacker.currentTaskId });
+      }
+    });
 
-        const lang = data.lang;
-        if (!lang) {
-          socket.emit('task_result', { success: false, message: 'Missing language selection.' });
-          return;
-        }
-        if (!taskDef.versions || !taskDef.versions[lang]) {
-          socket.emit('task_result', { success: false, message: 'Unsupported language for this task.' });
-          return;
-        }
+    socket.on('submit_hack', (data = {}) => {
+      const hacker = gameState.players[socket.id];
+      if (!hacker || hacker.role !== 'hacker' || hacker.status !== 'alive') return;
+      syncTransientPlayerState();
 
-        const grade = gradeTaskAnswer(taskDef, lang, {
-          answer: data.answer ?? '',
-          fillState: data.fillState,
-          rearrangedLines: data.rearrangedLines,
-        });
+      const targetId = hacker.activeHackTargetId || data.targetId;
+      const target = targetId ? gameState.players[targetId] : null;
 
-        if (grade.status === 'unparseable') {
-          const replacementHackTaskId = getHackTaskId(socket.id);
-          hacker.currentTaskId = replacementHackTaskId;
-          socket.emit('task_assigned', {
-            taskPayload: replacementHackTaskId ? sanitizeTask(replacementHackTaskId) : null,
-            isHackTask: true,
-          });
-          return;
-        }
+      if (target && target.id === socket.id) {
+        socket.emit('error_msg', 'You cannot target yourself.');
+        return;
+      }
+      if (target?.pendingHack) return;
 
-        if (grade.status !== 'correct') {
-          socket.emit('task_result', { success: false, message: 'Incorrect. System locked temporarily.', penaltyMs: gameState.adminConfig.incorrectDelayMs });
-          socket.emit('task_assigned', {
-            taskPayload: sanitizeTask(data.taskId),
-            isHackTask: true,
-          });
-          return;
-        }
+      const taskId = data.taskId || hacker.currentTaskId;
+      const taskDef = taskId ? getTaskDef(taskId) : null;
+      if (!taskDef) return;
+      const isHardHackTask = normalizeDifficulty(taskDef.difficulty) === 'hard';
 
-        const pts = getPointsForDifficulty(taskDef.difficulty);
-        addScore(socket.id, pts);
-        socket.emit('your_score', { score: gameState.scores[socket.id] });
+      const lang = data.lang;
+      if (!lang) {
+        socket.emit('task_result', { success: false, message: 'Missing language selection.' });
+        return;
+      }
+      if (!taskDef.versions || !taskDef.versions[lang]) {
+        socket.emit('task_result', { success: false, message: 'Unsupported language for this task.' });
+        return;
+      }
 
-        if (hacker.solvedTasks) hacker.solvedTasks.push(data.taskId);
+      const grade = gradeTaskAnswer(taskDef, lang, {
+        answer: data.answer ?? '',
+        fillState: data.fillState,
+        dragOrder: data.dragOrder,
+        rearrangedLines: data.rearrangedLines,
+      });
 
-        if (!target || target.room !== hacker.room || target.status !== 'alive') {
-          socket.emit('hack_success', { target: target ? target.name : 'Unknown', cooldownUntil: Date.now() + 15000, message: 'Target escaped. Challenge solved, points awarded.' });
-          hacker.hackCooldownUntil = Date.now() + 15000;
-          hacker.currentTaskId = null;
-          hacker.activeHackTargetId = null;
-          return;
-        }
+      if (grade.status === 'unparseable') {
+        const replacementDifficulty = getPreferredDifficulty(hacker, taskDef.difficulty);
+        const replacementHackTaskId = getRandomTaskId(socket.id, replacementDifficulty);
+        hacker.currentTaskId = replacementHackTaskId;
+        emitTaskAssigned(socket, replacementHackTaskId ? { hackTaskId: replacementHackTaskId } : {});
+        return;
+      }
 
-        if (target.role === 'hacker') {
-          socket.emit('error_msg', 'Invalid target selection.');
-          return;
-        }
+      if (grade.status !== 'correct') {
+        socket.emit('task_result', { success: false, message: 'Incorrect. System locked temporarily.', penaltyMs: gameState.adminConfig.incorrectDelayMs });
+        emitTaskAssigned(socket, { hackTaskId: taskId });
+        return;
+      }
 
-        if (target.isProtected) {
-          hacker.hackCooldownUntil = Date.now() + 15000;
-          hacker.currentTaskId = null;
-          hacker.activeHackTargetId = null;
-          socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Task completed.' });
-          return;
-        }
+      if (isHardHackTask) {
+        hacker.hackCooldownUntil = 0;
+        socket.emit('hack_cooldown_reset', { message: 'System optimization complete. Special action re-enabled.' });
+      }
 
-        if (target.pendingHack) return;
+      const pts = getPointsForDifficulty(taskDef.difficulty);
+      addScore(socket.id, pts);
+      socket.emit('your_score', { score: gameState.scores[socket.id] });
 
-        target.pendingHack = {
-          hackerId: socket.id,
-          revealAt: Date.now() + HACK_NOTICE_DELAY_MS,
-        };
-        target.anomalyAlertUsed = false;
-        target.isProtected = false;
-        target.protectionExpiresAt = 0;
-        hacker.hackCooldownUntil = Date.now() + HACK_COOLDOWN_MS;
+      if (hacker.solvedTasks) hacker.solvedTasks.push(taskId);
+
+      if (!target || target.room !== hacker.room || target.status !== 'alive') {
+        const cooldownUntil = isHardHackTask ? Date.now() : Date.now() + 15000;
+        socket.emit('hack_success', { target: target ? target.name : 'Unknown', cooldownUntil, message: 'Target escaped. Challenge solved, points awarded.' });
+        hacker.hackCooldownUntil = cooldownUntil;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;
-        schedulePendingHackReveal(io, target.id);
-      });
+        return;
+      }
+
+      if (target.role === 'hacker') {
+        socket.emit('error_msg', 'Invalid target selection.');
+        hacker.currentTaskId = null;
+        hacker.activeHackTargetId = null;
         return;
       }
 
       if (target.isProtected) {
-        hacker.hackCooldownUntil = Date.now() + 15000;
+        hacker.hackCooldownUntil = isHardHackTask ? Date.now() : Date.now() + 15000;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;
         socket.emit('hack_success', { target: target.name, cooldownUntil: hacker.hackCooldownUntil, message: 'Task completed.' });
@@ -1353,7 +1254,7 @@ app.prepare().then(async () => {
       target.anomalyAlertUsed = false;
       target.isProtected = false;
       target.protectionExpiresAt = 0;
-      hacker.hackCooldownUntil = Date.now() + HACK_COOLDOWN_MS;
+      hacker.hackCooldownUntil = isHardHackTask ? Date.now() : Date.now() + HACK_COOLDOWN_MS;
       hacker.currentTaskId = null;
       hacker.activeHackTargetId = null;
       schedulePendingHackReveal(io, target.id);

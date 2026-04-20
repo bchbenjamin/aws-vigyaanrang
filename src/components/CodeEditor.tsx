@@ -6,6 +6,7 @@ import { type Language, type TaskDefinition } from '@/lib/tasks';
 
 const LANGUAGE_PREF_KEY = 'bd_preferred_language';
 const DIFFICULTY_PREF_KEY = 'bd_preferred_difficulty';
+const EMPTY_OPTIONS: string[] = [];
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -73,18 +74,33 @@ export default function CodeEditor({
 
   const task = taskPayload ?? null;
   const version = task?.versions?.[activeLang] ?? null;
-  const prompt = version?.prompt ?? null;
+  const prompt = useMemo<Record<string, any> | null>(() => {
+    if (!version || typeof version !== 'object') return null;
+    if (version.prompt && typeof version.prompt === 'object') {
+      return version.prompt as Record<string, any>;
+    }
+    return version as Record<string, any>;
+  }, [version]);
 
   const format = task?.format ?? 'fill_blank';
-  const codeTemplate = prompt?.codeTemplate ?? '';
+  const codeTemplate = prompt?.codeTemplate ?? prompt?.blankCode ?? '';
   const code = prompt?.code ?? '';
   const buggyCode = prompt?.buggyCode ?? '';
-  const lines = Array.isArray(prompt?.lines) ? prompt.lines : [];
+  const lines = useMemo<string[]>(() => {
+    if (Array.isArray(prompt?.lines)) return prompt.lines;
+    if (Array.isArray(prompt?.shuffledLines)) return prompt.shuffledLines;
+    return EMPTY_OPTIONS;
+  }, [prompt]);
   const question = useMemo(
     () => [prompt?.question, prompt?.code].filter(Boolean).join('\n\n'),
-    [prompt?.question, prompt?.code]
+    [prompt]
   );
-  const options = format === 'drag_and_fill' ? (prompt?.tokens ?? []) : (prompt?.options ?? []);
+  const options = useMemo<string[]>(() => {
+    const raw = format === 'drag_and_fill'
+      ? (prompt?.tokens ?? prompt?.options)
+      : (prompt?.options ?? prompt?.tokens);
+    return Array.isArray(raw) ? raw : EMPTY_OPTIONS;
+  }, [format, prompt]);
   const displayCode = format === 'output_prediction' ? (code || codeTemplate) : (codeTemplate || code);
 
   useEffect(() => {
@@ -94,6 +110,12 @@ export default function CodeEditor({
   useEffect(() => {
     localStorage.setItem(DIFFICULTY_PREF_KEY, activeDifficulty);
   }, [activeDifficulty]);
+
+  useEffect(() => {
+    const taskDifficulty = task?.difficulty;
+    if (taskDifficulty !== 'easy' && taskDifficulty !== 'medium' && taskDifficulty !== 'hard') return;
+    setActiveDifficulty(prev => (prev === taskDifficulty ? prev : taskDifficulty));
+  }, [task?.id, task?.difficulty]);
 
   useEffect(() => {
     if (!task || !prompt) {

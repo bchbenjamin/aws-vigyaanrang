@@ -222,7 +222,7 @@ test('canonical tasks are playable when prompt and evaluation blocks exist', () 
 });
 
 test('project puzzle bank has exact approved counts and valid ids', () => {
-  const puzzlePath = path.join(__dirname, '..', 'src', 'data', 'puzzles.json');
+  const puzzlePath = path.join(__dirname, '..', 'data', 'puzzles.json');
   const raw = JSON.parse(fs.readFileSync(puzzlePath, 'utf8'));
 
   assert.equal(raw.length, 750);
@@ -246,7 +246,7 @@ test('project puzzle bank has exact approved counts and valid ids', () => {
 });
 
 test('all puzzle-language variants are parseable by verifier', () => {
-  const puzzlePath = path.join(__dirname, '..', 'src', 'data', 'puzzles.json');
+  const puzzlePath = path.join(__dirname, '..', 'data', 'puzzles.json');
   const raw = JSON.parse(fs.readFileSync(puzzlePath, 'utf8'));
 
   const unparseable = [];

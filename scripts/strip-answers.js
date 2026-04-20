@@ -1,9 +1,9 @@
 /**
  * strip-answers.js
  * ─────────────────────────────────────────────────────────────────────────────
- * Reads src/data/puzzles.json (which contains correct answers),
+ * Reads data/puzzles.json (which contains correct answers),
  * strips all answer-related fields, and writes the result to
- * src/data/puzzles-safe.json which is safe to bundle with the React client.
+ * data/puzzles-safe.json for optional client-side usage.
  *
  * Run automatically via `prebuild` and `predev` npm scripts.
  */
@@ -12,8 +12,8 @@ const fs   = require('fs');
 const path = require('path');
 const { buildSafeTask } = require('../src/lib/puzzleEngine');
 
-const SRC  = path.join(__dirname, '../src/data/puzzles.json');
-const DEST = path.join(__dirname, '../src/data/puzzles-safe.json');
+const SRC  = path.join(__dirname, '../data/puzzles.json');
+const DEST = path.join(__dirname, '../data/puzzles-safe.json');
 
 const raw   = JSON.parse(fs.readFileSync(SRC, 'utf8'));
 const puzzles = Array.isArray(raw) ? raw : (raw.puzzles || raw.tasks || Object.values(raw)[0] || []);
