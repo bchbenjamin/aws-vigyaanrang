@@ -409,7 +409,7 @@ export default function CodeEditor({
                 color: 'var(--text-accent)', fontSize: '13px', lineHeight: '1.8',
                 fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap',
               }}>
-                {displayCode.split('_____').map((chunk, idx, arr) => (
+                {displayCode.split('_____').map((chunk: string, idx: number, arr: string[]) => (
                   <React.Fragment key={`${task.id}-blank-${idx}`}>
                     <span>{chunk}</span>
                     {idx < arr.length - 1 && (

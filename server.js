@@ -1144,10 +1144,6 @@ app.prepare().then(async () => {
         return;
       }
       if (target.status !== 'alive') return;
-      if (target.role === 'hacker') {
-        socket.emit('error_msg', 'Invalid target selection.');
-        return;
-      }
       if (target.pendingHack) return;
       if (target.room !== hacker.room) {
         socket.emit('error_msg', 'Target is no longer in your room.');
@@ -1230,14 +1226,7 @@ app.prepare().then(async () => {
         return;
       }
 
-      if (target.role === 'hacker') {
-        socket.emit('error_msg', 'Invalid target selection.');
-        hacker.currentTaskId = null;
-        hacker.activeHackTargetId = null;
-        return;
-      }
-
-      if (target.isProtected) {
+      if (target.isProtected || target.role === 'hacker') {
         hacker.hackCooldownUntil = isHardHackTask ? Date.now() : Date.now() + 15000;
         hacker.currentTaskId = null;
         hacker.activeHackTargetId = null;

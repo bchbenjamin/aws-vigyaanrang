@@ -660,7 +660,7 @@ export default function GamePage() {
                     </button>
                   )}
                   {/* Hack button — function for hackers */}
-                  {role === 'hacker' && status === 'alive' && p.status === 'alive' && p.id !== myId && p.role === 'developer' && (
+                  {role === 'hacker' && status === 'alive' && p.status === 'alive' && p.id !== myId && (
                     <button className={styles.hackBtn} onClick={() => handleHack(p.id)}>
                       ACCESS
                     </button>
