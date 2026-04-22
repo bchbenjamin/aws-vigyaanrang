@@ -87,10 +87,13 @@ export default function CodeEditor({
     if (Array.isArray(prompt?.shuffledLines)) return prompt.shuffledLines;
     return EMPTY_OPTIONS;
   }, [prompt]);
-  const question = useMemo(
-    () => [prompt?.question, prompt?.code].filter(Boolean).join('\n\n'),
-    [prompt]
-  );
+  const question = useMemo(() => String(prompt?.question ?? '').trim(), [prompt]);
+  const displayTitle = useMemo(() => {
+    const rawTitle = String(task?.title ?? '').trim();
+    if (!rawTitle) return 'Task';
+    if (/^predict\s+output\s+\d+$/i.test(rawTitle)) return 'Predict Output';
+    return rawTitle.replace(/\s+\d+$/, '').trim() || rawTitle;
+  }, [task?.title]);
   const options = useMemo<string[]>(() => {
     const raw = format === 'drag_and_fill'
       ? (prompt?.tokens ?? prompt?.options)
@@ -308,7 +311,7 @@ export default function CodeEditor({
 
       <div className="split-pane">
         <div className="split-pane-desc">
-          <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '12px' }}>{task.title}</h3>
+          <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '12px' }}>{displayTitle}</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: '1.8', marginBottom: '16px' }}>{task.description}</p>
           <div style={{
             padding: '8px 12px', background: 'var(--bg-tertiary)',
@@ -317,7 +320,8 @@ export default function CodeEditor({
           }}>
             <span style={{ color: 'var(--text-info)' }}>Format:</span>{' '}
             {task.format === 'debug' && 'Find and fix the bug in the code.'}
-            {(task.format === 'fill_blank' || task.format === 'output_prediction') && 'Type the missing keyword or expression.'}
+            {task.format === 'fill_blank' && 'Type the missing keyword or expression.'}
+            {task.format === 'output_prediction' && 'Read the code and predict the exact stdout output.'}
             {task.format === 'rearrange' && 'Drag and drop lines into the correct order.'}
             {task.format === 'multiple_choice' && 'Select the correct option.'}
             {task.format === 'drag_and_fill' && 'Drag options into the blanks to complete the code.'}
@@ -342,24 +346,25 @@ export default function CodeEditor({
           {(task.format === 'fill_blank' || task.format === 'output_prediction') && (
             <>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                Code with blank:
+                {task.format === 'output_prediction' ? 'Code:' : 'Code with blank:'}
               </label>
               <pre style={{
-                background: 'var(--bg-tertiary)', padding: '16px',
-                border: '1px solid var(--border-primary)', borderRadius: '4px',
-                color: 'var(--text-accent)', fontSize: '13px', lineHeight: '1.8',
+                background: 'var(--bg-tertiary)', padding: '16px 18px',
+                border: '1px solid var(--border-primary)', borderRadius: '6px',
+                color: 'var(--text-primary)', fontSize: '13px', lineHeight: '1.85',
                 whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)',
+                wordBreak: 'break-word',
               }}>
                 {displayCode}
               </pre>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '8px' }}>
-                Your answer (replace the _____):
+                {task.format === 'output_prediction' ? 'Your answer (exact stdout):' : 'Your answer (replace the _____):'}
               </label>
               <input
                 type="text"
                 value={userAnswer}
                 onChange={e => setUserAnswer(e.target.value)}
-                placeholder="Type the missing code..."
+                placeholder={task.format === 'output_prediction' ? 'Type expected stdout...' : 'Type the missing code...'}
                 style={{ fontFamily: 'var(--font-mono)' }}
               />
             </>
@@ -424,20 +429,48 @@ export default function CodeEditor({
 
           {task.format === 'multiple_choice' && displayOptions.length > 0 && (
             <>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                {question || 'Select the correct option:'}
-              </label>
+              <div style={{
+                border: '1px solid var(--border-primary)',
+                borderRadius: '6px',
+                background: 'var(--bg-tertiary)',
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0 }}>
+                  {question || 'Select the correct option.'}
+                </p>
+                {code && (
+                  <pre style={{
+                    margin: 0,
+                    padding: '12px 14px',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '6px',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '12px',
+                    lineHeight: '1.8',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    fontFamily: 'var(--font-mono)',
+                  }}>
+                    {code}
+                  </pre>
+                )}
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                 {displayOptions.map((opt, idx) => (
                   <div
                     key={`${task.id}-opt-${idx}`}
                     onClick={() => setUserAnswer(opt)}
                     style={{
-                      padding: '12px',
+                      padding: '14px 12px',
                       background: userAnswer === opt ? 'var(--bg-elevated)' : 'var(--bg-tertiary)',
                       border: `1px solid ${userAnswer === opt ? 'var(--text-accent)' : 'var(--border-primary)'}`,
                       borderRadius: '4px', cursor: 'pointer',
-                      fontSize: '13px', fontFamily: 'var(--font-mono)',
+                      fontSize: '14px', fontFamily: 'var(--font-mono)',
+                      lineHeight: '1.5',
                       color: 'var(--text-primary)', transition: 'all 0.2s',
                     }}
                   >

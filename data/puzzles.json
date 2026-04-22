@@ -1,10 +1,10 @@
 [
   {
     "id": "1001",
-    "title": "Predict Output 1001",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1001",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -55,15 +55,15 @@
   },
   {
     "id": "1002",
-    "title": "Predict Output 1002",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1002",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 3\nb = 4\nc = 3\nif (a + b) % 2 == 0:\n    print(a * b)\nelse:\n    print(a + b + c)",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -82,8 +82,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 3;\nint b = 4;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    System.out.println(a * b);\n} else {\n    System.out.println(a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -102,8 +102,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 3;\nint b = 4;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    printf(\"%d\\n\", a * b);\n} else {\n    printf(\"%d\\n\", a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -124,10 +124,10 @@
   },
   {
     "id": "1003",
-    "title": "Predict Output 1003",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1003",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -178,15 +178,15 @@
   },
   {
     "id": "1004",
-    "title": "Predict Output 1004",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1004",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [4, 5, 6, 5]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "28",
             "29",
@@ -205,8 +205,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {4, 5, 6, 5};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "28",
             "29",
@@ -225,8 +225,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {4, 5, 6, 5};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "28",
             "29",
@@ -247,10 +247,10 @@
   },
   {
     "id": "1005",
-    "title": "Predict Output 1005",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1005",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -301,15 +301,15 @@
   },
   {
     "id": "1006",
-    "title": "Predict Output 1006",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1006",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 7\nb = 8\nc = 2\nd = 2\nprint(a + b * c - d)",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -328,8 +328,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 7;\nint b = 8;\nint c = 2;\nint d = 2;\nSystem.out.println(a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -348,8 +348,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 7;\nint b = 8;\nint c = 2;\nint d = 2;\nprintf(\"%d\\n\", a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -370,10 +370,10 @@
   },
   {
     "id": "1007",
-    "title": "Predict Output 1007",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1007",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -424,15 +424,15 @@
   },
   {
     "id": "1008",
-    "title": "Predict Output 1008",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1008",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 6\nm = 5\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "10",
             "11",
@@ -451,8 +451,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 6;\nint m = 5;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "10",
             "11",
@@ -471,8 +471,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 6;\nint m = 5;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "10",
             "11",
@@ -493,10 +493,10 @@
   },
   {
     "id": "1009",
-    "title": "Predict Output 1009",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1009",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -547,15 +547,15 @@
   },
   {
     "id": "1010",
-    "title": "Predict Output 1010",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1010",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 2\nb = 5\nm = 3\nprint((a * a + b * b) % m)",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -574,8 +574,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 2;\nint b = 5;\nint m = 3;\nSystem.out.println((a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -594,8 +594,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 2;\nint b = 5;\nint m = 3;\nprintf(\"%d\\n\", (a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -616,10 +616,10 @@
   },
   {
     "id": "1011",
-    "title": "Predict Output 1011",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1011",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -670,15 +670,15 @@
   },
   {
     "id": "1012",
-    "title": "Predict Output 1012",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1012",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 4\nb = 7\nc = 3\nif (a + b) % 2 == 0:\n    print(a * b)\nelse:\n    print(a + b + c)",
+          "question": "What is printed to stdout?",
           "options": [
             "13",
             "14",
@@ -697,8 +697,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 4;\nint b = 7;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    System.out.println(a * b);\n} else {\n    System.out.println(a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "13",
             "14",
@@ -717,8 +717,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 4;\nint b = 7;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    printf(\"%d\\n\", a * b);\n} else {\n    printf(\"%d\\n\", a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "13",
             "14",
@@ -739,10 +739,10 @@
   },
   {
     "id": "1013",
-    "title": "Predict Output 1013",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1013",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -793,15 +793,15 @@
   },
   {
     "id": "1014",
-    "title": "Predict Output 1014",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1014",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [4, 3, 6, 3]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "18",
             "19",
@@ -820,8 +820,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {4, 3, 6, 3};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "18",
             "19",
@@ -840,8 +840,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {4, 3, 6, 3};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "18",
             "19",
@@ -862,10 +862,10 @@
   },
   {
     "id": "1015",
-    "title": "Predict Output 1015",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1015",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -916,15 +916,15 @@
   },
   {
     "id": "1016",
-    "title": "Predict Output 1016",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1016",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 8\nb = 4\nc = 2\nd = 4\nprint(a + b * c - d)",
+          "question": "What is printed to stdout?",
           "options": [
             "11",
             "12",
@@ -943,8 +943,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 8;\nint b = 4;\nint c = 2;\nint d = 4;\nSystem.out.println(a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "11",
             "12",
@@ -963,8 +963,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 8;\nint b = 4;\nint c = 2;\nint d = 4;\nprintf(\"%d\\n\", a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "11",
             "12",
@@ -985,10 +985,10 @@
   },
   {
     "id": "1017",
-    "title": "Predict Output 1017",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1017",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1039,15 +1039,15 @@
   },
   {
     "id": "1018",
-    "title": "Predict Output 1018",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1018",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 10\nm = 3\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -1066,8 +1066,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 10;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -1086,8 +1086,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 10;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "9",
             "10",
@@ -1108,10 +1108,10 @@
   },
   {
     "id": "1019",
-    "title": "Predict Output 1019",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1019",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1162,15 +1162,15 @@
   },
   {
     "id": "1020",
-    "title": "Predict Output 1020",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1020",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 3\nb = 8\nm = 5\nprint((a * a + b * b) % m)",
+          "question": "What is printed to stdout?",
           "options": [
             "2",
             "3",
@@ -1189,8 +1189,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 3;\nint b = 8;\nint m = 5;\nSystem.out.println((a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "2",
             "3",
@@ -1209,8 +1209,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 3;\nint b = 8;\nint m = 5;\nprintf(\"%d\\n\", (a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "2",
             "3",
@@ -1231,10 +1231,10 @@
   },
   {
     "id": "1021",
-    "title": "Predict Output 1021",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1021",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1285,15 +1285,15 @@
   },
   {
     "id": "1022",
-    "title": "Predict Output 1022",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1022",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 5\nb = 3\nc = 3\nif (a + b) % 2 == 0:\n    print(a * b)\nelse:\n    print(a + b + c)",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -1312,8 +1312,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 5;\nint b = 3;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    System.out.println(a * b);\n} else {\n    System.out.println(a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -1332,8 +1332,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 5;\nint b = 3;\nint c = 3;\nif ((a + b) % 2 == 0) {\n    printf(\"%d\\n\", a * b);\n} else {\n    printf(\"%d\\n\", a + b + c);\n}",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -1354,10 +1354,10 @@
   },
   {
     "id": "1023",
-    "title": "Predict Output 1023",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1023",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1408,15 +1408,15 @@
   },
   {
     "id": "1024",
-    "title": "Predict Output 1024",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1024",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [4, 7, 6, 5]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "26",
             "27",
@@ -1435,8 +1435,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {4, 7, 6, 5};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "26",
             "27",
@@ -1455,8 +1455,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {4, 7, 6, 5};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "26",
             "27",
@@ -1477,10 +1477,10 @@
   },
   {
     "id": "1025",
-    "title": "Predict Output 1025",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1025",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1531,15 +1531,15 @@
   },
   {
     "id": "1026",
-    "title": "Predict Output 1026",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1026",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 9\nb = 7\nc = 2\nd = 2\nprint(a + b * c - d)",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -1558,8 +1558,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 9;\nint b = 7;\nint c = 2;\nint d = 2;\nSystem.out.println(a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -1578,8 +1578,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 9;\nint b = 7;\nint c = 2;\nint d = 2;\nprintf(\"%d\\n\", a + b * c - d);",
+          "question": "What is printed to stdout?",
           "options": [
             "20",
             "21",
@@ -1600,10 +1600,10 @@
   },
   {
     "id": "1027",
-    "title": "Predict Output 1027",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1027",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1654,15 +1654,15 @@
   },
   {
     "id": "1028",
-    "title": "Predict Output 1028",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1028",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 8\nm = 5\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "15",
             "16",
@@ -1681,8 +1681,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 8;\nint m = 5;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "15",
             "16",
@@ -1701,8 +1701,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 8;\nint m = 5;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "15",
             "16",
@@ -1723,10 +1723,10 @@
   },
   {
     "id": "1029",
-    "title": "Predict Output 1029",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "output_prediction",
+    "title": "Predict Output 1029",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1777,15 +1777,15 @@
   },
   {
     "id": "1030",
-    "title": "Predict Output 1030",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "easy",
     "format": "multiple_choice",
+    "title": "Predict Output 1030",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 4\nb = 4\nm = 3\nprint((a * a + b * b) % m)",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -1804,8 +1804,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 4;\nint b = 4;\nint m = 3;\nSystem.out.println((a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -1824,8 +1824,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 4;\nint b = 4;\nint m = 3;\nprintf(\"%d\\n\", (a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -1846,10 +1846,10 @@
   },
   {
     "id": "2001",
-    "title": "Predict Output 2001",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2001",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -1900,15 +1900,15 @@
   },
   {
     "id": "2002",
-    "title": "Predict Output 2002",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2002",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 9\ncount = 0\nfor i in range(n):\n    for j in range(i):\n        count += (i + j) % 2\nprint(count)",
+          "question": "What is printed to stdout?",
           "options": [
             "19",
             "20",
@@ -1927,8 +1927,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 9;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nSystem.out.println(count);",
+          "question": "What is printed to stdout?",
           "options": [
             "19",
             "20",
@@ -1947,8 +1947,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 9;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nprintf(\"%d\\n\", count);",
+          "question": "What is printed to stdout?",
           "options": [
             "19",
             "20",
@@ -1969,10 +1969,10 @@
   },
   {
     "id": "2003",
-    "title": "Predict Output 2003",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2003",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2023,15 +2023,15 @@
   },
   {
     "id": "2004",
-    "title": "Predict Output 2004",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2004",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 11\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)",
+          "question": "What is printed to stdout?",
           "options": [
             "88",
             "89",
@@ -2050,8 +2050,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 11;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nSystem.out.println(a);",
+          "question": "What is printed to stdout?",
           "options": [
             "88",
             "89",
@@ -2070,8 +2070,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 11;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nprintf(\"%d\\n\", a);",
+          "question": "What is printed to stdout?",
           "options": [
             "88",
             "89",
@@ -2092,10 +2092,10 @@
   },
   {
     "id": "2005",
-    "title": "Predict Output 2005",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2005",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2146,15 +2146,15 @@
   },
   {
     "id": "2006",
-    "title": "Predict Output 2006",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2006",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 13\nm = 3\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "12",
             "13",
@@ -2173,8 +2173,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "12",
             "13",
@@ -2193,8 +2193,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "12",
             "13",
@@ -2215,10 +2215,10 @@
   },
   {
     "id": "2007",
-    "title": "Predict Output 2007",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2007",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2269,15 +2269,15 @@
   },
   {
     "id": "2008",
-    "title": "Predict Output 2008",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2008",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "def f(x):\n    return x * x - 2 * x + 3\nprint(f(12) + f(11))",
+          "question": "What is printed to stdout?",
           "options": [
             "224",
             "225",
@@ -2296,8 +2296,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 12;\nint y = 11;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nSystem.out.println(fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "224",
             "225",
@@ -2316,8 +2316,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 12;\nint y = 11;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nprintf(\"%d\\n\", fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "224",
             "225",
@@ -2338,10 +2338,10 @@
   },
   {
     "id": "2009",
-    "title": "Predict Output 2009",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2009",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2392,15 +2392,15 @@
   },
   {
     "id": "2010",
-    "title": "Predict Output 2010",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2010",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [6, 7, 7, 6]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "40",
             "41",
@@ -2419,8 +2419,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {6, 7, 7, 6};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "40",
             "41",
@@ -2439,8 +2439,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {6, 7, 7, 6};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "40",
             "41",
@@ -2461,10 +2461,10 @@
   },
   {
     "id": "2011",
-    "title": "Predict Output 2011",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2011",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2515,15 +2515,15 @@
   },
   {
     "id": "2012",
-    "title": "Predict Output 2012",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2012",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 11\ncount = 0\nfor i in range(n):\n    for j in range(i):\n        count += (i + j) % 2\nprint(count)",
+          "question": "What is printed to stdout?",
           "options": [
             "29",
             "30",
@@ -2542,8 +2542,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 11;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nSystem.out.println(count);",
+          "question": "What is printed to stdout?",
           "options": [
             "29",
             "30",
@@ -2562,8 +2562,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 11;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nprintf(\"%d\\n\", count);",
+          "question": "What is printed to stdout?",
           "options": [
             "29",
             "30",
@@ -2584,10 +2584,10 @@
   },
   {
     "id": "2013",
-    "title": "Predict Output 2013",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2013",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2638,15 +2638,15 @@
   },
   {
     "id": "2014",
-    "title": "Predict Output 2014",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2014",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 13\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -2665,8 +2665,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nSystem.out.println(a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -2685,8 +2685,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nprintf(\"%d\\n\", a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -2707,10 +2707,10 @@
   },
   {
     "id": "2015",
-    "title": "Predict Output 2015",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2015",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2761,15 +2761,15 @@
   },
   {
     "id": "2016",
-    "title": "Predict Output 2016",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2016",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 15\nm = 3\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -2788,8 +2788,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 15;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -2808,8 +2808,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 15;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "14",
             "15",
@@ -2830,10 +2830,10 @@
   },
   {
     "id": "2017",
-    "title": "Predict Output 2017",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2017",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -2884,15 +2884,15 @@
   },
   {
     "id": "2018",
-    "title": "Predict Output 2018",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2018",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "def f(x):\n    return x * x - 2 * x + 3\nprint(f(13) + f(5))",
+          "question": "What is printed to stdout?",
           "options": [
             "163",
             "164",
@@ -2911,8 +2911,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 13;\nint y = 5;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nSystem.out.println(fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "163",
             "164",
@@ -2931,8 +2931,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 13;\nint y = 5;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nprintf(\"%d\\n\", fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "163",
             "164",
@@ -2953,10 +2953,10 @@
   },
   {
     "id": "2019",
-    "title": "Predict Output 2019",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2019",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3007,15 +3007,15 @@
   },
   {
     "id": "2020",
-    "title": "Predict Output 2020",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2020",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [9, 10, 9, 4]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "34",
             "35",
@@ -3034,8 +3034,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {9, 10, 9, 4};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "34",
             "35",
@@ -3054,8 +3054,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {9, 10, 9, 4};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "34",
             "35",
@@ -3076,10 +3076,10 @@
   },
   {
     "id": "2021",
-    "title": "Predict Output 2021",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2021",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3130,15 +3130,15 @@
   },
   {
     "id": "2022",
-    "title": "Predict Output 2022",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2022",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 13\ncount = 0\nfor i in range(n):\n    for j in range(i):\n        count += (i + j) % 2\nprint(count)",
+          "question": "What is printed to stdout?",
           "options": [
             "41",
             "42",
@@ -3157,8 +3157,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nSystem.out.println(count);",
+          "question": "What is printed to stdout?",
           "options": [
             "41",
             "42",
@@ -3177,8 +3177,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nprintf(\"%d\\n\", count);",
+          "question": "What is printed to stdout?",
           "options": [
             "41",
             "42",
@@ -3199,10 +3199,10 @@
   },
   {
     "id": "2023",
-    "title": "Predict Output 2023",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2023",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3253,15 +3253,15 @@
   },
   {
     "id": "2024",
-    "title": "Predict Output 2024",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2024",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 15\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)",
+          "question": "What is printed to stdout?",
           "options": [
             "609",
             "610",
@@ -3280,8 +3280,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 15;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nSystem.out.println(a);",
+          "question": "What is printed to stdout?",
           "options": [
             "609",
             "610",
@@ -3300,8 +3300,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 15;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nprintf(\"%d\\n\", a);",
+          "question": "What is printed to stdout?",
           "options": [
             "609",
             "610",
@@ -3322,10 +3322,10 @@
   },
   {
     "id": "2025",
-    "title": "Predict Output 2025",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2025",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3376,15 +3376,15 @@
   },
   {
     "id": "2026",
-    "title": "Predict Output 2026",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2026",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 9\nm = 3\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "8",
             "9",
@@ -3403,8 +3403,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 9;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "8",
             "9",
@@ -3423,8 +3423,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 9;\nint m = 3;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "8",
             "9",
@@ -3445,10 +3445,10 @@
   },
   {
     "id": "2027",
-    "title": "Predict Output 2027",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2027",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3499,15 +3499,15 @@
   },
   {
     "id": "2028",
-    "title": "Predict Output 2028",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2028",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "def f(x):\n    return x * x - 2 * x + 3\nprint(f(5) + f(7))",
+          "question": "What is printed to stdout?",
           "options": [
             "55",
             "56",
@@ -3526,8 +3526,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 5;\nint y = 7;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nSystem.out.println(fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "55",
             "56",
@@ -3546,8 +3546,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 5;\nint y = 7;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nprintf(\"%d\\n\", fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "55",
             "56",
@@ -3568,10 +3568,10 @@
   },
   {
     "id": "2029",
-    "title": "Predict Output 2029",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "output_prediction",
+    "title": "Predict Output 2029",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3622,15 +3622,15 @@
   },
   {
     "id": "2030",
-    "title": "Predict Output 2030",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "medium",
     "format": "multiple_choice",
+    "title": "Predict Output 2030",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "arr = [5, 6, 11, 8]\nprint(arr[0] + arr[2] * arr[3] - arr[1])",
+          "question": "What is printed to stdout?",
           "options": [
             "86",
             "87",
@@ -3649,8 +3649,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int[] arr = {5, 6, 11, 8};\nSystem.out.println(arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "86",
             "87",
@@ -3669,8 +3669,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int arr[] = {5, 6, 11, 8};\nprintf(\"%d\\n\", arr[0] + arr[2] * arr[3] - arr[1]);",
+          "question": "What is printed to stdout?",
           "options": [
             "86",
             "87",
@@ -3691,10 +3691,10 @@
   },
   {
     "id": "3001",
-    "title": "Predict Output 3001",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3001",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3745,15 +3745,15 @@
   },
   {
     "id": "3002",
-    "title": "Predict Output 3002",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3002",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 13\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -3772,8 +3772,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nSystem.out.println(a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -3792,8 +3792,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nprintf(\"%d\\n\", a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -3814,10 +3814,10 @@
   },
   {
     "id": "3003",
-    "title": "Predict Output 3003",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3003",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3868,15 +3868,15 @@
   },
   {
     "id": "3004",
-    "title": "Predict Output 3004",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3004",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 23\nb = 17\nm = 8\nprint((a * a + b * b) % m)",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -3895,8 +3895,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 23;\nint b = 17;\nint m = 8;\nSystem.out.println((a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -3915,8 +3915,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 23;\nint b = 17;\nint m = 8;\nprintf(\"%d\\n\", (a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "1",
             "2",
@@ -3937,10 +3937,10 @@
   },
   {
     "id": "3005",
-    "title": "Predict Output 3005",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3005",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -3991,15 +3991,15 @@
   },
   {
     "id": "3006",
-    "title": "Predict Output 3006",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3006",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 17\ncount = 0\nfor i in range(n):\n    for j in range(i):\n        count += (i + j) % 2\nprint(count)",
+          "question": "What is printed to stdout?",
           "options": [
             "71",
             "72",
@@ -4018,8 +4018,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 17;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nSystem.out.println(count);",
+          "question": "What is printed to stdout?",
           "options": [
             "71",
             "72",
@@ -4038,8 +4038,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 17;\nint count = 0;\nfor (int i = 0; i < n; i++) {\n    for (int j = 0; j < i; j++) {\n        count += (i + j) % 2;\n    }\n}\nprintf(\"%d\\n\", count);",
+          "question": "What is printed to stdout?",
           "options": [
             "71",
             "72",
@@ -4060,10 +4060,10 @@
   },
   {
     "id": "3007",
-    "title": "Predict Output 3007",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3007",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -4114,15 +4114,15 @@
   },
   {
     "id": "3008",
-    "title": "Predict Output 3008",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3008",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "def f(x):\n    return x * x - 2 * x + 3\nprint(f(15) + f(16))",
+          "question": "What is printed to stdout?",
           "options": [
             "424",
             "425",
@@ -4141,8 +4141,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 15;\nint y = 16;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nSystem.out.println(fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "424",
             "425",
@@ -4161,8 +4161,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int x = 15;\nint y = 16;\nint fx = x * x - 2 * x + 3;\nint fy = y * y - 2 * y + 3;\nprintf(\"%d\\n\", fx + fy);",
+          "question": "What is printed to stdout?",
           "options": [
             "424",
             "425",
@@ -4183,10 +4183,10 @@
   },
   {
     "id": "3009",
-    "title": "Predict Output 3009",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3009",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -4237,15 +4237,15 @@
   },
   {
     "id": "3010",
-    "title": "Predict Output 3010",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3010",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 21\nm = 8\ns = 0\nfor i in range(n + 1):\n    s += i % m\nprint(s)",
+          "question": "What is printed to stdout?",
           "options": [
             "70",
             "71",
@@ -4264,8 +4264,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 21;\nint m = 8;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nSystem.out.println(s);",
+          "question": "What is printed to stdout?",
           "options": [
             "70",
             "71",
@@ -4284,8 +4284,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 21;\nint m = 8;\nint s = 0;\nfor (int i = 0; i <= n; i++) {\n    s += i % m;\n}\nprintf(\"%d\\n\", s);",
+          "question": "What is printed to stdout?",
           "options": [
             "70",
             "71",
@@ -4306,10 +4306,10 @@
   },
   {
     "id": "3011",
-    "title": "Predict Output 3011",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3011",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -4360,15 +4360,15 @@
   },
   {
     "id": "3012",
-    "title": "Predict Output 3012",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3012",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "n = 13\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(a)",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -4387,8 +4387,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nSystem.out.println(a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -4407,8 +4407,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int n = 13;\nint a = 0;\nint b = 1;\nfor (int i = 0; i < n; i++) {\n    int t = a + b;\n    a = b;\n    b = t;\n}\nprintf(\"%d\\n\", a);",
+          "question": "What is printed to stdout?",
           "options": [
             "232",
             "233",
@@ -4429,10 +4429,10 @@
   },
   {
     "id": "3013",
-    "title": "Predict Output 3013",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3013",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
@@ -4483,15 +4483,15 @@
   },
   {
     "id": "3014",
-    "title": "Predict Output 3014",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "multiple_choice",
+    "title": "Predict Output 3014",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "a = 33\nb = 14\nm = 6\nprint((a * a + b * b) % m)",
+          "question": "What is printed to stdout?",
           "options": [
             "0",
             "1",
@@ -4510,8 +4510,8 @@
       },
       "java": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 33;\nint b = 14;\nint m = 6;\nSystem.out.println((a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "0",
             "1",
@@ -4530,8 +4530,8 @@
       },
       "c": {
         "prompt": {
-          "question": "What is printed to stdout?",
           "code": "int a = 33;\nint b = 14;\nint m = 6;\nprintf(\"%d\\n\", (a * a + b * b) % m);",
+          "question": "What is printed to stdout?",
           "options": [
             "0",
             "1",
@@ -4552,10 +4552,10 @@
   },
   {
     "id": "3015",
-    "title": "Predict Output 3015",
-    "description": "Predict the exact stdout produced by the code.",
     "difficulty": "hard",
     "format": "output_prediction",
+    "title": "Predict Output 3015",
+    "description": "Predict the exact stdout produced by the code.",
     "versions": {
       "python": {
         "prompt": {

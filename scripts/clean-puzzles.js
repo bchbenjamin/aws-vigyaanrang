@@ -7,6 +7,23 @@ const ALLOWED_FORMATS = new Set(['output_prediction', 'multiple_choice']);
 const PROMPT_FIELDS = ['code', 'codeTemplate', 'buggyCode', 'question', 'options', 'tokens', 'lines', 'blankCount', 'shuffleOnServe'];
 const EVAL_FIELDS = ['correctAnswer', 'acceptedAnswers', 'correctOrder', 'expectedStdout', 'solutionCode'];
 
+function normalizeInlineText(value) {
+  return String(value || '').replace(/\r/g, '').trim();
+}
+
+function shouldDropMultipleChoiceQuestion(question) {
+  const text = normalizeInlineText(question);
+  if (!text) return true;
+
+  // Questions should be short prompts, not embedded code or token streams.
+  if (text.length > 140) return true;
+  if (/\n/.test(text)) return true;
+  if (/\b(for|while|if|print|printf|System\.out|range\(|int\s+[a-zA-Z_]|def\s+[a-zA-Z_])\b/.test(text)) return true;
+  if (/[{};]/.test(text)) return true;
+
+  return false;
+}
+
 function pickFields(source, fields) {
   const out = {};
   fields.forEach((field) => {
@@ -64,6 +81,33 @@ function normalizeTask(rawTask) {
   };
 }
 
+function sanitizeTaskForUi(task) {
+  if (!task || task.format !== 'multiple_choice') return task;
+
+  const next = {
+    ...task,
+    versions: { ...task.versions },
+  };
+
+  LANGUAGES.forEach((lang) => {
+    const version = next.versions?.[lang];
+    if (!version || typeof version !== 'object') return;
+    const prompt = version.prompt && typeof version.prompt === 'object' ? { ...version.prompt } : null;
+    if (!prompt) return;
+
+    if (shouldDropMultipleChoiceQuestion(prompt.question)) {
+      delete prompt.question;
+    }
+
+    next.versions[lang] = {
+      ...version,
+      prompt,
+    };
+  });
+
+  return next;
+}
+
 function cleanPuzzles(options = {}) {
   const inputPath = options.inputPath || selectInputPath();
   const outputPath = options.outputPath || path.join(__dirname, '..', 'data', 'puzzles.json');
@@ -94,12 +138,14 @@ function cleanPuzzles(options = {}) {
       return;
     }
 
-    if (!isTaskPlayable(normalized)) {
+    const uiSafeTask = sanitizeTaskForUi(normalized);
+
+    if (!isTaskPlayable(uiSafeTask)) {
       removed.push({ id: normalized.id, reason: 'unplayable_or_illogical' });
       return;
     }
 
-    cleaned.push(normalized);
+    cleaned.push(uiSafeTask);
   });
 
   cleaned.sort((a, b) => Number(a.id) - Number(b.id));
