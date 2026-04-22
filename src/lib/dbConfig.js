@@ -183,6 +183,18 @@ async function saveLiveScore(playerName, currentScore) {
   }
 }
 
+async function loadLiveScores() {
+  await ensureTables();
+  const db = getSql();
+  try {
+    const rows = await db`SELECT player_name, current_score, updated_at FROM live_scores ORDER BY updated_at DESC`;
+    return rows;
+  } catch (err) {
+    console.error('[DB] Failed to load live scores:', err.message);
+    return [];
+  }
+}
+
 async function clearLiveScores() {
   await ensureTables();
   const db = getSql();
@@ -203,5 +215,6 @@ module.exports = {
   saveRegisteredUser,
   removeRegisteredUser,
   saveLiveScore,
+  loadLiveScores,
   clearLiveScores,
 };

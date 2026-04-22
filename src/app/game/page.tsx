@@ -80,7 +80,13 @@ export default function GamePage() {
   const [showStandupConfirm, setShowStandupConfirm] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [completionFx, setCompletionFx] = useState<{ message: string; tone: 'task' | 'hack' } | null>(null);
-  const [hackerRevealEndsAt, setHackerRevealEndsAt] = useState<number | null>(null);
+  const [taskLock, setTaskLock] = useState<{
+    until: number;
+    requiresRoomChange?: boolean;
+    nextRooms?: string[];
+    refreshTaskAfterPenalty?: boolean;
+    message?: string;
+  } | null>(null);
   const fabButtonRef = useRef<HTMLButtonElement | null>(null);
   const fabPanelRef = useRef<HTMLDivElement | null>(null);
   const showAlert = useCallback((type: string, message: string) => {
@@ -94,11 +100,13 @@ export default function GamePage() {
 
   // ── Connect to Socket.io ────────────────────────────────
   useEffect(() => {
-    const code = sessionStorage.getItem('playerCode');
+    const code = localStorage.getItem('playerCode') || sessionStorage.getItem('playerCode');
     if (!code) {
       router.push('/');
       return;
     }
+    localStorage.setItem('playerCode', code);
+    sessionStorage.setItem('playerCode', code);
     setPlayerName(`[${code}]`);
 
     socket = io(window.location.origin, {
@@ -152,6 +160,7 @@ export default function GamePage() {
       setStatus('alive');
       setProtectTargetId(null);
       setGameEndTime(data.gameEndTime || null);
+      setHackCooldownUntil(data.hackCooldownUntil || 0);
       setMyScore(data.score || 0);
     });
 
@@ -195,7 +204,15 @@ export default function GamePage() {
 
     socket.on('task_result', (data) => {
       if (!data?.success) {
-        if (data?.message) {
+        if (data?.penaltyMs) {
+          setTaskLock({
+            until: Date.now() + data.penaltyMs,
+            requiresRoomChange: Boolean(data.requiresRoomChange),
+            nextRooms: Array.isArray(data.nextRooms) ? data.nextRooms : [],
+            refreshTaskAfterPenalty: Boolean(data.refreshTaskAfterPenalty),
+            message: data.message || 'Terminal locked temporarily.',
+          });
+        } else if (data?.message) {
           showAlert('danger', data.message);
         }
         return;
@@ -238,7 +255,7 @@ export default function GamePage() {
       setHackTargetId(null);
       setTaskPayload(null);
       setIsHackTask(false);
-      triggerCompletionFx(data.message || 'Task completed.', 'task');
+      triggerCompletionFx(data.message || 'Access completed.', 'hack');
     });
 
     socket.on('hack_cooldown_reset', (data) => {
@@ -316,7 +333,6 @@ export default function GamePage() {
       setIsHackTask(false);
       setFirewallNextTaskAt(0);
       setGameEndTime(null);
-      setHackerRevealEndsAt(data.winSide === 'developers' ? Date.now() + 3000 : null);
       setEndData({
         winSide: data.winSide,
         reason: data.reason,
@@ -337,8 +353,8 @@ export default function GamePage() {
       setProtectTargetId(null);
       setHackCooldownUntil(0);
       setFirewallNextTaskAt(0);
+      setTaskLock(null);
       setGameEndTime(null);
-      setHackerRevealEndsAt(null);
       setEndData(null);
     });
 
@@ -380,6 +396,31 @@ export default function GamePage() {
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, [fabOpen]);
 
+  useEffect(() => {
+    if (!taskLock) return;
+
+    const remainingMs = taskLock.until - Date.now();
+    if (remainingMs <= 0) {
+      if (taskLock.refreshTaskAfterPenalty && socket) {
+        socket.emit('request_current_task');
+      }
+      if (taskLock.requiresRoomChange) {
+        const guidance = taskLock.nextRooms && taskLock.nextRooms.length > 0
+          ? ` Move next: ${taskLock.nextRooms.join(', ')}.`
+          : ' Move to a different room next.';
+        showAlert('warning', `${taskLock.message || 'Lock cleared.'}${guidance}`);
+      }
+      setTaskLock(null);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setTaskLock(prev => (prev ? { ...prev } : null));
+    }, Math.min(remainingMs, 250));
+
+    return () => window.clearTimeout(timeout);
+  }, [taskLock, showAlert]);
+
   // ── HELPERS ─────────────────────────────────────────────
   const handleNavigate = useCallback((targetRoom: string) => {
     if (!socket || isMoving || room === targetRoom) return;
@@ -401,13 +442,15 @@ export default function GamePage() {
     if (targetId === myId) return;
     if (Date.now() < hackCooldownUntil) {
       const secs = Math.ceil((hackCooldownUntil - Date.now()) / 1000);
-      showAlert('warning', `System optimization required: ${secs}s remaining. Solve a Hard task to clear it.`);
+      showAlert('warning', `System optimization required for ${secs}s`);
+      return;
     }
     setHackTargetId(targetId);
     socket.emit('start_hack', targetId);
   }, [hackCooldownUntil, myId]);
 
   const handleLogout = useCallback(() => {
+    localStorage.removeItem('playerCode');
     sessionStorage.removeItem('playerCode');
     socket?.disconnect();
     router.push('/');
@@ -436,6 +479,7 @@ export default function GamePage() {
   };
 
   const remainingGameSeconds = gameEndTime ? Math.max(0, Math.ceil((gameEndTime - nowMs) / 1000)) : 0;
+  const taskLockSeconds = taskLock ? Math.max(0, Math.ceil((taskLock.until - nowMs) / 1000)) : 0;
 
   useEffect(() => {
     if (protectTargetId && !aliveDevelopers.some(player => player.id === protectTargetId)) {
@@ -464,29 +508,6 @@ export default function GamePage() {
   // Game ended overlay
   if (phase === 'ended' && endData) {
     const hackers = Object.values(endData.players || {}).filter((p: any) => p.role === 'hacker');
-    const showHackerReveal = endData.winSide === 'developers' && hackerRevealEndsAt !== null && nowMs < hackerRevealEndsAt;
-
-    if (showHackerReveal) {
-      return (
-        <div className="overlay">
-          <div className="overlay-content" style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: '18px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-accent)', marginBottom: '12px' }}>
-              Developers Win
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '20px' }}>
-              Hacker identities revealed
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-              {hackers.map((h: any) => (
-                <span key={h.id} style={{ color: 'var(--text-danger)', border: '1px solid var(--text-danger)', padding: '8px 12px', borderRadius: '999px', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                  {h.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    }
 
     return (
       <div className="overlay">
@@ -501,6 +522,25 @@ export default function GamePage() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px' }}>
             {endData.reason}
           </p>
+
+          <div style={{ marginTop: '16px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+              Hacker Identities
+            </p>
+            {hackers.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
+                No hackers in this round.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+                {hackers.map((h: any) => (
+                  <span key={h.id} style={{ color: 'var(--text-danger)', border: '1px solid var(--text-danger)', padding: '8px 12px', borderRadius: '999px', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                    {h.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
             <button className="btn-accent" onClick={() => router.push('/')} style={{ width: '100%' }}>
@@ -556,10 +596,31 @@ export default function GamePage() {
               boxShadow: '0 0 32px rgba(0,255,136,0.2)',
             }}
           >
-            <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-accent)', marginBottom: '8px' }}>
-              Task Completed
+            <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: completionFx.tone === 'hack' ? 'var(--text-danger)' : 'var(--text-accent)', marginBottom: '8px' }}>
+              {completionFx.tone === 'hack' ? 'Access Completed' : 'Task Completed'}
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{completionFx.message}</div>
+          </div>
+        </div>
+      )}
+
+      {taskLock && (
+        <div className="overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9996 }}>
+          <div className="terminal-box" style={{ width: '360px', padding: '24px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '14px', textTransform: 'uppercase', color: 'var(--text-warning)', marginBottom: '8px' }}>
+              Terminal Locked
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px' }}>
+              {taskLock.message || 'Please wait while the terminal resets.'}
+            </p>
+            <div style={{ fontSize: '28px', color: 'var(--text-accent)', marginBottom: '12px' }}>
+              {taskLockSeconds}s
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+              {taskLock.requiresRoomChange
+                ? 'You will need to continue from a different room after the timer ends.'
+                : 'Interaction is disabled until the timer ends.'}
+            </p>
           </div>
         </div>
       )}
@@ -710,6 +771,7 @@ export default function GamePage() {
             <CodeEditor
               taskPayload={taskPayload}
               isHackTask={isHackTask}
+              difficultyResetKey={room}
               difficultiesAllowed={((role === 'hacker' && status === 'alive') || status === 'firewall') ? ['easy', 'medium', 'hard'] : ['easy', 'medium']}
               systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
                 ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
@@ -785,9 +847,8 @@ export default function GamePage() {
         <FirewallOverlay
           rooms={ALL_ROOMS}
           currentRoom={room}
-          aliveDevelopers={aliveDevelopers}
+          protectablePlayers={aliveDevelopers}
           selectedProtectTargetId={protectTargetId}
-          firewallMode={role === 'hacker' ? 'hacker' : 'developer'}
           cooldownSeconds={firewallCooldownSeconds}
           onSelectProtectTarget={setProtectTargetId}
           onNavigate={handleNavigate}
@@ -856,7 +917,7 @@ export default function GamePage() {
                 <div style={{ marginBottom: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                   {nowMs < hackCooldownUntil
-                    ? `System Sync: ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
+                    ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
                     : 'System Ready'}
                 </div>
               )}

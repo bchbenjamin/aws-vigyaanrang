@@ -6,9 +6,8 @@ import { Eye, ShieldOff } from 'lucide-react';
 interface FirewallOverlayProps {
   rooms: string[];
   currentRoom: string;
-  aliveDevelopers: { id: string; name: string }[];
+  protectablePlayers: { id: string; name: string }[];
   selectedProtectTargetId: string | null;
-  firewallMode: 'developer' | 'hacker';
   cooldownSeconds: number;
   onSelectProtectTarget: (targetId: string) => void;
   onNavigate: (room: string) => void;
@@ -17,9 +16,8 @@ interface FirewallOverlayProps {
 export default function FirewallOverlay({
   rooms,
   currentRoom,
-  aliveDevelopers,
+  protectablePlayers,
   selectedProtectTargetId,
-  firewallMode,
   cooldownSeconds,
   onSelectProtectTarget,
   onNavigate,
@@ -37,12 +35,10 @@ export default function FirewallOverlay({
           <ShieldOff size={20} color="var(--text-warning)" />
           <div>
             <p style={{ color: 'var(--text-warning)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {firewallMode === 'hacker' ? 'Hacker Firewall' : 'Developer Firewall'}
+              Firewall Mode
             </p>
             <p style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-              {firewallMode === 'hacker'
-                ? 'Strip protection or block it briefly, solve tasks, no voting, instant movement'
-                : 'Protect live players, solve tasks, no voting, instant movement'}
+              Select a live player, solve tasks, apply protection, no voting, instant movement
             </p>
           </div>
         </div>
@@ -89,7 +85,7 @@ export default function FirewallOverlay({
           }}
         >
           <option value="">Select Player</option>
-          {aliveDevelopers.map(player => (
+          {protectablePlayers.map(player => (
             <option key={player.id} value={player.id}>
               {player.name}
             </option>

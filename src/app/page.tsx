@@ -9,11 +9,17 @@ export default function LobbyPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setCode(sessionStorage.getItem('playerCode') || '');
+    const storedCode = localStorage.getItem('playerCode') || sessionStorage.getItem('playerCode') || '';
+    if (storedCode) {
+      localStorage.setItem('playerCode', storedCode);
+      sessionStorage.setItem('playerCode', storedCode);
+    }
+    setCode(storedCode);
   }, []);
 
   const handleJoin = () => {
     if (code.trim().length < 1) return;
+    localStorage.setItem('playerCode', code.trim());
     sessionStorage.setItem('playerCode', code.trim());
     router.push('/game');
   };

@@ -7,6 +7,7 @@
 - Deployment: `docs/deployment.md`
 - Puzzle schema: `docs/puzzle-schema.md`
 - Architecture walkthrough: `docs/architecture-walkthrough.md`
+- Full puzzle data contract: `PUZZLE.md`
 
 ## Current gameplay model
 
@@ -27,6 +28,8 @@
 - Developers also win if all hackers are gone.
 - Hackers win if alive hackers are greater than or equal to alive developers.
 - On timeout, developers win only if progress is at least `50%`; otherwise hackers win.
+- The winner announcement includes an explicit victory reason.
+- Hacker identities are exposed at the end of every round, regardless of winner.
 
 ## Tasks and difficulty
 
@@ -53,9 +56,11 @@
 
 - A hacker can hack only a living developer in the same room.
 - Self-hacking is blocked on both client and server.
-- Hack attempts work in task rooms and in `The Log Room`.
+- Hack attempts work in every room, including `Breakroom`.
 - If the target escapes before submission resolves, the hacker still keeps puzzle points but the target is not converted.
 - If the target is protected, the hack bounces, the target loses the protection flag, and the hacker receives cooldown without a conversion.
+- Hack reveal notifications are delayed by `Hack Reveal Delay`; when the delay expires, all players are notified with the hacked player's identity.
+- Hackers begin each round with active cooldown, so immediate opening hacks are blocked.
 
 ### Firewall behavior
 - Firewalls do not self-protect and cannot protect each other.
@@ -81,10 +86,12 @@
 - Start a round with assigned roles.
 - Extend stand-up discussion time in `+30s` increments.
 - Kick a player out of the active round.
+- Live game timer is visible in the admin stats grid.
 - When a round ends, the admin gets a popup with the three stop/reset modes:
   - `Retain Points & Restart`
   - `Discard Round & Restart`
   - `Full Reset`
+- End-of-round admin view includes both victory reason and revealed hacker identities.
 
 ## Configuration and persistence
 

@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Play, GripVertical } from 'lucide-react';
+import { Play, GripVertical, ArrowUp, ArrowDown, Smartphone } from 'lucide-react';
 import { type Language, type TaskDefinition } from '@/lib/tasks';
 
 const LANGUAGE_PREF_KEY = 'bd_preferred_language';
-const DIFFICULTY_PREF_KEY = 'bd_preferred_difficulty';
 const EMPTY_OPTIONS: string[] = [];
 
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -26,6 +25,7 @@ interface CodeEditorProps {
   taskPayload: TaskDefinition | null;
   isHackTask?: boolean;
   difficultiesAllowed: Difficulty[];
+  difficultyResetKey?: string | number;
   systemStatusHint?: string | null;
   disabledMsg?: string | null;
   onRequestTask: (difficulty: Difficulty) => void;
@@ -37,13 +37,6 @@ function getStoredLanguage(): Language {
   const v = localStorage.getItem(LANGUAGE_PREF_KEY);
   if (v === 'python' || v === 'java' || v === 'c') return v;
   return 'python';
-}
-
-function getStoredDifficulty(): Difficulty {
-  if (typeof window === 'undefined') return 'easy';
-  const v = localStorage.getItem(DIFFICULTY_PREF_KEY);
-  if (v === 'easy' || v === 'medium' || v === 'hard') return v;
-  return 'easy';
 }
 
 function shuffleArray<T>(items: T[]): T[] {
@@ -59,18 +52,21 @@ export default function CodeEditor({
   taskPayload,
   isHackTask = false,
   difficultiesAllowed,
+  difficultyResetKey,
   systemStatusHint,
   disabledMsg,
   onRequestTask,
   onSubmit,
 }: CodeEditorProps) {
   const [activeLang, setActiveLang] = useState<Language>(() => getStoredLanguage());
-  const [activeDifficulty, setActiveDifficulty] = useState<Difficulty>(() => getStoredDifficulty());
+  const [activeDifficulty, setActiveDifficulty] = useState<Difficulty>('medium');
   const [userAnswer, setUserAnswer] = useState('');
   const [dragOrder, setDragOrder] = useState<number[]>([]);
   const [fillState, setFillState] = useState<FillState>({});
   const [displayOptions, setDisplayOptions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const task = taskPayload ?? null;
   const version = task?.versions?.[activeLang] ?? null;
@@ -108,8 +104,21 @@ export default function CodeEditor({
   }, [activeLang]);
 
   useEffect(() => {
-    localStorage.setItem(DIFFICULTY_PREF_KEY, activeDifficulty);
-  }, [activeDifficulty]);
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(pointer: coarse)');
+    const updateTouchMode = () => setIsTouchDevice(media.matches || window.innerWidth < 900);
+    updateTouchMode();
+    media.addEventListener?.('change', updateTouchMode);
+    window.addEventListener('resize', updateTouchMode);
+    return () => {
+      media.removeEventListener?.('change', updateTouchMode);
+      window.removeEventListener('resize', updateTouchMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    setActiveDifficulty('medium');
+  }, [difficultyResetKey]);
 
   useEffect(() => {
     const taskDifficulty = task?.difficulty;
@@ -124,12 +133,14 @@ export default function CodeEditor({
       setFillState({});
       setDisplayOptions([]);
       setIsSubmitting(false);
+      setSelectedToken(null);
       return;
     }
 
     setIsSubmitting(false);
     setUserAnswer(format === 'debug' ? buggyCode : '');
     setFillState({});
+    setSelectedToken(null);
 
     if (format === 'rearrange' && lines.length > 0) {
       const baseOrder = lines.map((_line, idx) => idx);
@@ -157,6 +168,26 @@ export default function CodeEditor({
       return next;
     });
   };
+
+  const moveLine = useCallback((fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= dragOrder.length || fromIndex === toIndex) return;
+    setDragOrder(prev => {
+      const next = [...prev];
+      const [removed] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, removed);
+      return next;
+    });
+  }, [dragOrder.length]);
+
+  const handleTokenClick = useCallback((token: string) => {
+    setSelectedToken(prev => (prev === token ? null : token));
+  }, []);
+
+  const handleBlankClick = useCallback((idx: number) => {
+    if (!selectedToken) return;
+    updateFillState(idx, selectedToken);
+    setSelectedToken(null);
+  }, [selectedToken]);
 
   const handleSubmit = useCallback(() => {
     if (!task || !prompt) return;
@@ -259,6 +290,22 @@ export default function CodeEditor({
         </div>
       </div>
 
+      {isTouchDevice && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 12px',
+          borderBottom: '1px solid var(--border-primary)',
+          background: 'rgba(255, 180, 0, 0.08)',
+          color: 'var(--text-warning)',
+          fontSize: '11px',
+        }}>
+          <Smartphone size={14} />
+          <span>Mobile detected. Use Desktop mode for the best drag-and-drop experience. Tap controls are enabled here.</span>
+        </div>
+      )}
+
       <div className="split-pane">
         <div className="split-pane-desc">
           <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '12px' }}>{task.title}</h3>
@@ -321,7 +368,7 @@ export default function CodeEditor({
           {task.format === 'rearrange' && lines.length > 0 && (
             <>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                Drag lines into correct order:
+                {isTouchDevice ? 'Arrange lines in the correct order:' : 'Drag lines into correct order:'}
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', flex: 1 }}>
                 {dragOrder.map((lineIdx, visualIdx) => (
@@ -348,7 +395,27 @@ export default function CodeEditor({
                   >
                     <GripVertical size={14} color="var(--text-muted)" />
                     <span style={{ color: 'var(--text-muted)', minWidth: '20px' }}>{visualIdx + 1}.</span>
-                    <code>{lines[lineIdx]}</code>
+                    <code style={{ flex: 1 }}>{lines[lineIdx]}</code>
+                    {isTouchDevice && (
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          onClick={() => moveLine(visualIdx, visualIdx - 1)}
+                          disabled={visualIdx === 0}
+                          style={{ padding: '4px 6px', fontSize: '10px' }}
+                        >
+                          <ArrowUp size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveLine(visualIdx, visualIdx + 1)}
+                          disabled={visualIdx === dragOrder.length - 1}
+                          style={{ padding: '4px 6px', fontSize: '10px' }}
+                        >
+                          <ArrowDown size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -384,7 +451,7 @@ export default function CodeEditor({
           {task.format === 'drag_and_fill' && displayCode && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                Drag options to blanks:
+                {isTouchDevice ? 'Tap a token, then tap a blank:' : 'Drag options to blanks:'}
               </label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {displayOptions.map((opt, i) => (
@@ -392,11 +459,13 @@ export default function CodeEditor({
                     key={`${task.id}-token-${i}`}
                     draggable
                     onDragStart={e => e.dataTransfer.setData('text/plain', opt)}
+                    onClick={() => handleTokenClick(opt)}
                     style={{
                       padding: '4px 8px', background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border-primary)',
+                      border: `1px solid ${selectedToken === opt ? 'var(--text-accent)' : 'var(--border-primary)'}`,
                       cursor: 'grab', fontSize: '12px', fontFamily: 'var(--font-mono)',
                       userSelect: 'none',
+                      color: selectedToken === opt ? 'var(--text-accent)' : 'var(--text-primary)',
                     }}
                   >
                     {opt}
@@ -419,7 +488,13 @@ export default function CodeEditor({
                           e.preventDefault();
                           updateFillState(idx, e.dataTransfer.getData('text/plain'));
                         }}
-                        onClick={() => updateFillState(idx, null)}
+                        onClick={() => {
+                          if (fillState[idx]) {
+                            updateFillState(idx, null);
+                            return;
+                          }
+                          handleBlankClick(idx);
+                        }}
                         style={{
                           display: 'inline-block', minWidth: '60px', padding: '0 8px',
                           borderBottom: '2px solid var(--text-accent)',

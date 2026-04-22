@@ -14,6 +14,8 @@ type StopMode = 'retain' | 'discard' | 'fresh';
 const TIMING_CONFIG_KEYS = new Set([
   'standupDurationMs',
   'firewallBufferMs',
+  'hackCooldownMs',
+  'hackNoticeDelayMs',
   'easySpeedLimitMs',
   'easyCooldownMs',
   'incorrectDelayMs',
@@ -34,6 +36,7 @@ export default function AdminPage() {
   const [rolesMap, setRolesMap] = useState<Record<string, string>>({});
   const [standupDurationInput, setStandupDurationInput] = useState('90');
   const [showEndStopPopup, setShowEndStopPopup] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const toAdminValue = useCallback((key: string, value: string | number) => {
     const numericValue = Number(value) || 0;
     return TIMING_CONFIG_KEYS.has(key) ? String(Math.round(numericValue / 1000)) : String(value);
@@ -52,6 +55,8 @@ export default function AdminPage() {
     pointsWin: 'Base Game Win Points',
     standupDurationMs: 'Voting Discussion (s)',
     firewallBufferMs: 'Firewall Task Shield Cooldown (s)',
+    hackCooldownMs: 'Hack Cooldown (s)',
+    hackNoticeDelayMs: 'Hack Reveal Delay (s)',
     easySpeedLimitMs: 'Speedrun Threshold (s)',
     easyCooldownMs: 'Speedrun Penalty Cooldown (s)',
     incorrectDelayMs: 'Incorrect Answer Penalty (s)',
@@ -134,6 +139,11 @@ export default function AdminPage() {
       setShowEndStopPopup(false);
     }
   }, [gameState?.phase]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // ── ADMIN ACTIONS ────────────────────────────────────────
   const openRoleModal = () => {
@@ -259,6 +269,32 @@ export default function AdminPage() {
   }
 
   // ── DASHBOARD ────────────────────────────────────────────
+  const standupVotes = (gameState?.standupData?.votes || {}) as Record<string, string>;
+  const activePlayers = (gameState?.players || []).filter(p => p.status === 'alive');
+  const gameEndTime = Number((gameState as any)?.gameEndTime || 0);
+  const remainingGameSeconds = gameEndTime ? Math.max(0, Math.ceil((gameEndTime - nowMs) / 1000)) : 0;
+  const formatClock = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+  const timerText = gameEndTime ? formatClock(remainingGameSeconds) : '--:--';
+  const timerColor = remainingGameSeconds <= 30 ? 'var(--text-danger)' : remainingGameSeconds <= 60 ? 'var(--text-warning)' : 'var(--text-accent)';
+
+  const voteEntries = Object.entries(standupVotes).map(([voterId, targetId]) => {
+    const voter = gameState?.players.find(p => p.id === voterId);
+    const target = targetId === 'skip'
+      ? { name: 'Skip' }
+      : gameState?.players.find(p => p.id === targetId);
+
+    return {
+      voterId,
+      voterName: voter?.name || voterId,
+      targetName: target?.name || 'Unknown',
+    };
+  });
+  const nonVoters = activePlayers.filter(p => standupVotes[p.id] === undefined);
+
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
@@ -359,6 +395,50 @@ export default function AdminPage() {
         </div>
       )}
 
+      {gameState?.phase === 'standup' && (
+        <div className="terminal-box" style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
+            Vote Audit
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Votes Cast
+              </div>
+              {voteEntries.length === 0 ? (
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No votes recorded yet.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {voteEntries.map(entry => (
+                    <div key={entry.voterId} style={{ fontSize: '12px', padding: '8px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', borderRadius: '4px' }}>
+                      <span style={{ color: 'var(--text-primary)' }}>{entry.voterName}</span>
+                      <span style={{ color: 'var(--text-muted)' }}> voted for </span>
+                      <span style={{ color: 'var(--text-accent)' }}>{entry.targetName}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Pending Votes
+              </div>
+              {nonVoters.length === 0 ? (
+                <p style={{ fontSize: '11px', color: 'var(--text-accent)' }}>Everyone has voted.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {nonVoters.map(player => (
+                    <div key={player.id} style={{ fontSize: '12px', padding: '8px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', borderRadius: '4px' }}>
+                      {player.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Admin Config Override */}
       {gameState?.adminConfig && gameState.phase === 'lobby' && (
         <div className="terminal-box" style={{ marginBottom: '24px' }}>
@@ -398,13 +478,43 @@ export default function AdminPage() {
             {gameState.winSide === 'developers' ? 'DEVELOPERS WIN' : 'HACKERS WIN'}
           </h2>
 
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px' }}>
+            {(gameState as any).gameEndReason || 'Round ended.'}
+          </p>
+
+          <div style={{ marginBottom: '18px' }}>
+            <p style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+              Hacker Identities
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
+              {(gameState.players || [])
+                .filter(p => p.role === 'hacker')
+                .map(p => (
+                  <span
+                    key={p.id}
+                    style={{
+                      color: 'var(--text-danger)',
+                      border: '1px solid var(--text-danger)',
+                      borderRadius: '999px',
+                      fontSize: '11px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      padding: '6px 10px',
+                    }}
+                  >
+                    {p.name}
+                  </span>
+                ))}
+            </div>
+          </div>
+
           <h3 style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', textTransform: 'uppercase' }}>
             Top 3 MVP {gameState.winSide === 'developers' ? 'Developers' : 'Hackers'}
           </h3>
           <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
             {(gameState.players || [])
               .filter(p => (gameState.winSide === 'developers' && p.role === 'developer') || (gameState.winSide === 'hackers' && p.role === 'hacker'))
-              .map(p => ({ id: p.id, name: p.name, score: gameState.scores?.[p.id] || 0 }))
+              .map(p => ({ id: p.id, name: p.name, score: (p as any).displayScore ?? (gameState.scores?.[p.id] || 0) }))
               .sort((a, b) => b.score - a.score)
               .slice(0, 3)
               .map((p, idx) => (
@@ -423,17 +533,18 @@ export default function AdminPage() {
       )}
 
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px', marginBottom: '24px' }}>
         {[
           { label: 'Phase', value: gameState?.phase?.toUpperCase() || '—', icon: <Activity size={16} /> },
           { label: 'Players', value: gameState?.playerCount || 0, icon: <Users size={16} /> },
+          { label: 'Time Left', value: timerText, icon: <Wifi size={16} />, valueColor: timerColor },
           { label: 'Progress', value: `${Math.round(gameState?.globalProgress || 0)}%`, icon: <CheckCircle size={16} /> },
           { label: 'Tasks Done', value: gameState?.totalTasksSolved || 0, icon: <Wifi size={16} /> },
           { label: 'Sabotaged', value: gameState?.totalSabotageDone || 0, icon: <Skull size={16} /> },
         ].map((stat, i) => (
           <div key={i} className="terminal-box" style={{ textAlign: 'center', padding: '16px' }}>
             <div style={{ color: 'var(--text-accent)', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>{stat.icon}</div>
-            <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px' }}>{stat.value}</div>
+            <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '4px', color: (stat as any).valueColor || 'var(--text-primary)' }}>{stat.value}</div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{stat.label}</div>
           </div>
         ))}
@@ -554,14 +665,18 @@ export default function AdminPage() {
                     </span>
                   </td>
                   <td style={{ padding: '8px', color: 'var(--text-accent)' }}>
-                    {gameState?.scores[p.id] || 0}
+                    {(p as any).displayScore ?? (gameState?.scores[p.id] || 0)}
                   </td>
                   <td style={{ padding: '8px' }}>
                     {gameState?.phase === 'playing' && p.status !== 'disconnected' && p.status !== 'ejected' ? (
                       <button
                         className="btn-danger"
                         style={{ padding: '6px 10px', fontSize: '10px' }}
-                        onClick={() => adminSocket?.emit('admin_kick_player', p.id)}
+                        onClick={() => {
+                          if (window.confirm(`Kick ${p.name} from the current round?`)) {
+                            adminSocket?.emit('admin_kick_player', p.id);
+                          }
+                        }}
                       >
                         Kick
                       </button>
