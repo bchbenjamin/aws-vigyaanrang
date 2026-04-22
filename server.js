@@ -82,7 +82,7 @@ let ALL_PUZZLES = [];
 try {
   ALL_PUZZLES = JSON.parse(fs.readFileSync(PUZZLES_PATH, 'utf8'));
 } catch (e) {
-  console.error('Failed to load puzzles.json:', e);
+  console.error(`Failed to load root puzzle bank at ${PUZZLES_PATH}:`, e);
 }
 
 const incompatiblePuzzles = ALL_PUZZLES.filter(p => !isTaskPlayable(p));

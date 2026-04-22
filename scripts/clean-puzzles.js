@@ -3,6 +3,7 @@ const path = require('path');
 const { mapFormat, normalizeDifficulty, isTaskPlayable } = require('../src/lib/puzzleEngine');
 
 const LANGUAGES = ['python', 'java', 'c'];
+const ALLOWED_FORMATS = new Set(['output_prediction', 'multiple_choice']);
 const PROMPT_FIELDS = ['code', 'codeTemplate', 'buggyCode', 'question', 'options', 'tokens', 'lines', 'blankCount', 'shuffleOnServe'];
 const EVAL_FIELDS = ['correctAnswer', 'acceptedAnswers', 'correctOrder', 'expectedStdout', 'solutionCode'];
 
@@ -15,17 +16,11 @@ function pickFields(source, fields) {
 }
 
 function selectInputPath() {
-  const candidates = [
-    path.join(__dirname, '..', 'data', 'puzzles.json'),
-    path.join(__dirname, '..', 'src', 'data', 'puzzles.json'),
-  ];
-
-  const found = candidates.find((candidate) => fs.existsSync(candidate));
-  if (!found) {
-    throw new Error('No puzzle source found (expected data/puzzles.json or src/data/puzzles.json).');
+  const source = path.join(__dirname, '..', 'data', 'puzzles.json');
+  if (!fs.existsSync(source)) {
+    throw new Error('No puzzle source found (expected data/puzzles.json).');
   }
-
-  return found;
+  return source;
 }
 
 function normalizeVersion(rawVersion) {
@@ -93,6 +88,11 @@ function cleanPuzzles(options = {}) {
       return;
     }
     seenIds.add(normalized.id);
+
+    if (!ALLOWED_FORMATS.has(normalized.format)) {
+      removed.push({ id: normalized.id, reason: `unsupported_format:${normalized.format}` });
+      return;
+    }
 
     if (!isTaskPlayable(normalized)) {
       removed.push({ id: normalized.id, reason: 'unplayable_or_illogical' });

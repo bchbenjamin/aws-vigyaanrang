@@ -225,7 +225,7 @@ test('project puzzle bank has exact approved counts and valid ids', () => {
   const puzzlePath = path.join(__dirname, '..', 'data', 'puzzles.json');
   const raw = JSON.parse(fs.readFileSync(puzzlePath, 'utf8'));
 
-  assert.equal(raw.length, 750);
+  assert.equal(raw.length, 75);
 
   const counts = { easy: 0, medium: 0, hard: 0 };
   const seen = new Set();
@@ -234,6 +234,7 @@ test('project puzzle bank has exact approved counts and valid ids', () => {
     assert.match(task.id, /^[123][0-9]{3}$/);
     assert.equal(seen.has(task.id), false, `Duplicate id detected: ${task.id}`);
     seen.add(task.id);
+    assert.equal(['output_prediction', 'multiple_choice'].includes(task.format), true);
 
     counts[task.difficulty] += 1;
 
@@ -242,7 +243,7 @@ test('project puzzle bank has exact approved counts and valid ids', () => {
     if (task.difficulty === 'hard') assert.equal(task.id.startsWith('3'), true);
   });
 
-  assert.deepEqual(counts, { easy: 300, medium: 300, hard: 150 });
+  assert.deepEqual(counts, { easy: 30, medium: 30, hard: 15 });
 });
 
 test('all puzzle-language variants are parseable by verifier', () => {

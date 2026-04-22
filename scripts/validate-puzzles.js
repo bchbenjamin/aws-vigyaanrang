@@ -7,11 +7,12 @@ const { isTaskPlayable, mapFormat, normalizeDifficulty, verifyAnswer } = require
 const LANGUAGES = ['python', 'java', 'c'];
 const PUZZLE_PATH = path.join(__dirname, '..', 'data', 'puzzles.json');
 const RUNTIME_TIMEOUT_MS = 5000;
+const ALLOWED_FORMATS = new Set(['output_prediction', 'multiple_choice']);
 
 const ID_RULES = {
-  easy: { start: 1001, count: 300 },
-  medium: { start: 2001, count: 300 },
-  hard: { start: 3001, count: 150 },
+  easy: { start: 1001, count: 30 },
+  medium: { start: 2001, count: 30 },
+  hard: { start: 3001, count: 15 },
 };
 
 function parseRuntimeFlag() {
@@ -229,6 +230,10 @@ function validatePuzzles() {
 
     if (mapFormat(task.format) !== task.format) {
       issues.push({ ref, issue: `non_canonical_format:${task.format}` });
+    }
+
+    if (!ALLOWED_FORMATS.has(task.format)) {
+      issues.push({ ref, issue: `banned_format:${task.format}` });
     }
 
     if (!task.versions) {

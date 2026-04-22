@@ -5,9 +5,9 @@
 ## Documentation
 
 - Deployment: `docs/deployment.md`
-- Puzzle schema: `docs/puzzle-schema.md`
+- Puzzle schema: `PUZZLE_SCHEMA.md`
 - Architecture walkthrough: `docs/architecture-walkthrough.md`
-- Full puzzle data contract: `PUZZLE.md`
+- Legacy puzzle notes: `PUZZLE.md`
 
 ## Current gameplay model
 
@@ -40,9 +40,8 @@
 
 ### Parser and grading resilience
 - The server normalizes and sanitizes puzzle payloads at assignment time before sending over WebSocket, so evaluation blocks never reach the client.
-- Common format aliases are normalized automatically, including `Logic Error Detection`, `Syntax Error Detection`, `Parenthesis Matching`, `Code Completion`, and `Drag and Fill`.
+- The active puzzle bank is output-only and restricted to canonical `output_prediction` and `multiple_choice` formats.
 - Difficulty aliases are normalized (`leetcode_easy` and similar labels map into `hard`).
-- Rearrangement tasks are graded using the submitted ordered lines, so shuffled client order no longer breaks validation.
 - If a task shape cannot be parsed or graded safely, the task is skipped/replaced without penalizing the player.
 
 ### Difficulty rules
