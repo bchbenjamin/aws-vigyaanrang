@@ -8,14 +8,16 @@ For schema-level contract details, also see `PUZZLE_SCHEMA.md`.
 ## 1) Dataset Scope
 
 - Source of truth: `data/puzzles.json`
-- Total puzzles: `75`
+- Total puzzles: `450`
 - Difficulty split:
-	- `easy`: `30` (IDs `1001` to `1030`)
-	- `medium`: `30` (IDs `2001` to `2030`)
-	- `hard`: `15` (IDs `3001` to `3015`)
-- Supported formats only:
+	- `easy`: `200`
+	- `medium`: `200`
+	- `hard`: `50`
+- Supported formats:
 	- `output_prediction`
 	- `multiple_choice`
+	- `drag_and_drop`
+	- `fill_in_the_blanks`
 - Every puzzle must contain all three language versions:
 	- `python`
 	- `java`
@@ -30,9 +32,11 @@ The task UI has two separate text regions:
 	 - `description`
 
 2. Prompt area:
-	 - Question text block (for `multiple_choice`, from `prompt.question`)
+	 - Question text block (from `prompt.question`)
 	 - Code block (from `prompt.code`)
-	 - Options list (from `prompt.options`)
+	 - Options list (for `multiple_choice`, from `prompt.options`)
+	 - Blank fields (for `fill_in_the_blanks`, from `prompt.blanks`)
+	 - Draggable items (for `drag_and_drop`, from `prompt.items`)
 
 Important: `question` and `code` are rendered as separate blocks.
 Do not combine code-like content into `question`.
@@ -57,6 +61,18 @@ Do not combine code-like content into `question`.
 - `prompt.code` must contain the actual snippet being evaluated.
 - `prompt.options` must contain clean answer options only (no explanatory prose).
 
+### 3.4 `drag_and_drop` prompt rules
+
+- `prompt.question` should clearly state what items need to be arranged.
+- `prompt.code` can contain context or a target code block with drop zones.
+- `prompt.items` must list the items to drag.
+
+### 3.5 `fill_in_the_blanks` prompt rules
+
+- `prompt.question` must be a short natural-language prompt.
+- `prompt.code` should contain the snippet with blanks clearly marked.
+- `prompt.blanks` should list the available options for each blank.
+
 `prompt.question` must NOT:
 - include code fragments,
 - include long token streams,
@@ -65,6 +81,8 @@ Do not combine code-like content into `question`.
 
 Recommended question text:
 - `What is printed to stdout?`
+- `Arrange the blocks to complete the code.`
+- `Fill in the blanks to make the code compile.`
 
 ## 4) Malformed Question Handling Policy
 
@@ -91,12 +109,87 @@ Each language version must include:
 
 `acceptedAnswers` may be used for equivalent textual forms.
 
-## 6) Team Checklist Before Merge
+## 6) Unified Schema Info
 
-1. Confirm IDs are in the exact allowed ranges and contiguous.
-2. Confirm only `output_prediction` and `multiple_choice` are used.
+This is the authoritative schema for the root puzzle bank at `data/puzzles.json`.
+
+### Top-level object contract
+
+Each puzzle must follow:
+
+```json
+{
+  "id": "string",
+  "difficulty": "easy | medium | hard",
+  "format": "output_prediction | multiple_choice | drag_and_drop | fill_in_the_blanks",
+  "title": "string",
+  "description": "string",
+  "versions": {
+    "python": { "prompt": {}, "evaluation": {} },
+    "java": { "prompt": {}, "evaluation": {} },
+    "c": { "prompt": {}, "evaluation": {} }
+  }
+}
+```
+
+Rules:
+
+- `id` is required, unique, and numeric-string only.
+- `difficulty` must be canonical (`easy`, `medium`, `hard`).
+- `format` must be canonical.
+- All three language versions must exist.
+
+### Evaluation and Prompt fields by format
+
+#### `output_prediction`
+
+Prompt fields:
+- `code`
+
+Evaluation fields:
+- `correctAnswer` (exact target output)
+- `acceptedAnswers` (additional accepted forms)
+- `expectedStdout` (explicit runtime output contract)
+- `solutionCode` (compilable/executable reference implementation)
+
+#### `multiple_choice`
+
+Prompt fields:
+- `question`
+- `code`
+- `options`
+
+Evaluation fields:
+- `correctAnswer` (exact expected choice/output)
+- `acceptedAnswers` (optional aliases)
+- `expectedStdout`
+
+#### `drag_and_drop`
+
+Prompt fields:
+- `question`
+- `code`
+- `items`
+
+Evaluation fields:
+- `correctOrder` (array of items in correct order)
+
+#### `fill_in_the_blanks`
+
+Prompt fields:
+- `question`
+- `code`
+- `blanks`
+
+Evaluation fields:
+- `correctAnswers` (map or array of correct entries for each blank)
+
+## 7) Team Checklist Before Merge
+
+1. Confirm IDs are unique.
+2. Confirm only canonical formats are used.
 3. Confirm all puzzles include `python`, `java`, and `c` versions.
-4. For `multiple_choice`, verify question is plain language and code is in `prompt.code`.
+4. For `multiple_choice`, `drag_and_drop`, and `fill_in_the_blanks`, verify question is plain language and code represents snippets accurately.
 5. Run `npm run validate:puzzles`.
 6. Run `npm run validate:puzzles:runtime` on a machine with Python, Java, and GCC available.
 
