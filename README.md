@@ -4,10 +4,8 @@
 
 ## Documentation
 
-- Deployment: `docs/deployment.md`
-- Puzzle schema: `PUZZLE_SCHEMA.md`
-- Architecture walkthrough: `docs/architecture-walkthrough.md`
-- Legacy puzzle notes: `PUZZLE.md`
+- Agent notes: `docs/AGENTS.md`
+- Puzzle authoring and schema: `docs/PUZZLE.md`
 
 ## Current gameplay model
 
@@ -40,9 +38,11 @@
 
 ### Parser and grading resilience
 - The server normalizes and sanitizes puzzle payloads at assignment time before sending over WebSocket, so evaluation blocks never reach the client.
-- The active puzzle bank is output-only and restricted to canonical `output_prediction` and `multiple_choice` formats.
+- The active puzzle bank is restricted to canonical `output_prediction` and `multiple_choice` formats.
 - Difficulty aliases are normalized (`leetcode_easy` and similar labels map into `hard`).
 - If a task shape cannot be parsed or graded safely, the task is skipped/replaced without penalizing the player.
+- Multiple-choice prompt text, options, and answer keys support multiline content.
+- Output/fill answers support both real multiline input and escaped `\\n` forms during grading.
 
 ### Difficulty rules
 - Developers can request `easy` and `medium`.
@@ -115,6 +115,12 @@ Database-backed data:
 - Local and LAN execution use the custom `server.js` entrypoint.
 - The runtime reads puzzle data from JSON directly. It no longer relies on Node loading `src/lib/tasks` for server-side task assignment.
 - The app is intended for persistent Node hosting and LAN play. Serverless hosting assumptions should be treated as unsupported.
+
+## Security hygiene
+
+- Never commit real credentials. Keep only placeholder values in `.env.example`.
+- Use a local untracked `.env` for secrets.
+- Before release, run a repository-wide secret scan and rotate any credential that was ever committed.
 
 ## Development
 

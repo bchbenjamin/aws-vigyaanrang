@@ -26,10 +26,21 @@ interface CodeEditorProps {
   isHackTask?: boolean;
   difficultiesAllowed: Difficulty[];
   difficultyResetKey?: string | number;
-  systemStatusHint?: string | null;
   disabledMsg?: string | null;
   onRequestTask: (difficulty: Difficulty) => void;
   onSubmit: (result: CodeEditorSubmit) => void;
+}
+
+function decodeEscapedLineBreaks(value: string): string {
+  return value
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\n');
+}
+
+function serializeMultilineAnswer(value: string): string {
+  const normalized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  return normalized.includes('\n') ? normalized.replace(/\n/g, '\\n') : normalized;
 }
 
 function getStoredLanguage(): Language {
@@ -53,7 +64,6 @@ export default function CodeEditor({
   isHackTask = false,
   difficultiesAllowed,
   difficultyResetKey,
-  systemStatusHint,
   disabledMsg,
   onRequestTask,
   onSubmit,
@@ -100,6 +110,8 @@ export default function CodeEditor({
       : (prompt?.options ?? prompt?.tokens);
     return Array.isArray(raw) ? raw : EMPTY_OPTIONS;
   }, [format, prompt]);
+  const decodedQuestion = useMemo(() => decodeEscapedLineBreaks(question), [question]);
+  const decodedOptions = useMemo(() => displayOptions.map(opt => decodeEscapedLineBreaks(opt)), [displayOptions]);
   const displayCode = format === 'output_prediction' ? (code || codeTemplate) : (codeTemplate || code);
 
   useEffect(() => {
@@ -202,7 +214,7 @@ export default function CodeEditor({
       isHackTask,
       taskId: task.id,
       lang: activeLang,
-      answer: userAnswer,
+      answer: serializeMultilineAnswer(userAnswer),
       dragOrder,
       rearrangedLines,
       fillState,
@@ -263,11 +275,6 @@ export default function CodeEditor({
           {task.format.replace(/_/g, ' ')} - {task.difficulty}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {systemStatusHint && (
-            <span style={{ fontSize: '10px', color: 'var(--text-warning)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {systemStatusHint}
-            </span>
-          )}
           <select
             value={activeDifficulty}
             onChange={e => {
@@ -309,8 +316,8 @@ export default function CodeEditor({
         </div>
       )}
 
-      <div className="split-pane">
-        <div className="split-pane-desc">
+      <div className="split-pane" style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, minHeight: 0, overflow: 'hidden', padding: '12px' }}>
+        <div className="split-pane-desc" style={{ flexShrink: 0 }}>
           <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', marginBottom: '12px' }}>{displayTitle}</h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: '1.8', marginBottom: '16px' }}>{task.description}</p>
           <div style={{
@@ -328,7 +335,8 @@ export default function CodeEditor({
           </div>
         </div>
 
-        <div className="split-pane-editor">
+        <div className="split-pane-editor" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '4px' }}>
           {task.format === 'debug' && (
             <>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
@@ -360,12 +368,12 @@ export default function CodeEditor({
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '8px' }}>
                 {task.format === 'output_prediction' ? 'Your answer (exact stdout):' : 'Your answer (replace the _____):'}
               </label>
-              <input
-                type="text"
+              <textarea
                 value={userAnswer}
                 onChange={e => setUserAnswer(e.target.value)}
                 placeholder={task.format === 'output_prediction' ? 'Type expected stdout...' : 'Type the missing code...'}
-                style={{ fontFamily: 'var(--font-mono)' }}
+                rows={task.format === 'output_prediction' ? 4 : 3}
+                style={{ fontFamily: 'var(--font-mono)', resize: 'vertical' }}
               />
             </>
           )}
@@ -438,8 +446,8 @@ export default function CodeEditor({
                 flexDirection: 'column',
                 gap: '10px',
               }}>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0 }}>
-                  {question || 'Select the correct option.'}
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0, whiteSpace: 'pre-wrap' }}>
+                  {decodedQuestion || 'Select the correct option.'}
                 </p>
                 {code && (
                   <pre style={{
@@ -460,7 +468,7 @@ export default function CodeEditor({
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                {displayOptions.map((opt, idx) => (
+                {decodedOptions.map((opt, idx) => (
                   <div
                     key={`${task.id}-opt-${idx}`}
                     onClick={() => setUserAnswer(opt)}
@@ -474,7 +482,7 @@ export default function CodeEditor({
                       color: 'var(--text-primary)', transition: 'all 0.2s',
                     }}
                   >
-                    <code>{opt}</code>
+                    <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)' }}>{opt}</div>
                   </div>
                 ))}
               </div>
@@ -544,7 +552,9 @@ export default function CodeEditor({
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
             <button
               className="btn-accent"
               onClick={handleSubmit}

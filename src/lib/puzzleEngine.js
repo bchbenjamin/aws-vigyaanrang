@@ -12,8 +12,24 @@ function normalizeText(value) {
   return String(value ?? '').replace(/\r/g, '').trim();
 }
 
+function normalizeAnswerText(value) {
+  return normalizeText(value)
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\n');
+}
+
 function normalizeForCompare(value) {
   return normalizeText(value).replace(/\s+/g, ' ').toLowerCase();
+}
+
+function normalizeForExactAnswerCompare(value) {
+  return normalizeAnswerText(value)
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim()
+    .toLowerCase();
 }
 
 function normalizeDifficulty(rawDifficulty) {
@@ -117,15 +133,15 @@ function getChoiceOptions(rawVersion) {
   const prompt = getPromptBlock(rawVersion);
 
   if (Array.isArray(prompt.options) && prompt.options.length > 0) {
-    return prompt.options.map(opt => normalizeText(opt)).filter(Boolean);
+    return prompt.options.map(opt => normalizeAnswerText(opt)).filter(Boolean);
   }
 
   if (Array.isArray(prompt.tokens) && prompt.tokens.length > 0) {
-    return prompt.tokens.map(opt => normalizeText(opt)).filter(Boolean);
+    return prompt.tokens.map(opt => normalizeAnswerText(opt)).filter(Boolean);
   }
 
   if (Array.isArray(rawVersion.options) && rawVersion.options.length > 0) {
-    return rawVersion.options.map(opt => normalizeText(opt)).filter(Boolean);
+    return rawVersion.options.map(opt => normalizeAnswerText(opt)).filter(Boolean);
   }
 
   const sourceCode = prompt.code || rawVersion.code || '';
@@ -265,10 +281,11 @@ function buildSafeVersion(rawVersion, format, options = {}, lang = 'python') {
   }
 
   if (format === 'multiple_choice') {
-    const question = normalizeText(prompt.question || rawVersion.question || '');
+    const question = normalizeAnswerText(prompt.question || rawVersion.question || '');
     const code = normalizeText(prompt.code || rawVersion.code || '');
     return {
-      question: [question, code].filter(Boolean).join('\n\n'),
+      question,
+      code,
       options: getChoiceOptions(rawVersion),
     };
   }
@@ -312,7 +329,7 @@ function buildSafeTask(taskDef, options = {}) {
 function extractExpectedCandidates(rawVersion) {
   const values = [];
   const push = (v) => {
-    const text = normalizeText(v);
+    const text = normalizeAnswerText(v);
     if (text) values.push(text);
   };
 
@@ -433,11 +450,21 @@ function extractChoiceLabels(text) {
 }
 
 function matchesByCandidates(actual, candidates) {
-  const actualNorm = normalizeForCompare(actual);
+  const actualExactNorm = normalizeForExactAnswerCompare(actual);
+  if (!actualExactNorm) return false;
+
+  const exactMatch = candidates.some(candidate => {
+    const expectedExactNorm = normalizeForExactAnswerCompare(candidate);
+    if (!expectedExactNorm) return false;
+    return actualExactNorm === expectedExactNorm;
+  });
+  if (exactMatch) return true;
+
+  const actualNorm = normalizeForCompare(normalizeAnswerText(actual));
   if (!actualNorm) return false;
 
   return candidates.some(candidate => {
-    const expectedNorm = normalizeForCompare(candidate);
+    const expectedNorm = normalizeForCompare(normalizeAnswerText(candidate));
     if (!expectedNorm) return false;
 
     if (actualNorm === expectedNorm) return true;

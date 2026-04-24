@@ -773,9 +773,6 @@ export default function GamePage() {
               isHackTask={isHackTask}
               difficultyResetKey={room}
               difficultiesAllowed={((role === 'hacker' && status === 'alive') || status === 'firewall') ? ['easy', 'medium', 'hard'] : ['easy', 'medium']}
-              systemStatusHint={role === 'hacker' && status === 'alive' && nowMs < hackCooldownUntil
-                ? `System optimization required for ${Math.ceil((hackCooldownUntil - nowMs) / 1000)}s`
-                : null}
               disabledMsg={status === 'firewall' && !selectedProtectTarget ? 'Select an active player in the firewall panel before requesting a task.' : null}
               onRequestTask={(diff) => {
                 setIsHackTask(false);
