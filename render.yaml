@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: breach-defend
+    env: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      - key: NODE_ENV
+        value: production
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      - key: HOST
+        value: 0.0.0.0
+      - key: APP_BASE_URL
+        value: https://breach-defend.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://breach-defend.onrender.com
+      - key: ALLOWED_DEV_ORIGINS
+        value: https://breach-defend.onrender.com
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false

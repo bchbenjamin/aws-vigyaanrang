@@ -2,10 +2,25 @@ const { neon } = require('@neondatabase/serverless');
 
 let sql;
 let initialized = false;
+let dbUnavailableLogged = false;
 
 function getSql() {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    if (!dbUnavailableLogged) {
+      console.warn('[DB] DATABASE_URL is missing. Running without persistent database storage.');
+      dbUnavailableLogged = true;
+    }
+    return null;
+  }
+
   if (!sql) {
-    sql = neon(process.env.DATABASE_URL);
+    try {
+      sql = neon(dbUrl);
+    } catch (err) {
+      console.error('[DB] Failed to initialize Neon client:', err.message);
+      return null;
+    }
   }
   return sql;
 }
@@ -13,6 +28,7 @@ function getSql() {
 async function ensureTables() {
   if (initialized) return;
   const db = getSql();
+  if (!db) return;
   try {
     await db`
       CREATE TABLE IF NOT EXISTS admin_config (
@@ -50,6 +66,7 @@ async function ensureTables() {
 async function loadAdminConfig(defaults) {
   await ensureTables();
   const db = getSql();
+  if (!db) return defaults;
   try {
     const rows = await db`SELECT key, value FROM admin_config`;
     const config = { ...defaults };
@@ -69,6 +86,7 @@ async function loadAdminConfig(defaults) {
 async function saveAdminConfig(configObj) {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     for (const [key, value] of Object.entries(configObj)) {
       await db`
@@ -85,6 +103,7 @@ async function saveAdminConfig(configObj) {
 async function saveCumulativeScores(scores, players) {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     for (const [id, score] of Object.entries(scores)) {
       const player = players[id];
@@ -106,6 +125,7 @@ async function saveCumulativeScores(scores, players) {
 async function loadCumulativeScores() {
   await ensureTables();
   const db = getSql();
+  if (!db) return [];
   try {
     const rows = await db`SELECT player_name, total_score, last_seen FROM cumulative_scores ORDER BY total_score DESC`;
     return rows;
@@ -118,6 +138,7 @@ async function loadCumulativeScores() {
 async function resetCumulativeScores() {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     await db`DELETE FROM cumulative_scores`;
     console.log('[DB] Reset cumulative scores.');
@@ -129,6 +150,7 @@ async function resetCumulativeScores() {
 async function loadRegisteredUsers() {
   await ensureTables();
   const db = getSql();
+  if (!db) return {};
   try {
     const rows = await db`SELECT code, name FROM registered_users`;
     const users = {};
@@ -146,6 +168,7 @@ async function loadRegisteredUsers() {
 async function saveRegisteredUser(code, name) {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     await db`
       INSERT INTO registered_users (code, name)
@@ -160,6 +183,7 @@ async function saveRegisteredUser(code, name) {
 async function removeRegisteredUser(code) {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     await db`DELETE FROM registered_users WHERE code = ${code}`;
   } catch (err) {
@@ -170,6 +194,7 @@ async function removeRegisteredUser(code) {
 async function saveLiveScore(playerName, currentScore) {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     await db`
       INSERT INTO live_scores (player_name, current_score, updated_at)
@@ -186,6 +211,7 @@ async function saveLiveScore(playerName, currentScore) {
 async function loadLiveScores() {
   await ensureTables();
   const db = getSql();
+  if (!db) return [];
   try {
     const rows = await db`SELECT player_name, current_score, updated_at FROM live_scores ORDER BY updated_at DESC`;
     return rows;
@@ -198,6 +224,7 @@ async function loadLiveScores() {
 async function clearLiveScores() {
   await ensureTables();
   const db = getSql();
+  if (!db) return;
   try {
     await db`DELETE FROM live_scores`;
   } catch (err) {

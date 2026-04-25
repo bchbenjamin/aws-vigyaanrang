@@ -2,32 +2,35 @@
   "name": "breach-and-defend",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.10.0"
+  },
   "scripts": {
     "generate:puzzles": "node scripts/generate-puzzles.js",
     "validate:puzzles": "node scripts/validate-puzzles.js",
     "validate:puzzles:runtime": "node scripts/validate-puzzles.js --runtime",
-    "dev":   "node server.js",
+    "dev": "node server.js",
     "build": "next build",
     "start": "node -e \"process.env.NODE_ENV='production'; require('./server.js')\"",
-    "lint":  "eslint",
+    "lint": "eslint",
     "test": "node --test \"tests/*.test.js\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
+    "@types/node": "^20.19.39",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "dotenv": "^16.4.0",
     "lucide-react": "^1.7.0",
     "next": "16.2.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
-    "typescript": "^5"
+    "eslint-config-next": "16.2.2"
   }
 }

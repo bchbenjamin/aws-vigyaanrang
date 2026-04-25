@@ -21,6 +21,22 @@ const host = process.env.HOST || '0.0.0.0';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+function parseAllowedOrigins() {
+  const rawOrigins = process.env.ALLOWED_ORIGINS || process.env.ALLOWED_DEV_ORIGINS || '';
+  if (!rawOrigins || rawOrigins === '*') return '*';
+
+  const origins = rawOrigins
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => {
+      if (/^https?:\/\//i.test(origin)) return origin;
+      return `https://${origin}`;
+    });
+
+  return origins.length > 0 ? origins : '*';
+}
+
 // ─── CONSTANTS ──────────────────────────────────────────────
 const ALL_ROOMS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab', 'The Log Room', 'Breakroom'];
 const TASK_ROOMS = ['Frontend', 'Main Database', 'API Gateway', 'Server Room', 'QA Testing Lab'];
@@ -664,8 +680,13 @@ app.prepare().then(async () => {
     handle(req, res);
   });
 
+  const socketCorsOrigin = parseAllowedOrigins();
+
   const io = new Server(server, {
-    cors: { origin: process.env.ALLOWED_DEV_ORIGINS && process.env.ALLOWED_DEV_ORIGINS !== '*' ? process.env.ALLOWED_DEV_ORIGINS.split(',').map(o=>o.trim()) : '*', methods: ['GET', 'POST'] },
+    cors: {
+      origin: socketCorsOrigin,
+      methods: ['GET', 'POST'],
+    },
     perMessageDeflate: true,
     path: '/socket.io',
   });

@@ -6,6 +6,7 @@
 
 - Agent notes: `docs/AGENTS.md`
 - Puzzle authoring and schema: `docs/PUZZLE.md`
+- Render deployment: `docs/DEPLOYMENT.md`
 
 ## Current gameplay model
 
